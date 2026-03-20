@@ -1,0 +1,52 @@
+
+> my-academic-site@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 6.2s
+ ○ Compiling / ...
+ ✓ Compiled / in 5.2s (663 modules)
+ GET / 200 in 5808ms
+ ✓ Compiled in 597ms (337 modules)
+ ✓ Compiled /blog in 400ms (615 modules)
+ ○ Compiling /blog/[slug] ...
+ ✓ Compiled /blog/[slug] in 1290ms (882 modules)
+ ✓ Compiled in 1392ms (958 modules)
+ ✓ Compiled in 1224ms (958 modules)
+ ✓ Compiled in 2.3s (958 modules)
+ ✓ Compiled in 1027ms (958 modules)
+ ✓ Compiled in 2.1s (958 modules)
+ ✓ Compiled in 1245ms (958 modules)
+ ✓ Compiled in 784ms (958 modules)
+ ✓ Compiled in 632ms (958 modules)
+ ✓ Compiled in 756ms (958 modules)
+ ✓ Compiled in 507ms (958 modules)
+ ✓ Compiled in 1151ms (958 modules)
+ GET / 200 in 186ms
+ ✓ Compiled /contact in 425ms (940 modules)
+ ✓ Compiled in 816ms (1016 modules)
+ ✓ Compiled in 585ms (1016 modules)
+ ✓ Compiled in 725ms (1016 modules)
+ ✓ Compiled in 663ms (1016 modules)
+ ✓ Compiled in 520ms (1016 modules)
+ ✓ Compiled in 713ms (986 modules)
+ ✓ Compiled in 557ms (986 modules)
+ GET / 200 in 236ms
+ ✓ Compiled /contact in 144ms (638 modules)
+ ✓ Compiled in 806ms (1016 modules)
+ ○ Compiling /_error ...
+ GET / 500 in 8790ms
+ GET / 500 in 26ms
+ GET / 500 in 14ms
+ ✓ Compiled /_error in 990ms (564 modules)
+ ○ Compiling /_not-found ...
+ GET / 200 in 534ms
+ ✓ Compiled /_not-found in 1614ms (1139 modules)
+ ○ Compiling /contact ...
+ ✓ Compiled /contact in 512ms (678 modules)
+ GET / 200 in 141ms
+Terminate batch job (Y/N)? 
+[?25h

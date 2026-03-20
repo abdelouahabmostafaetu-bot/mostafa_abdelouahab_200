@@ -41,7 +41,7 @@ export default async function BlogPostPage({
       <div className="max-w-5xl mx-auto px-6">
         <Link
           href="/blog"
-          className="group mb-10 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors duration-200"
+          className="group mb-6 md:mb-10 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors duration-200"
         >
           <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
           All Posts
@@ -49,9 +49,9 @@ export default async function BlogPostPage({
 
         <div className="flex gap-10 xl:gap-14">
           <article className="flex-grow min-w-0">
-            <div className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:p-10">
+            <div className="rounded-[24px] md:rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-10">
               <header className="mb-12 border-b border-[var(--color-border)]/60 pb-8">
-                <div className="flex items-center gap-2.5 text-xs text-[var(--color-text-tertiary)] mb-5">
+                <div className="mb-4 md:mb-5 flex flex-wrap items-center gap-2.5 text-xs text-[var(--color-text-tertiary)]">
                   <time className="font-medium">{formatDate(post.date)}</time>
                   <span>{post.category}</span>
                   <span className="inline-flex items-center gap-1">
@@ -61,14 +61,14 @@ export default async function BlogPostPage({
                 </div>
 
                 <h1
-                  className="text-3xl md:text-[2.8rem] font-semibold text-[var(--color-text)] leading-[1.1]"
+                  className="text-[1.95rem] md:text-[2.8rem] font-semibold text-[var(--color-text)] leading-[1.1]"
                   style={{ fontFamily: 'var(--font-serif)' }}
                 >
                   {post.title}
                 </h1>
 
                 {post.excerpt && (
-                  <p className="mt-5 text-lg text-[var(--color-text-secondary)] leading-relaxed">
+                  <p className="mt-4 md:mt-5 text-base md:text-lg text-[var(--color-text-secondary)] leading-7 md:leading-relaxed">
                     {post.excerpt}
                   </p>
                 )}

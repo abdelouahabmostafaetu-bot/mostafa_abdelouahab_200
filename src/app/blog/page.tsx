@@ -39,7 +39,7 @@ export default function BlogPage({
             Writing
           </p>
           <h1
-            className="text-4xl font-semibold text-[var(--color-text)] mb-4"
+            className="text-3xl md:text-4xl font-semibold text-[var(--color-text)] mb-4"
             style={{ fontFamily: 'var(--font-serif)' }}
           >
             Blog

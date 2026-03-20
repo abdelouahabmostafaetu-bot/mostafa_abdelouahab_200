@@ -14,7 +14,7 @@ export default function RecentActivity() {
               Latest Writing
             </p>
             <h2
-              className="text-3xl font-semibold text-[var(--color-text)]"
+              className="text-2xl font-semibold text-[var(--color-text)] md:text-3xl"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
               Latest Posts
@@ -38,17 +38,17 @@ export default function RecentActivity() {
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
-                className="group rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
+                className="group rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
               >
-                <div className="flex min-h-[220px] flex-col">
+                <div className="flex min-h-0 md:min-h-[220px] flex-col">
                   <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
                     <Calendar size={12} />
                     <span>{post.date}</span>
                   </div>
-                  <h3 className="mt-4 text-xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
+                  <h3 className="mt-4 text-lg md:text-xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
                     {post.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)]">
+                  <p className="mt-3 text-sm leading-6 md:leading-7 text-[var(--color-text-secondary)]">
                     {post.excerpt}
                   </p>
                   <div className="mt-auto flex items-center justify-between pt-6 text-sm font-semibold text-[var(--color-accent)]">
