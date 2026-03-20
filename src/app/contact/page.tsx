@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Mail, MapPin, Send, CheckCircle, ArrowRight } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
@@ -16,7 +16,6 @@ const EMAILJS_TEMPLATE_ID = 'template_v0pz5co';
 const EMAILJS_PUBLIC_KEY = 'e5WN5YFhN6mFynUwJ';
 
 export default function ContactPage() {
-  const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -51,53 +50,58 @@ export default function ContactPage() {
 
   return (
     <div className="pt-28 pb-20">
-      <div className="max-w-2xl mx-auto px-6">
-        {/* Header */}
+      <div className="max-w-5xl mx-auto px-6">
         <div className="mb-12 fade-in-up">
-          <p className="text-xs uppercase tracking-[0.15em] text-[var(--color-accent)] font-medium mb-3">
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-3">
             Reach Out
           </p>
-          <h1 className="text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-4 tracking-tight">
+          <h1
+            className="text-3xl md:text-5xl font-semibold text-[var(--color-text)] mb-4"
+            style={{ fontFamily: 'var(--font-serif)' }}
+          >
             Get in Touch
           </h1>
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-8 h-0.5 bg-[var(--color-accent)]/60 rounded-full" />
-            <span className="w-2 h-0.5 bg-[var(--color-accent)]/30 rounded-full" />
-          </div>
-          <p className="text-[var(--color-text-secondary)] text-[0.95rem] leading-relaxed">
+          <p className="max-w-2xl text-[var(--color-text-secondary)] text-[0.95rem] leading-7">
             Feel free to reach out for collaborations, questions, or to say hello.
           </p>
         </div>
 
-        {/* Contact Info Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
-          <a
-            href="mailto:mostafaabdelouahab.etu@centre-univ-mila.dz"
-            className="group flex items-center gap-3 p-4 rounded-xl border border-[var(--color-border)]/60 hover:border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-all duration-200"
-          >
-            <div className="p-2 rounded-lg bg-[var(--color-surface)] text-[var(--color-accent)] group-hover:scale-105 transition-transform duration-200">
-              <Mail size={16} />
+        <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <div className="space-y-4">
+            <a
+              href="mailto:mostafaabdelouahab.etu@centre-univ-mila.dz"
+              className="group flex items-center gap-3 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-all duration-200 hover:shadow-[var(--shadow-soft)]"
+            >
+              <div className="rounded-2xl bg-[var(--color-bg)] p-3 text-[var(--color-accent)]">
+                <Mail size={18} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-tertiary)] mb-1">Email</p>
+                <p className="text-sm text-[var(--color-text)] truncate font-medium">
+                  mostafaabdelouahab.etu@centre-univ-mila.dz
+                </p>
+              </div>
+            </a>
+            <div className="flex items-center gap-3 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+              <div className="rounded-2xl bg-[var(--color-bg)] p-3 text-[var(--color-accent)]">
+                <MapPin size={18} />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-tertiary)] mb-1">Location</p>
+                <p className="text-sm text-[var(--color-text)] font-medium">University of Mila, Algeria</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs text-[var(--color-text-tertiary)] mb-0.5">Email</p>
-              <p className="text-sm text-[var(--color-text)] truncate font-medium">
-                mostafaabdelouahab.etu@centre-univ-mila.dz
+            <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+              <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
+                Notes
+              </p>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-text-secondary)]">
+                Use the form for collaboration requests, questions about a post, or general academic contact.
               </p>
             </div>
-          </a>
-          <div className="flex items-center gap-3 p-4 rounded-xl border border-[var(--color-border)]/60">
-            <div className="p-2 rounded-lg bg-[var(--color-surface)] text-[var(--color-accent)]">
-              <MapPin size={16} />
-            </div>
-            <div>
-              <p className="text-xs text-[var(--color-text-tertiary)] mb-0.5">Location</p>
-              <p className="text-sm text-[var(--color-text)] font-medium">University of Mila, Algeria</p>
-            </div>
           </div>
-        </div>
 
-        {/* Form */}
-        <div className="rounded-xl border border-[var(--color-border)]/60 p-6 md:p-8 bg-[var(--color-bg)]">
+        <div className="rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:p-8">
           {status === 'sent' ? (
             <div className="text-center py-10">
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-50 dark:bg-green-950/30 flex items-center justify-center">
@@ -130,7 +134,7 @@ export default function ContactPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)] text-sm transition-all duration-200"
+                    className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]"
                     placeholder="Your name"
                   />
                 </div>
@@ -144,7 +148,7 @@ export default function ContactPage() {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)] text-sm transition-all duration-200"
+                    className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -160,7 +164,7 @@ export default function ContactPage() {
                   required
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)] text-sm transition-all duration-200"
+                  className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]"
                   placeholder="What's this about?"
                 />
               </div>
@@ -175,7 +179,7 @@ export default function ContactPage() {
                   rows={5}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)] text-sm resize-none transition-all duration-200"
+                  className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] resize-none"
                   placeholder="Your message..."
                 />
               </div>
@@ -191,13 +195,14 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={status === 'sending'}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[var(--color-text)] text-[var(--color-bg)] rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-[var(--color-text)]/10 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-[var(--color-text)] px-6 py-3 text-sm font-medium text-[var(--color-bg)] transition-all duration-200 hover:opacity-90 disabled:opacity-50"
               >
                 <Send size={15} />
                 {status === 'sending' ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           )}
+        </div>
         </div>
       </div>
     </div>

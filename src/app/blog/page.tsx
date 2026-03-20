@@ -32,20 +32,19 @@ export default function BlogPage({
 
   return (
     <div className="pt-28 pb-20">
-      <div className="max-w-xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         {/* Header */}
         <div className="mb-10 fade-in-up">
-          <p className="text-xs uppercase tracking-[0.15em] text-[var(--color-accent)] font-medium mb-3">
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-3">
             Writing
           </p>
-          <h1 className="text-4xl font-bold text-[var(--color-text)] mb-4 tracking-tight">
+          <h1
+            className="text-4xl font-semibold text-[var(--color-text)] mb-4"
+            style={{ fontFamily: 'var(--font-serif)' }}
+          >
             Blog
           </h1>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="w-8 h-0.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 60%, transparent)' }} />
-            <span className="w-2 h-0.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 30%, transparent)' }} />
-          </div>
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)]">
             {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
             {activeTag ? ` tagged "${activeTag}"` : ''}
             {totalPages > 1 ? ` \u00b7 Page ${safePage} of ${totalPages}` : ''}
@@ -73,7 +72,7 @@ export default function BlogPage({
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
+          <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] text-center py-20">
             <p className="text-sm text-[var(--color-text-secondary)]">
               No posts found for this tag.
             </p>

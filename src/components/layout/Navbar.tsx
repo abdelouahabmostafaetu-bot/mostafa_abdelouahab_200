@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
@@ -14,16 +14,8 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Close mobile menu on route change
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
@@ -34,44 +26,30 @@ export default function Navbar() {
   };
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-[var(--color-bg)]/80 backdrop-blur-xl border-b border-[var(--color-border)]/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]'
-          : 'bg-transparent'
-      }`}
-    >
-      <nav className="max-w-2xl mx-auto px-6">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-border)]/85 bg-[var(--color-bg)]/95 backdrop-blur-sm">
+      <nav className="max-w-5xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="group flex items-center gap-2"
-          >
-            <span className="text-lg font-bold text-[var(--color-text)] tracking-tight group-hover:text-[var(--color-accent)] transition-colors duration-200">
-              AM
+          <Link href="/" className="group flex flex-col leading-none">
+            <span className="text-base font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
+              Abdelouahab Mostafa
             </span>
-            <span className="hidden sm:inline text-[11px] text-[var(--color-text-tertiary)] font-medium tracking-wide uppercase">
-              Mathematics
+            <span className="hidden sm:block mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
+              Mathematics Notes
             </span>
           </Link>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative px-3.5 py-2 text-sm rounded-lg transition-all duration-200 ${
+                className={`px-3.5 py-2 text-sm rounded-full border transition-all duration-200 ${
                   isActive(link.href)
-                    ? 'text-[var(--color-text)] font-medium'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)]'
+                    ? 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]'
+                    : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]'
                 }`}
               >
                 {link.label}
-                {isActive(link.href) && (
-                  <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[var(--color-accent)] rounded-full" />
-                )}
               </Link>
             ))}
             <div className="ml-2 pl-2 border-l border-[var(--color-border)]">
@@ -79,12 +57,11 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile */}
-          <div className="md:hidden flex items-center gap-1">
+          <div className="md:hidden flex items-center gap-2">
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
+              className="p-2 rounded-full border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
               aria-label="Toggle menu"
             >
               {isOpen ? <X size={18} /> : <Menu size={18} />}
@@ -92,21 +69,20 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isOpen ? 'max-h-48 opacity-100 pb-4' : 'max-h-0 opacity-0'
+            isOpen ? 'max-h-56 opacity-100 pb-4' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="flex flex-col gap-0.5 pt-2 border-t border-[var(--color-border)]/50">
+          <div className="mb-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-2.5 text-sm rounded-lg transition-all duration-200 ${
+                className={`block px-3 py-2.5 text-sm rounded-xl transition-all duration-200 ${
                   isActive(link.href)
-                    ? 'text-[var(--color-text)] font-medium bg-[var(--color-hover)]'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)]'
+                    ? 'text-[var(--color-text)] font-medium bg-[var(--color-bg)]'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)]'
                 }`}
               >
                 {link.label}

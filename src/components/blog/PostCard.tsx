@@ -24,38 +24,31 @@ export default function PostCard({
   isLast = false,
 }: PostCardProps) {
   return (
-    <article
-      className={`py-7 ${
-        !isLast ? 'border-b border-[var(--color-border)]/60' : ''
-      }`}
-    >
-      <Link href={`/blog/${slug}`} className="group block">
-        {/* Date & Category */}
-        <div className="flex items-center gap-2.5 text-xs text-[var(--color-text-tertiary)] mb-2.5">
+    <article className={!isLast ? 'mb-4' : ''}>
+      <Link
+        href={`/blog/${slug}`}
+        className="group block rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
+      >
+        <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-tertiary)]">
           <time>{date}</time>
-          <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
           <span>{category}</span>
-          <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
           <span className="inline-flex items-center gap-1">
             <Clock size={11} />
             {readingTime}
           </span>
         </div>
 
-        {/* Title */}
-        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-2 group-hover:text-[var(--color-accent)] transition-colors duration-200 leading-snug">
+        <h3 className="mt-4 text-2xl font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)] leading-snug">
           {title}
         </h3>
 
-        {/* Excerpt */}
-        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed line-clamp-2">
+        <p className="mt-3 text-sm text-[var(--color-text-secondary)] leading-7 line-clamp-3">
           {excerpt}
         </p>
       </Link>
 
-      {/* Tags */}
       {tags && tags.length > 0 && (
-        <div className="mt-3">
+        <div className="mt-4">
           <TagList tags={tags} size="sm" />
         </div>
       )}

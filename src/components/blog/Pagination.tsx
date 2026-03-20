@@ -40,23 +40,24 @@ export default function Pagination({ currentPage, totalPages, activeTag }: Pagin
   const pageNumbers = getPageNumbers();
 
   return (
-    <nav className="flex items-center justify-center gap-1 mt-14 mb-4" aria-label="Pagination">
-      {/* Previous */}
+    <nav
+      className="flex items-center justify-center gap-1 mt-14 mb-4"
+      aria-label="Pagination"
+    >
       {currentPage > 1 ? (
         <Link
           href={buildHref(currentPage - 1)}
-          className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
           aria-label="Previous page"
         >
           <ChevronLeft size={16} />
         </Link>
       ) : (
-        <span className="p-2 rounded-lg text-[var(--color-text-tertiary)] opacity-40 cursor-not-allowed">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-tertiary)] opacity-40 cursor-not-allowed">
           <ChevronLeft size={16} />
         </span>
       )}
 
-      {/* Page numbers */}
       {pageNumbers.map((p, i) =>
         p === '...' ? (
           <span key={`ellipsis-${i}`} className="px-2 py-1.5 text-sm text-[var(--color-text-tertiary)]">
@@ -65,7 +66,7 @@ export default function Pagination({ currentPage, totalPages, activeTag }: Pagin
         ) : p === currentPage ? (
           <span
             key={p}
-            className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm"
+            className="min-w-10 rounded-full bg-[var(--color-text)] px-4 py-2 text-center text-sm font-semibold text-[var(--color-bg)]"
           >
             {p}
           </span>
@@ -73,24 +74,23 @@ export default function Pagination({ currentPage, totalPages, activeTag }: Pagin
           <Link
             key={p}
             href={buildHref(p)}
-            className="px-3 py-1.5 text-sm rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
+            className="min-w-10 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-center text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
           >
             {p}
           </Link>
         )
       )}
 
-      {/* Next */}
       {currentPage < totalPages ? (
         <Link
           href={buildHref(currentPage + 1)}
-          className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
           aria-label="Next page"
         >
           <ChevronRight size={16} />
         </Link>
       ) : (
-        <span className="p-2 rounded-lg text-[var(--color-text-tertiary)] opacity-40 cursor-not-allowed">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-tertiary)] opacity-40 cursor-not-allowed">
           <ChevronRight size={16} />
         </span>
       )}

@@ -18,8 +18,8 @@ export default function Tag({
   clickable = true,
 }: TagProps) {
   const baseClasses = `
-    inline-flex items-center gap-1 rounded-[3px] border transition-colors duration-150
-    ${size === 'sm' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-1 text-xs'}
+    inline-flex items-center gap-1.5 rounded-full border transition-colors duration-150
+    ${size === 'sm' ? 'px-2.5 py-1 text-[11px]' : 'px-3 py-1.5 text-xs'}
     ${
       active
         ? 'bg-[var(--tag-bg-active)] border-[var(--tag-border-active)] text-[var(--tag-text-active)]'
@@ -61,7 +61,7 @@ interface TagListProps {
 
 export function TagList({ tags, activeTag, size = 'sm', clickable = true }: TagListProps) {
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-2">
       {tags.map((tag) => (
         <Tag
           key={tag}

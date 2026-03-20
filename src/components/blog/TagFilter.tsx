@@ -17,15 +17,15 @@ export default function TagFilter({ tags, activeTag }: TagFilterProps) {
   const hasMore = tags.length > 15;
 
   return (
-    <div className="mb-8 pb-6 border-b border-[var(--color-border)]">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)] font-medium">
+    <div className="mb-10 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-secondary)] font-medium">
           Tags
         </h2>
         {activeTag && (
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1 text-xs text-[var(--color-accent)] hover:opacity-80 transition-opacity"
+            className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-accent)] hover:opacity-80 transition-opacity"
           >
             <X size={12} />
             Clear filter
@@ -48,7 +48,7 @@ export default function TagFilter({ tags, activeTag }: TagFilterProps) {
       {hasMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors"
+          className="mt-3 inline-flex items-center gap-1 text-[11px] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors"
         >
           {expanded ? (
             <>

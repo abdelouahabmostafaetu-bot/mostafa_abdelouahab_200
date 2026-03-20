@@ -38,11 +38,11 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
   if (headings.length === 0) return null;
 
   return (
-    <nav className="sticky top-28">
-      <p className="text-[10px] uppercase tracking-widest text-[var(--color-text-secondary)] mb-3">
+    <nav className="sticky top-28 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+      <p className="mb-3 text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-secondary)]">
         On this page
       </p>
-      <ul className="space-y-0.5 border-l border-[var(--color-border)]">
+      <ul className="space-y-1 border-l border-[var(--color-border)]">
         {headings.map((heading) => (
           <li key={heading.id}>
             <a
