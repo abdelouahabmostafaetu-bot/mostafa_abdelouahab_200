@@ -1,0 +1,688 @@
+---
+title: "The Cut Point Trick: A Fast Way to Tell Spaces Apart"
+date: "2026-03-20"
+category: "Mathematics"
+excerpt: "A clear guide to cut points, why homeomorphisms preserve them, how the cut point trick works, and why higher-dimensional Euclidean spaces require stronger invariants."
+tags: ["topology", "homeomorphism", "connectedness", "cut-points", "fundamental-group", "invariance-of-domain"]
+---
+
+## The Question
+
+One of the most useful beginner tools in topology is the **cut point trick**.
+
+The goal is simple:
+
+> How can we prove that two spaces are **not** homeomorphic without using heavy machinery?
+
+A cut point often gives the answer immediately.
+
+This post explains:
+
+- what a cut point is,
+- why homeomorphisms preserve cut points,
+- how to use the trick in examples,
+- where the trick stops,
+- how to prove $\mathbb{R}^n \not\cong \mathbb{R}^2$ with stronger tools,
+- and why having the same number of cut points does **not** automatically mean two spaces are homeomorphic.
+
+---
+
+## What Is a Cut Point?
+
+Let $X$ be a connected topological space and let $p \in X$.
+
+We say that $p$ is a **cut point** if removing it disconnects the space:
+
+$$
+X \setminus \{p\} \text{ is disconnected.}
+$$
+
+In plain language:
+
+> A cut point is a point that breaks the space when you remove it.
+
+---
+
+## First Picture
+
+<figure style={{ margin: "26px 0 34px" }}>
+  <img
+    src="/images/blog/cut-point-trick/cut-point-visual-guide.svg"
+    alt="A three-panel visual guide showing the real line, the circle, and a T-shape as examples of cut point behavior."
+  />
+  <figcaption style={{ textAlign: "center", color: "var(--color-text-tertiary)", fontSize: "0.95rem", marginTop: "-6px" }}>
+    A simple plotted figure showing the three basic deletion patterns.
+  </figcaption>
+</figure>
+
+### Example 1: The Real Line
+
+```text
+<-----------o----------->
+            p
+```
+
+If we remove $p$ from $\mathbb{R}$, we get
+
+$$
+\mathbb{R} \setminus \{p\} = (-\infty, p) \cup (p, \infty).
+$$
+
+These are two separated pieces, so $p$ is a cut point.
+
+In fact, **every point of $\mathbb{R}$ is a cut point**.
+
+### Example 2: The Circle
+
+```text
+      .-'''-.
+    .'       '.
+   /           \
+   \           /
+    '.       .'
+      '-._.-'
+```
+
+If we remove one point from $S^1$, the remaining space is still one connected arc.
+
+In fact,
+
+$$
+S^1 \setminus \{p\} \cong (0,1).
+$$
+
+So:
+
+> The circle has **no** cut points.
+
+That is already enough to prove that $\mathbb{R}$ and $S^1$ are not homeomorphic.
+
+---
+
+## The Trick in One Sentence
+
+<div style={{
+  border: "2px solid #2563eb",
+  borderRadius: "12px",
+  padding: "22px",
+  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+  margin: "28px 0"
+}}>
+
+**Cut Point Trick**
+
+If two spaces are homeomorphic, then cut points in one space must correspond to cut points in the other.
+
+</div>
+
+So if one space has cut points and the other does not, then they cannot be homeomorphic.
+
+More generally, if the "cut point behavior" is different, then the spaces are not topologically the same.
+
+---
+
+## Why Homeomorphisms Preserve Cut Points
+
+Suppose
+
+$$
+h : X \to Y
+$$
+
+is a homeomorphism, and let $x \in X$.
+
+Then the restricted map
+
+$$
+h\!\restriction_{X \setminus \{x\}} : X \setminus \{x\} \to Y \setminus \{h(x)\}
+$$
+
+is also a homeomorphism.
+
+Why? Because:
+
+- restricting a continuous map to a subspace stays continuous,
+- the inverse is still continuous after restriction,
+- and the restriction is still bijective.
+
+Therefore:
+
+$$
+X \setminus \{x\} \text{ is disconnected }
+\Longleftrightarrow
+Y \setminus \{h(x)\} \text{ is disconnected.}
+$$
+
+So:
+
+> $x$ is a cut point in $X$ if and only if $h(x)$ is a cut point in $Y$.
+
+This is exactly why cut points are a **topological invariant**.
+
+---
+
+## How To Use the Trick
+
+The method is usually:
+
+1. Assume or test whether $X$ and $Y$ might be homeomorphic.
+2. Remove a point from each space.
+3. Compare what happens.
+4. If the behavior is different, conclude $X \not\cong Y$.
+
+Very often this is much faster than computing a fundamental group or homology.
+
+---
+
+## Example 1: The Line vs the Circle
+
+Compare $\mathbb{R}$ and $S^1$.
+
+### In $\mathbb{R}$
+
+Every point is a cut point.
+
+```text
+<------o------>    remove o    <---     --->
+```
+
+### In $S^1$
+
+No point is a cut point.
+
+```text
+circle minus one point = one connected open arc
+```
+
+Since the cut point structure is different,
+
+$$
+\mathbb{R} \not\cong S^1.
+$$
+
+---
+
+## Example 2: An Open Interval vs the Circle
+
+The same argument shows
+
+$$
+(0,1) \not\cong S^1.
+$$
+
+Every point of $(0,1)$ is a cut point, but no point of the circle is.
+
+This is one of the standard first applications of the trick.
+
+---
+
+## Example 3: The Line vs the Plane
+
+Compare $\mathbb{R}$ and $\mathbb{R}^2$.
+
+In $\mathbb{R}$, removing a point breaks the line into two pieces.
+
+In $\mathbb{R}^2$, removing one point does **not** disconnect the plane. You can still move around the missing point.
+
+```text
+Plane with one missing point:
+
+  you can go around the hole
+
+      path  )   o   (
+```
+
+So
+
+$$
+\mathbb{R} \not\cong \mathbb{R}^2.
+$$
+
+More generally, for $n \ge 2$, no point of $\mathbb{R}^n$ is a cut point.
+
+---
+
+## Example 4: The Interval vs the Letter T
+
+This example is especially helpful because both spaces have many cut points, but not the same **type**.
+
+### Interval
+
+```text
+o-----------o
+```
+
+If you remove an interior point, the interval splits into **two** components.
+
+### Letter T
+
+```text
+-----o-----
+     |
+     |
+```
+
+If you remove the center point, the space splits into **three** components.
+
+So the interval and the letter `T` are not homeomorphic.
+
+This shows that it is not only the number of cut points that matters. Sometimes we must also look at **how many connected components appear after deletion**.
+
+---
+
+## Example 5: The Letters X and Y
+
+```text
+X-shape:            Y-shape:
+
+\   /               \   /
+ \ /                 \ /
+ / \                  |
+/   \                 |
+```
+
+In the `X` shape, the center is a point whose removal creates **four** components.
+
+In the `Y` shape, the branching point creates **three** components.
+
+Therefore these spaces are not homeomorphic.
+
+This is a nice visual example of how cut points detect **branching**.
+
+---
+
+## Important Warning
+
+<div style={{
+  borderLeft: "4px solid #dc2626",
+  paddingLeft: "18px",
+  margin: "26px 0"
+}}>
+
+Having the same number of cut points is a **necessary** condition for homeomorphism, but it is **not sufficient**.
+
+</div>
+
+This is one of the most important ideas to remember.
+
+If $X \cong Y$, then they must have matching cut point behavior.
+
+But the converse fails:
+
+> Two spaces can have the same number of cut points and still fail to be homeomorphic.
+
+### A Simple Counterexample
+
+Take:
+
+- an open interval $(0,1)$,
+- and the letter `T`.
+
+Both have infinitely many cut points.
+
+But they are not homeomorphic, because:
+
+- in $(0,1)$ every cut point splits the space into exactly **two** components,
+- while in `T` the center point splits the space into **three** components.
+
+So matching the raw count of cut points does not settle the problem.
+
+---
+
+## Where the Cut Point Trick Stops
+
+The cut point trick is powerful, but it has limits.
+
+It immediately proves
+
+$$
+\mathbb{R} \not\cong \mathbb{R}^2,
+$$
+
+because $\mathbb{R}$ has cut points and $\mathbb{R}^2$ does not.
+
+But it does **not** distinguish $\mathbb{R}^2$ from $\mathbb{R}^3$ or, more generally, $\mathbb{R}^2$ from $\mathbb{R}^n$ for $n \ge 3$, because all these spaces have the same cut-point behavior:
+
+> removing one point still leaves them connected.
+
+So to separate $\mathbb{R}^2$ from higher-dimensional Euclidean spaces, we need a stronger invariant.
+
+---
+
+## A Stronger Proof: Why $\mathbb{R}^n$ Is Not Homeomorphic to $\mathbb{R}^2$
+
+<figure style={{ margin: "28px 0 34px" }}>
+  <img
+    src="/images/blog/cut-point-trick/punctured-space-proof.svg"
+    alt="A two-panel comparison of the punctured plane and punctured higher-dimensional Euclidean space, highlighting the difference between fundamental groups."
+  />
+  <figcaption style={{ textAlign: "center", color: "var(--color-text-tertiary)", fontSize: "0.95rem", marginTop: "-6px" }}>
+    A plotted figure for the stronger punctured-space proof.
+  </figcaption>
+</figure>
+
+For $n = 1$, the cut point argument already works.
+
+Now assume $n \ge 3$ and suppose, for contradiction, that there is a homeomorphism
+
+$$
+h : \mathbb{R}^n \to \mathbb{R}^2.
+$$
+
+Remove one point. Then restriction gives a homeomorphism
+
+$$
+h\!\restriction_{\mathbb{R}^n \setminus \{0\}} :
+\mathbb{R}^n \setminus \{0\}
+\to
+\mathbb{R}^2 \setminus \{h(0)\}.
+$$
+
+Hence the punctured spaces must have isomorphic fundamental groups:
+
+$$
+\pi_1(\mathbb{R}^n \setminus \{0\})
+\cong
+\pi_1(\mathbb{R}^2 \setminus \{h(0)\}).
+$$
+
+### Step 1: The punctured plane
+
+The space $\mathbb{R}^2 \setminus \{0\}$ deformation retracts onto the unit circle $S^1$ by pushing each point radially to the circle:
+
+$$
+r(x) = \frac{x}{\|x\|},
+\qquad
+H_t(x) = \left((1-t) + \frac{t}{\|x\|}\right)x.
+$$
+
+for $x \in \mathbb{R}^2 \setminus \{0\}$.
+
+Therefore
+
+$$
+\mathbb{R}^2 \setminus \{0\} \simeq S^1,
+\qquad
+\pi_1(\mathbb{R}^2 \setminus \{0\}) \cong \pi_1(S^1) \cong \mathbb{Z}.
+$$
+
+Intuitively, loops around the missing point can wind around it one time, two times, three times, and so on.
+
+### Step 2: The punctured higher-dimensional space
+
+For $n \ge 3$, the space $\mathbb{R}^n \setminus \{0\}$ deformation retracts onto the sphere $S^{n-1}$ by the same radial formula.
+
+There is also a more precise statement, and it matches the idea many students guess at first:
+
+$$
+\mathbb{R}^n \setminus \{x\}
+\cong
+S^{n-1} \times (0,\infty)
+\cong
+S^{n-1} \times \mathbb{R}.
+$$
+
+So the correct notation is
+
+$$
+\mathbb{R}^n \setminus \{x\},
+$$
+
+not a quotient such as $\mathbb{R}^n / \{x\}$.
+
+One explicit homeomorphism is
+
+$$
+\Phi : \mathbb{R}^n \setminus \{x\} \to S^{n-1} \times (0,\infty),
+\qquad
+\Phi(y) =
+\left(
+\frac{y-x}{\|y-x\|},
+\|y-x\|
+\right).
+$$
+
+Its inverse is
+
+$$
+\Phi^{-1}(u,r) = x + ru.
+$$
+
+Since $(0,\infty) \cong \mathbb{R}$ via $r \mapsto \log r$, this gives
+
+$$
+\mathbb{R}^n \setminus \{x\}
+\cong
+S^{n-1} \times \mathbb{R}.
+$$
+
+So
+
+$$
+\mathbb{R}^n \setminus \{0\} \simeq S^{n-1},
+\qquad
+\pi_1(\mathbb{R}^n \setminus \{0\})
+\cong
+\pi_1(S^{n-1}).
+$$
+
+Now use the standard product formula for fundamental groups:
+
+$$
+\pi_1(X \times Y, (x_0,y_0))
+\cong
+\pi_1(X,x_0) \times \pi_1(Y,y_0)
+$$
+
+for path-connected spaces $X$ and $Y$.
+
+Applying this to $S^{n-1} \times \mathbb{R}$ gives
+
+$$
+\pi_1(\mathbb{R}^n \setminus \{x\})
+\cong
+\pi_1(S^{n-1} \times \mathbb{R})
+\cong
+\pi_1(S^{n-1}) \times \pi_1(\mathbb{R})
+\cong
+\pi_1(S^{n-1}) \times \{e\}
+\cong
+\pi_1(S^{n-1}),
+$$
+
+since $\mathbb{R}$ is contractible and therefore has trivial fundamental group.
+
+But when $n \ge 3$, we have $n-1 \ge 2$, and spheres of dimension at least $2$ are simply connected. Hence
+
+$$
+\pi_1(\mathbb{R}^n \setminus \{0\})
+\cong
+\pi_1(S^{n-1})
+\cong
+\{e\}.
+$$
+
+### Contradiction
+
+So we would get
+
+$$
+\{e\} \cong \pi_1(\mathbb{R}^n \setminus \{0\})
+\cong
+\pi_1(\mathbb{R}^2 \setminus \{h(0)\})
+\cong \mathbb{Z},
+$$
+
+which is impossible.
+
+Therefore:
+
+$$
+\mathbb{R}^n \not\cong \mathbb{R}^2
+\qquad \text{for every } n \ne 2.
+$$
+
+### The Main Idea
+
+The cut point trick studies what happens after deleting one point and asking whether the space stays connected.
+
+This stronger proof studies what happens after deleting one point and asking:
+
+> what kinds of loops survive around the missing point?
+
+That is the first place where algebraic topology goes beyond cut points.
+
+---
+
+## A Quick Comparison of the Punctured Spaces
+
+| Space | Precise model / homotopy type | Fundamental group |
+| --- | --- | --- |
+| $\mathbb{R}^2 \setminus \{0\}$ | $\cong S^1 \times \mathbb{R} \simeq S^1$ | $\mathbb{Z}$ |
+| $\mathbb{R}^n \setminus \{0\}$, $n \ge 3$ | $\cong S^{n-1} \times \mathbb{R} \simeq S^{n-1}$ | $\{e\}$ |
+
+This table explains in one line why $\mathbb{R}^2$ cannot be homeomorphic to $\mathbb{R}^n$ for $n \ge 3$.
+
+---
+
+## A Clean Theorem Statement
+
+Here is the formal result behind the trick.
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  padding: "20px",
+  background: "#fafafa",
+  margin: "24px 0"
+}}>
+
+**Theorem.** Let $h : X \to Y$ be a homeomorphism. For every $x \in X$, the map
+
+$$
+h\!\restriction_{X \setminus \{x\}} : X \setminus \{x\} \to Y \setminus \{h(x)\}
+$$
+
+is a homeomorphism. Hence $x$ is a cut point of $X$ if and only if $h(x)$ is a cut point of $Y$.
+
+</div>
+
+This is the entire logical engine of the method.
+
+---
+
+## Why This Result Is So Useful
+
+The cut point trick gives a quick obstruction to homeomorphism:
+
+- it is visual,
+- it is easy to explain,
+- and it works before you learn more advanced invariants.
+
+It is especially effective for:
+
+- intervals,
+- circles,
+- graphs,
+- tree-like spaces,
+- and simple subsets of $\mathbb{R}^n$.
+
+In many first topology courses, cut points are one of the earliest examples of a topological invariant that students can actually use right away.
+
+---
+
+## Famous Results Connected to This Idea
+
+Cut points are only the beginning. Once you start studying complements of points, curves, and spheres, you quickly reach some of the most famous theorems in topology.
+
+### 1. Brouwer's Invariance of Domain
+
+This theorem says:
+
+> If $U \subseteq \mathbb{R}^n$ is open and $f : U \to \mathbb{R}^n$ is continuous and injective, then $f(U)$ is open.
+
+One major corollary is that dimension is a topological invariant for Euclidean spaces:
+
+$$
+\mathbb{R}^n \cong \mathbb{R}^m
+\Longrightarrow
+n = m.
+$$
+
+So while the cut point trick proves some non-homeomorphism results quickly, invariance of domain is the famous general theorem that settles the whole Euclidean story at once.
+
+### 2. The Jordan Curve Theorem
+
+If $C \subset \mathbb{R}^2$ is a simple closed curve, then
+
+$$
+\mathbb{R}^2 \setminus C
+$$
+
+has exactly two connected components, an inside and an outside, and each has $C$ as its boundary.
+
+This is much deeper than the cut point trick, but philosophically it is related:
+
+- remove a simple object from a space,
+- study the complement,
+- and use that information to understand the topology.
+
+In that sense, cut points are a very first example of a much larger theme in topology.
+
+---
+
+## A Good Way To Think About It
+
+A homeomorphism is like a perfect rubber-sheet deformation:
+
+- you may stretch,
+- bend,
+- and twist,
+
+but you may not tear the space or glue new parts together.
+
+Because of that, a point that acts like a "bridge" in one space must still act like a bridge in the other.
+
+That bridge-point is exactly a cut point.
+
+---
+
+## Summary Table
+
+| Space | Cut points? | What happens after deletion? |
+| --- | --- | --- |
+| $\mathbb{R}$ | Every point | Splits into 2 components |
+| $(0,1)$ | Every point | Splits into 2 components |
+| $[0,1]$ | Interior points only | Splits into 2 components |
+| $S^1$ | None | Still connected |
+| $\mathbb{R}^2$ | None | Still connected |
+| $\mathbb{R}^n$, $n \ge 3$ | None | Still connected |
+| `T` shape | Many, including one branch point | Center splits into 3 components |
+| `X` shape | Many, with one special center | Center splits into 4 components |
+
+This table is often enough to solve many beginner problems.
+
+---
+
+## Final Takeaway
+
+The cut point trick is one of the fastest ways to prove that two spaces are **not** homeomorphic.
+
+The core principle is:
+
+> Homeomorphisms preserve what happens when you delete a point.
+
+So if deleting a point breaks one space but not the other, the spaces cannot be homeomorphic.
+
+And even if both have cut points, the finer deletion behavior can still distinguish them.
+
+That is why cut points are such a powerful first invariant in topology.
+
+---
+
+## Further Reading
+
+- James Munkres, *Topology*
+- Gamelin and Greene, *Introduction to Topology*
+- Allen Hatcher, [*Algebraic Topology*](https://pi.math.cornell.edu/~hatcher/AT/AT.pdf), especially the early chapters on homotopy and the fundamental group
+- Christian Schnell, [MAT 530 lecture notes](https://www.math.stonybrook.edu/~cschnell/pdf/notes/mat530.pdf), for the Jordan curve theorem and Brouwer's invariance of domain
