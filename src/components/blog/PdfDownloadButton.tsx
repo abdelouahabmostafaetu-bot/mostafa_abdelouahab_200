@@ -33,11 +33,13 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
 
       // Create a temporary unmounted DOM node for styling the actual PDF structure
       pdfContainer = document.createElement('div');
-      // Mount to body off-screen so html2canvas can compute layout and dimensions properly
-      pdfContainer.style.position = 'absolute'; 
-      pdfContainer.style.left = '0'; 
-      pdfContainer.style.top = '0'; 
-      pdfContainer.style.zIndex = '2147483647'; 
+      // Keep the container in the viewport so html2canvas can reliably capture it
+      // even if the user is scrolled far down the page.
+      pdfContainer.style.position = 'fixed';
+      pdfContainer.style.left = '0';
+      pdfContainer.style.top = '0';
+      pdfContainer.style.zIndex = '2147483647';
+      pdfContainer.style.pointerEvents = 'none';
       pdfContainer.style.width = '800px'; // Render like a desktop page
       pdfContainer.style.padding = '40px 60px';
       pdfContainer.style.fontFamily = "'Latin Modern Roman', 'Computer Modern', 'Georgia', serif";
@@ -127,7 +129,11 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       // Append to the body so html2canvas can measure things properly (needs to be in DOM)
       document.body.appendChild(pdfContainer);
 
-      // Let the browser layout the off-screen content before capture
+      // Let fonts + layout settle before capture
+      if (typeof document !== 'undefined' && (document as any).fonts?.ready) {
+        await (document as any).fonts.ready;
+      }
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
       // Basic sanity check: if the container has zero size, PDF will be blank.
