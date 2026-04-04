@@ -1,17 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { Clock3, Eraser, RefreshCcw, Trophy } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Eraser, Trophy } from 'lucide-react';
 
 type Mode = 'hard' | 'master';
+type CellPosition = [number, number];
 
 type PersistedSudokuState = {
   version: 1;
   mode: Mode;
   initialBoard: number[][];
   board: number[][];
-  selectedCell: [number, number] | null;
+  selectedCell: CellPosition | null;
   isWon: boolean;
   elapsedSeconds: number;
   hintUsed?: boolean;
@@ -74,7 +74,7 @@ const isValidBoard = (value: unknown, size: number): value is number[][] => {
 const isValidSelectedCell = (
   value: unknown,
   size: number
-): value is [number, number] | null => {
+): value is CellPosition | null => {
   if (value === null) return true;
   if (!Array.isArray(value) || value.length !== 2) return false;
 
@@ -275,58 +275,6 @@ const computeConflicts = (board: number[][], subgrid: number) => {
   return conflicts;
 };
 
-const solveSudokuRecursive = (board: number[][], size: number, subgrid: number): boolean => {
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      if (board[r][c] === 0) {
-        for (let num = 1; num <= size; num++) {
-          // Check valid
-          let isValid = true;
-          for (let i = 0; i < size; i++) {
-            if (board[r][i] === num || board[i][c] === num) {
-              isValid = false;
-              break;
-            }
-          }
-          if (isValid) {
-            const startRow = r - (r % subgrid);
-            const startCol = c - (c % subgrid);
-            for (let i = 0; i < subgrid; i++) {
-              for (let j = 0; j < subgrid; j++) {
-                if (board[i + startRow][j + startCol] === num) {
-                  isValid = false;
-                  break;
-                }
-              }
-            }
-          }
-
-          if (isValid) {
-            board[r][c] = num;
-            if (solveSudokuRecursive(board, size, subgrid)) return true;
-            board[r][c] = 0;
-          }
-        }
-        return false;
-      }
-    }
-  }
-  return true;
-};
-
-const getBoardSolution = (initialBoard: number[][], size: number, subgrid: number) => {
-  const copy = initialBoard.map((row) => [...row]);
-  solveSudokuRecursive(copy, size, subgrid);
-  return copy;
-};
-
-const formatTime = (totalSeconds: number) => {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-};
-
 const clampIndex = (value: number, max: number) => Math.min(max, Math.max(0, value));
 
 const toSymbol = (value: number, symbols: string[]) => {
@@ -336,6 +284,163 @@ const toSymbol = (value: number, symbols: string[]) => {
 
 const NUMBER_FONT_CLASS = 'font-mono font-semibold tabular-nums leading-none tracking-normal';
 
+type SudokuBoardProps = {
+  board: number[][];
+  config: ModeConfig;
+  conflicts: boolean[][];
+  initialBoard: number[][];
+  selectedCell: CellPosition | null;
+  selectedValue: number;
+  onCellPress: (row: number, col: number) => void;
+};
+
+const SudokuBoard = memo(function SudokuBoard({
+  board,
+  config,
+  conflicts,
+  initialBoard,
+  selectedCell,
+  selectedValue,
+  onCellPress,
+}: SudokuBoardProps) {
+  const cellSizeClass =
+    config.size === 16
+      ? 'text-[9px] sm:text-xs md:text-sm'
+      : 'text-sm sm:text-base md:text-xl lg:text-2xl';
+
+  return (
+    <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
+      <div className="w-full max-w-[500px] relative rounded-[12px] sm:rounded-[20px] overflow-hidden p-1 sm:p-2">
+        <div
+          className="w-full mx-auto border-[2px] border-amber-400/80 bg-[#0A1220] aspect-square"
+          style={{
+            display: 'grid',
+            gridTemplateRows: `repeat(${config.size}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${config.size}, minmax(0, 1fr))`,
+          }}
+        >
+          {board.flatMap((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+              const isFixed = initialBoard[rowIndex][colIndex] !== 0;
+              const hasSelectedCell = selectedCell !== null;
+              const selectedRow = selectedCell?.[0] ?? -1;
+              const selectedCol = selectedCell?.[1] ?? -1;
+              const isSelected = selectedRow === rowIndex && selectedCol === colIndex;
+              const inSameBox =
+                hasSelectedCell &&
+                Math.floor(rowIndex / config.subgrid) ===
+                  Math.floor(selectedRow / config.subgrid) &&
+                Math.floor(colIndex / config.subgrid) ===
+                  Math.floor(selectedCol / config.subgrid);
+              const isRelated =
+                hasSelectedCell &&
+                (rowIndex === selectedRow || colIndex === selectedCol || inSameBox);
+              const isSameValue = selectedValue !== 0 && cell === selectedValue;
+              const isConflict = conflicts[rowIndex][colIndex];
+
+              const borderRight =
+                colIndex === config.size - 1
+                  ? ''
+                  : (colIndex + 1) % config.subgrid === 0
+                    ? 'border-r-[2px] border-r-amber-400/80'
+                    : 'border-r-[1px] border-r-slate-700/80';
+              const borderBottom =
+                rowIndex === config.size - 1
+                  ? ''
+                  : (rowIndex + 1) % config.subgrid === 0
+                    ? 'border-b-[2px] border-b-amber-400/80'
+                    : 'border-b-[1px] border-b-slate-700/80';
+
+              let bgClass = 'bg-transparent';
+              if (isRelated) bgClass = 'bg-white/[0.04]';
+              if (isSameValue) bgClass = 'bg-amber-300/15';
+              if (isSelected) bgClass = 'bg-amber-300/25';
+
+              let textClass = isFixed
+                ? 'font-semibold text-slate-100'
+                : 'font-semibold text-amber-200';
+              if (isConflict && !isFixed) {
+                textClass = 'font-semibold text-rose-500';
+              }
+
+              const ringClass = isSelected ? 'ring-2 ring-inset ring-amber-300/80 z-10' : '';
+
+              return (
+                <button
+                  type="button"
+                  key={`${rowIndex}-${colIndex}`}
+                  onPointerDown={() => onCellPress(rowIndex, colIndex)}
+                  className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} active:bg-amber-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
+                  aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
+                >
+                  {toSymbol(cell, config.symbols)}
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+type SudokuKeypadProps = {
+  hasSelection: boolean;
+  keypadButtonSizeClass: string;
+  numberPadValues: number[];
+  onInput: (num: number) => void;
+  selectedIsEditable: boolean;
+  selectedValue: number;
+  symbols: string[];
+};
+
+const SudokuKeypad = memo(function SudokuKeypad({
+  hasSelection,
+  keypadButtonSizeClass,
+  numberPadValues,
+  onInput,
+  selectedIsEditable,
+  selectedValue,
+  symbols,
+}: SudokuKeypadProps) {
+  const canUseNumberPad = !hasSelection || selectedIsEditable;
+
+  return (
+    <div className="w-full max-w-[450px] mt-6 pb-2 flex flex-wrap justify-center gap-2 sm:gap-3 px-1">
+      {numberPadValues.map((num) => {
+        const isActive = selectedValue === num && canUseNumberPad;
+
+        return (
+          <button
+            key={num}
+            type="button"
+            onPointerDown={() => onInput(num)}
+            disabled={!canUseNumberPad}
+            aria-pressed={isActive}
+            className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
+              isActive
+                ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
+                : 'border-white/10 bg-white/5 text-slate-200 active:bg-white/20'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {toSymbol(num, symbols)}
+          </button>
+        );
+      })}
+
+      <button
+        type="button"
+        onPointerDown={() => onInput(0)}
+        disabled={!canUseNumberPad}
+        className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 active:bg-rose-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-50 disabled:cursor-not-allowed`}
+        aria-label="Clear cell"
+      >
+        <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
+      </button>
+    </div>
+  );
+});
+
 export default function SudokuGame() {
   const [mode, setMode] = useState<Mode>('hard');
   const activeConfig = MODE_CONFIG[mode];
@@ -343,12 +448,13 @@ export default function SudokuGame() {
     createEmptyBoard(MODE_CONFIG.hard.size)
   );
   const [board, setBoard] = useState<number[][]>(() => createEmptyBoard(MODE_CONFIG.hard.size));
-  const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
+  const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
   const [isWon, setIsWon] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [gameVersion, setGameVersion] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
   const [fastModeNumber, setFastModeNumber] = useState<number | null>(null);
+  const elapsedSecondsRef = useRef(0);
 
   const conflicts = useMemo(
     () => computeConflicts(board, activeConfig.subgrid),
@@ -391,6 +497,7 @@ export default function SudokuGame() {
     setIsWon(false);
     setSelectedCell(null);
     setFastModeNumber(null);
+    elapsedSecondsRef.current = 0;
     setElapsedSeconds(0);
     setGameVersion((version) => version + 1);
   }, []);
@@ -410,6 +517,7 @@ export default function SudokuGame() {
           saved.selectedCell ? [saved.selectedCell[0], saved.selectedCell[1]] : null
         );
         setIsWon(saved.isWon);
+        elapsedSecondsRef.current = saved.elapsedSeconds;
         setElapsedSeconds(saved.elapsedSeconds);
         setGameVersion((version) => version + 1);
       } else {
@@ -428,18 +536,46 @@ export default function SudokuGame() {
   useEffect(() => {
     if (!isHydrated) return;
 
-    const snapshot: PersistedSudokuState = {
+    void sudokuStateStorage.save({
       version: 1,
       mode,
       initialBoard,
       board,
       selectedCell,
       isWon,
-      elapsedSeconds,
+      elapsedSeconds: elapsedSecondsRef.current,
+    });
+  }, [isHydrated, mode, initialBoard, board, selectedCell, isWon, elapsedSeconds]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const persistCurrentState = () => {
+      void sudokuStateStorage.save({
+        version: 1,
+        mode,
+        initialBoard,
+        board,
+        selectedCell,
+        isWon,
+        elapsedSeconds: elapsedSecondsRef.current,
+      });
     };
 
-    void sudokuStateStorage.save(snapshot);
-  }, [isHydrated, mode, initialBoard, board, selectedCell, isWon, elapsedSeconds]);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        persistCurrentState();
+      }
+    };
+
+    window.addEventListener('pagehide', persistCurrentState);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('pagehide', persistCurrentState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isHydrated, mode, initialBoard, board, selectedCell, isWon]);
 
   useEffect(() => {
     const complete = board.every((row) => row.every((value) => value !== 0));
@@ -450,30 +586,45 @@ export default function SudokuGame() {
     if (!isHydrated || isWon) return;
 
     const interval = window.setInterval(() => {
-      setElapsedSeconds((current) => current + 1);
+      elapsedSecondsRef.current += 1;
+
+      if (elapsedSecondsRef.current % 5 === 0) {
+        setElapsedSeconds(elapsedSecondsRef.current);
+      }
     }, 1000);
 
     return () => window.clearInterval(interval);
   }, [gameVersion, isHydrated, isWon]);
 
-  const handleCellClick = (row: number, col: number) => {
-    if (fastModeNumber !== null) {
-      if (initialBoard[row]?.[col] === 0) {
-        setBoard((current) => {
-          const next = current.map((nextRow) => [...nextRow]);
-          next[row][col] = next[row][col] === fastModeNumber ? 0 : fastModeNumber;
-          return next;
-        });
-      }
-      return;
+  useEffect(() => {
+    if (isWon) {
+      setElapsedSeconds(elapsedSecondsRef.current);
     }
+  }, [isWon]);
 
-    if (selectedCell && selectedCell[0] === row && selectedCell[1] === col) {
-      setSelectedCell(null);
-    } else {
-      setSelectedCell([row, col]);
-    }
-  };
+  const handleCellClick = useCallback(
+    (row: number, col: number) => {
+      if (fastModeNumber !== null) {
+        if (initialBoard[row]?.[col] === 0) {
+          setBoard((current) => {
+            const next = current.map((nextRow) => [...nextRow]);
+            next[row][col] = next[row][col] === fastModeNumber ? 0 : fastModeNumber;
+            return next;
+          });
+        }
+        return;
+      }
+
+      setSelectedCell((current) => {
+        if (current?.[0] === row && current[1] === col) {
+          return null;
+        }
+
+        return [row, col];
+      });
+    },
+    [fastModeNumber, initialBoard]
+  );
 
   const handleNumberInput = useCallback(
     (num: number) => {
@@ -569,31 +720,6 @@ export default function SudokuGame() {
     : conflictCount > 0
       ? `${conflictCount} highlighted cell${conflictCount === 1 ? '' : 's'}`
       : '';
-  const statusDescription = isWon
-    ? 'Excellent work. Every row, column, and box is complete.'
-    : conflictCount > 0
-      ? 'Review the amber cells to remove repeated values.'
-      : '';
-  const hasStatus = Boolean(statusLabel || statusDescription);
-
-  const statCards: Array<{
-    title: string;
-    value: string;
-    hint: string;
-    icon: LucideIcon;
-  }> = [
-    {
-      title: 'Time',
-      value: formatTime(elapsedSeconds),
-      hint: isWon ? 'Finished session' : 'Current session',
-      icon: Clock3,
-    },
-  ];
-
-  const cellSizeClass =
-    activeConfig.size === 16
-      ? 'text-[9px] sm:text-xs md:text-sm'
-      : 'text-sm sm:text-base md:text-xl lg:text-2xl';
   const keypadButtonSizeClass =
     activeConfig.size === 16
       ? 'h-9 w-9 text-sm sm:h-10 sm:w-10 sm:text-base'
@@ -601,183 +727,58 @@ export default function SudokuGame() {
 
   return (
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl flex flex-col items-center">
-      {/* Top Header: Info Row (Status) */}
       <div className="mb-4 flex w-full max-w-[500px] items-center justify-center px-2 min-h-[20px]">
         <div className="flex flex-col w-full text-center items-center">
-          {hasStatus && (
+          {statusLabel && (
             <span className="text-xs font-medium text-amber-300/90">{statusLabel}</span>
           )}
         </div>
       </div>
 
-      {/* Board Section */}
-      <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
-          <div className="w-full max-w-[500px] relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden p-1 sm:p-2">
-            <div 
-              className="w-full mx-auto border-[2px] border-amber-400/80 bg-[#0A1220] aspect-square"
-              style={{
-                display: 'grid',
-                gridTemplateRows: `repeat(${activeConfig.size}, minmax(0, 1fr))`,
-                gridTemplateColumns: `repeat(${activeConfig.size}, minmax(0, 1fr))`
-              }}
-            >
-              {board.flatMap((row, rowIndex) =>
-                row.map((cell, colIndex) => {
-                  const isFixed = initialBoard[rowIndex][colIndex] !== 0;
-                  const isSelected =
-                    selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex;
+      <SudokuBoard
+        board={board}
+        config={activeConfig}
+        conflicts={conflicts}
+        initialBoard={initialBoard}
+        selectedCell={selectedCell}
+        selectedValue={selectedValue}
+        onCellPress={handleCellClick}
+      />
 
-                  const selectedRow = selectedCell?.[0];
-                  const selectedCol = selectedCell?.[1];
-                  const inSameBox =
-                    selectedCell &&
-                    Math.floor(rowIndex / activeConfig.subgrid) ===
-                      Math.floor(selectedRow! / activeConfig.subgrid) &&
-                    Math.floor(colIndex / activeConfig.subgrid) ===
-                      Math.floor(selectedCol! / activeConfig.subgrid);
-                  const isRelated =
-                    selectedCell &&
-                    (rowIndex === selectedRow ||
-                      colIndex === selectedCol ||
-                      inSameBox);
-                  const isSameValue =
-                    selectedCell && selectedValue !== 0 && cell === selectedValue;
-                  const isConflict = conflicts[rowIndex][colIndex];
-
-                  const borderRight =
-                    colIndex === activeConfig.size - 1
-                      ? ''
-                      : (colIndex + 1) % activeConfig.subgrid === 0
-                        ? 'border-r-[2px] border-r-amber-400/80'
-                        : 'border-r-[1px] border-r-slate-700/80';
-                  const borderBottom =
-                    rowIndex === activeConfig.size - 1
-                      ? ''
-                      : (rowIndex + 1) % activeConfig.subgrid === 0
-                        ? 'border-b-[2px] border-b-amber-400/80'
-                        : 'border-b-[1px] border-b-slate-700/80';
-
-                  let bgClass = 'bg-transparent';
-                  if (isRelated) bgClass = 'bg-white/[0.04]';
-                  if (isSameValue) bgClass = 'bg-amber-300/15';
-                  if (isSelected) bgClass = 'bg-amber-300/25';
-
-                  let textClass = isFixed
-                    ? 'font-semibold text-slate-100'
-                    : 'font-semibold text-amber-200';
-                  if (isConflict && !isFixed) {
-                    textClass = 'font-semibold text-rose-500';
-                  }
-
-                  const ringClass = isSelected
-                    ? 'ring-2 ring-inset ring-amber-300/80 z-10'
-                    : '';
-
-                  return (
-                    <button
-                      type="button"
-                      key={`${rowIndex}-${colIndex}`}
-                      onPointerDown={(e) => {
-                        // Only trigger directly on touch devices, else fallback to standard click
-                        if (e.pointerType === 'touch') {
-                           handleCellClick(rowIndex, colIndex);
-                        }
-                      }}
-                      onClick={(e) => {
-                         // Only handle mouse clicks (or fallback) via standard onClick
-                         if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') {
-                            handleCellClick(rowIndex, colIndex);
-                         }
-                      }}
-                      className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-colors duration-75 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] active:bg-amber-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
-                      aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
-                      aria-selected={isSelected}
-                    >
-                      {toSymbol(cell, activeConfig.symbols)}
-                    </button>
-                  );
-                })
-              )}
-            </div>
+      {isWon && (
+        <div className="mt-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-5 text-sm font-medium text-amber-200">
+          <div className="flex items-center gap-2 text-base pb-1">
+            <Trophy className="h-5 w-5 text-amber-300" />
+            Puzzle solved! What would you like to play next?
           </div>
-
-          {isWon && (
-            <div className="mt-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-5 text-sm font-medium text-amber-200">
-              <div className="flex items-center gap-2 text-base pb-1">
-                <Trophy className="h-5 w-5 text-amber-300" />
-                Puzzle solved! What would you like to play next?
-              </div>
-              <div className="flex flex-wrap gap-3 justify-center items-center w-full">
-                <button
-                  type="button"
-                  onClick={() => startNewGame('hard')}
-                  className="flex-1 min-w-[140px] rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/20 text-center"
-                >
-                  Play Hard 9x9
-                </button>
-                <button
-                  type="button"
-                  onClick={() => startNewGame('master')}
-                  className="flex-1 min-w-[140px] rounded-full border border-amber-400/60 bg-amber-400/20 px-5 py-2.5 text-sm font-semibold text-amber-100 transition-all hover:bg-amber-400/30 text-center"
-                >
-                  Play Master 16x16
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-      {/* Ultra-Fast Compact Keypad directly under the board */}
-      <div className="w-full max-w-[450px] mt-6 pb-2 flex flex-wrap justify-center gap-2 sm:gap-3 px-1">
-        {numberPadValues.map((num) => {
-          const isActive = selectedValue === num && selectedIsEditable;
-
-          return (
+          <div className="flex flex-wrap gap-3 justify-center items-center w-full">
             <button
-              key={num}
               type="button"
-              onPointerDown={(e) => {
-                 if (e.pointerType === 'touch') {
-                   handleNumberInput(num);
-                 }
-              }}
-              onClick={(e) => {
-                 if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') {
-                   handleNumberInput(num);
-                 }
-              }}
-              disabled={!selectedIsEditable}
-              className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border transition-transform transition-colors duration-75 active:scale-[0.92] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
-                isActive
-                  ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
-                  : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10 active:bg-white/20'
-              } disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed`}
+              onClick={() => startNewGame('hard')}
+              className="flex-1 min-w-[140px] rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white active:bg-white/20 text-center"
             >
-              {toSymbol(num, activeConfig.symbols)}
+              Play Hard 9x9
             </button>
-          );
-        })}
-        
-        {/* Simple Eraser in line with numbers */}
-        <button
-          type="button"
-          onPointerDown={(e) => {
-             if (e.pointerType === 'touch') {
-               handleNumberInput(0);
-             }
-          }}
-          onClick={(e) => {
-             if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') {
-               handleNumberInput(0);
-             }
-          }}
-          disabled={!selectedIsEditable}
-          className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 transition-transform transition-colors duration-75 active:scale-[0.92] active:bg-rose-500/30 hover:border-rose-500/50 hover:bg-rose-500/20 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed`}
-          aria-label="Clear cell"
-        >
-          <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
-        </button>
-      </div>
+            <button
+              type="button"
+              onClick={() => startNewGame('master')}
+              className="flex-1 min-w-[140px] rounded-full border border-amber-400/60 bg-amber-400/20 px-5 py-2.5 text-sm font-semibold text-amber-100 active:bg-amber-400/30 text-center"
+            >
+              Play Master 16x16
+            </button>
+          </div>
+        </div>
+      )}
+
+      <SudokuKeypad
+        hasSelection={selectedCell !== null}
+        keypadButtonSizeClass={keypadButtonSizeClass}
+        numberPadValues={numberPadValues}
+        onInput={handleNumberInput}
+        selectedIsEditable={selectedIsEditable}
+        selectedValue={selectedValue}
+        symbols={activeConfig.symbols}
+      />
 
     </div>
   );
