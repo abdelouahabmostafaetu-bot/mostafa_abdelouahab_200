@@ -516,8 +516,8 @@ export default function SudokuGame() {
       : 'h-[9vw] w-[9vw] sm:h-[3.1rem] sm:w-[3.1rem] max-w-[44px] max-h-[44px] text-base md:text-lg lg:text-xl';
   const keypadButtonSizeClass =
     activeConfig.size === 16
-      ? 'h-11 text-base sm:h-12 sm:text-lg'
-      : 'h-14 text-xl sm:h-16 sm:text-2xl lg:h-20 lg:text-3xl';
+      ? 'h-9 w-9 text-sm sm:h-10 sm:w-10 sm:text-base'
+      : 'h-10 w-10 text-base sm:h-12 sm:w-12 sm:text-xl';
 
   return (
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl">
@@ -661,18 +661,25 @@ export default function SudokuGame() {
         </div>
 
         {/* Keypad Section */}
-        <aside className="w-full max-w-[400px] lg:w-[320px] lg:mt-8 shrink-0 pb-10">
-          <div className="rounded-[24px] border border-white/5 bg-white/5 p-4 sm:p-6 backdrop-blur-xl shadow-2xl">
-            <div className="mb-4 text-center">
-              <p className="text-sm font-medium text-slate-300 mb-1">Number Pad</p>
-              <p className="text-xs text-slate-500">Select a cell to enter numbers</p>
+        <aside className="w-full max-w-[500px] lg:w-[400px] lg:mt-8 shrink-0 pb-10">
+          <div className="rounded-[24px] border border-white/5 bg-white/5 p-4 sm:p-5 backdrop-blur-xl shadow-2xl">
+            <div className="mb-4 flex items-center justify-between px-2">
+              <div>
+                <p className="text-sm font-medium text-slate-300">Number Pad</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleNumberInput(0)}
+                disabled={!selectedIsEditable}
+                className="touch-manipulation inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Clear cell"
+              >
+                <Eraser className="h-3 w-3" />
+                Clear
+              </button>
             </div>
 
-            <div
-              className={`grid ${
-                activeConfig.size === 16 ? 'grid-cols-4' : 'grid-cols-3'
-              } gap-3 sm:gap-4`}
-            >
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
               {numberPadValues.map((num) => {
                 const isActive = selectedValue === num && selectedIsEditable;
 
@@ -682,7 +689,7 @@ export default function SudokuGame() {
                     type="button"
                     onClick={() => handleNumberInput(num)}
                     disabled={!selectedIsEditable}
-                    className={`touch-manipulation ${keypadButtonSizeClass} rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
+                    className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
                       isActive
                         ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
                         : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10'
@@ -692,16 +699,6 @@ export default function SudokuGame() {
                   </button>
                 );
               })}
-              <button
-                type="button"
-                onClick={() => handleNumberInput(0)}
-                disabled={!selectedIsEditable}
-                className={`${activeConfig.size === 16 ? 'col-span-4' : 'col-span-3'} touch-manipulation inline-flex h-14 lg:h-16 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 text-base font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed`}
-                aria-label="Clear cell"
-              >
-                <Eraser className="h-[18px] w-[18px]" />
-                Clear Selection
-              </button>
             </div>
           </div>
         </aside>
