@@ -516,8 +516,8 @@ export default function SudokuGame() {
       : 'h-[9vw] w-[9vw] sm:h-[3.1rem] sm:w-[3.1rem] max-w-[44px] max-h-[44px] text-base md:text-lg lg:text-xl';
   const keypadButtonSizeClass =
     activeConfig.size === 16
-      ? 'h-9 text-sm sm:h-11 sm:text-base'
-      : 'h-12 text-base sm:h-14 sm:text-lg lg:h-16 lg:text-xl';
+      ? 'h-11 text-base sm:h-12 sm:text-lg'
+      : 'h-14 text-xl sm:h-16 sm:text-2xl lg:h-20 lg:text-3xl';
 
   return (
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl">
@@ -671,7 +671,7 @@ export default function SudokuGame() {
             <div
               className={`grid ${
                 activeConfig.size === 16 ? 'grid-cols-4' : 'grid-cols-3'
-              } gap-3`}
+              } gap-3 sm:gap-4`}
             >
               {numberPadValues.map((num) => {
                 const isActive = selectedValue === num && selectedIsEditable;
@@ -696,7 +696,7 @@ export default function SudokuGame() {
                 type="button"
                 onClick={() => handleNumberInput(0)}
                 disabled={!selectedIsEditable}
-                className={`${activeConfig.size === 16 ? 'col-span-4' : 'col-span-3'} touch-manipulation inline-flex h-12 lg:h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 text-sm font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`${activeConfig.size === 16 ? 'col-span-4' : 'col-span-3'} touch-manipulation inline-flex h-14 lg:h-16 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 text-base font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed`}
                 aria-label="Clear cell"
               >
                 <Eraser className="h-[18px] w-[18px]" />
