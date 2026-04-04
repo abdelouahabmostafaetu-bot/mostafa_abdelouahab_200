@@ -601,21 +601,14 @@ export default function SudokuGame() {
 
   return (
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl flex flex-col items-center">
-      {/* Top Header: Info Row (Timer & Status) */}
+      {/* Top Header: Info Row (Status) */}
       <div className="mb-4 flex w-full max-w-[500px] items-center justify-between px-2">
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full text-center items-center">
           {hasStatus ? (
             <span className="text-xs font-medium text-amber-300/90">{statusLabel}</span>
           ) : (
             <span className="text-sm font-medium text-slate-400">Playing {MODE_CONFIG[mode].label}</span>
           )}
-        </div>
-
-        <div className="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1.5">
-          <Clock3 className="h-4 w-4 text-amber-400" />
-          <span className={`text-sm font-medium text-slate-200 ${NUMBER_FONT_CLASS}`}>
-            {formatTime(elapsedSeconds)}
-          </span>
         </div>
       </div>
 
