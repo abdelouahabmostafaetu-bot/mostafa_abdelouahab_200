@@ -601,29 +601,6 @@ export default function SudokuGame() {
 
   return (
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl flex flex-col items-center">
-      {/* Top Header: Difficulty & Timer */}
-      <div className="w-full flex items-center justify-between gap-2 mb-4 px-1">
-        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none]">
-          {(Object.keys(MODE_CONFIG) as Mode[]).map((level) => {
-            const isActive = mode === level;
-            return (
-              <button
-                key={level}
-                type="button"
-                onClick={() => startNewGame(level)}
-                className={`touch-manipulation rounded-full border px-4 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'border-amber-300/50 bg-amber-400/20 text-white shadow-[0_2px_10px_rgba(251,191,36,0.15)]'
-                    : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:bg-white/10'
-                }`}
-              >
-                {MODE_CONFIG[level].label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Board Section */}
       <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
           <div className="w-full max-w-[500px] relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden p-1 sm:p-2">
