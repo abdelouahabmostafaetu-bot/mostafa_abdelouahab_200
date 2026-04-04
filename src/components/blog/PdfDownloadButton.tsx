@@ -96,7 +96,7 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       pdfContainer.appendChild(sigWrapper);
 
       // Generate the PDF file with the proper settings
-      const opt = {
+      const opt: any = {
         margin: [15, 10, 20, 10], // top, right, bottom, left
         filename: `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`,
         image: { type: 'jpeg', quality: 1 },

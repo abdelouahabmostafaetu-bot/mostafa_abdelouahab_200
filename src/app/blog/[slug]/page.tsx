@@ -75,7 +75,7 @@ export default async function BlogPostPage({
                   </div>
                 )}
                 
-                <PdfDownloadButton />
+                <PdfDownloadButton title={post.title} />
               </header>
 
               <div className="prose-academic">
