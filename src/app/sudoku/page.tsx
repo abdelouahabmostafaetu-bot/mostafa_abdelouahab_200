@@ -16,6 +16,9 @@ export default function SudokuPage() {
       </div>
 
       <div className="relative mx-auto h-full w-full max-w-7xl px-0 sm:px-6 pb-6">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 text-center mb-4 tracking-tight drop-shadow-md pb-2">
+          Mostafa&apos;s Sudoku
+        </h1>
         <SudokuGame />
       </div>
     </div>
