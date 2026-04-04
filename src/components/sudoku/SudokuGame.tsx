@@ -542,29 +542,11 @@ export default function SudokuGame() {
             );
           })}
         </div>
-        <div className="flex justify-end gap-3 w-full sm:w-auto">
-          {statCards.map((card) => (
-            <div
-              key={card.title}
-              className="flex-1 sm:flex-none flex items-center justify-between sm:justify-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 sm:px-6 sm:py-2.5 shadow-sm"
-            >
-              <div className="flex items-center gap-2">
-                <card.icon className="h-4 w-4 text-amber-300/80" />
-                <span className="text-xs font-medium uppercase tracking-wider text-slate-400 hidden sm:inline-block">
-                  {card.title}
-                </span>
-              </div>
-              <span className={`text-base font-medium text-white ${NUMBER_FONT_CLASS}`}>
-                {card.value}
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-center lg:items-start justify-center">
         {/* Board Section */}
-        <div className="flex flex-col items-center w-full max-w-[100vw]">
+        <div className="flex flex-col items-center w-full max-w-[100vw] relative">
           {hasStatus ? (
             <div className="mb-4 w-full text-center">
               {statusLabel ? (
@@ -658,6 +640,14 @@ export default function SudokuGame() {
               Puzzle solved! Amazing work.
             </div>
           )}
+
+          {/* Compact Right-Side Timer */}
+          <div className="absolute -bottom-8 right-2 sm:right-6 lg:-right-4 my-2 lg:bottom-auto lg:top-0 lg:mt-0 flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 shadow-md">
+            <Clock3 className="h-3 w-3 text-amber-400" />
+            <span className={`text-xs font-medium text-slate-200 ${NUMBER_FONT_CLASS}`}>
+              {formatTime(elapsedSeconds)}
+            </span>
+          </div>
         </div>
 
         {/* Keypad Section */}
