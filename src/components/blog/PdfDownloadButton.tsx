@@ -122,12 +122,27 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      // Call html2pdf chain to convert cloned body to blob and download directly
-      await html2pdf().set(opt).from(pdfContainer).save();
+      // Generate a PDF Blob then trigger a download manually.
+      // This is more reliable than html2pdf().save() on mobile/Safari.
+      const worker = html2pdf().set(opt).from(pdfContainer);
+      const pdfBlob: Blob = await worker.outputPdf('blob');
+      const filename: string = opt.filename || 'article.pdf';
 
-      // Clean up DOM after generation
-      if (document.body.contains(pdfContainer)) {
-        document.body.removeChild(pdfContainer);
+      const url = URL.createObjectURL(pdfBlob);
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch {
+        // Fallback: open the PDF in a new tab if download is blocked
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } finally {
+        // Give the browser a moment before revoking
+        setTimeout(() => URL.revokeObjectURL(url), 10_000);
       }
 
     } catch (error) {
