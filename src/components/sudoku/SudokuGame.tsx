@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Eraser, Trophy } from 'lucide-react';
+import { ChevronDown, Eraser, Trophy } from 'lucide-react';
 
 type Mode = 'hard' | 'master';
 type CellPosition = [number, number];
@@ -727,8 +727,40 @@ export default function SudokuGame() {
 
   return (
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl flex flex-col items-center">
-      <div className="mb-4 flex w-full max-w-[500px] items-center justify-center px-2 min-h-[20px]">
-        <div className="flex flex-col w-full text-center items-center">
+      <div className="mb-4 flex w-full max-w-[500px] flex-col items-center justify-center px-2 min-h-[40px] gap-2 relative">
+        <div className="flex w-full justify-end">
+          <div className="group relative flex flex-col items-end">
+            {/* New Game Dropdown Trigger */}
+            <button
+              type="button"
+              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 py-1.5 pl-3 pr-2 text-xs font-semibold text-slate-300 transition-all hover:bg-white/10 active:scale-95"
+            >
+              New Game
+              <ChevronDown className="h-3.5 w-3.5 text-amber-400" />
+            </button>
+            {/* Dropdown Menu */}
+            <div className="absolute top-full right-0 mt-2 flex hidden min-w-[140px] flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0A1220] shadow-xl group-hover:flex z-50">
+              <button
+                type="button"
+                onClick={() => startNewGame('hard')}
+                className="px-4 py-2.5 text-left text-sm font-medium text-slate-200 hover:bg-white/5 active:bg-white/10"
+              >
+                Hard 9x9
+              </button>
+              <div className="h-px w-full bg-white/5" />
+              <button
+                type="button"
+                onClick={() => startNewGame('master')}
+                className="px-4 py-2.5 text-left text-sm font-medium text-amber-200 hover:bg-white/5 active:bg-white/10"
+              >
+                Master 16x16
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Error Label entirely absolutely centered underneath the button bar if there's space, or we can just keep it exactly where it was before but slightly shifted. */}
+        <div className="flex flex-col w-full text-center items-center pointer-events-none absolute bottom-0 left-0 right-0 top-0 justify-center">
           {statusLabel && (
             <span className="text-xs font-medium text-amber-300/90">{statusLabel}</span>
           )}
