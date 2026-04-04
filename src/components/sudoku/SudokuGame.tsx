@@ -34,7 +34,7 @@ type ModeConfig = {
 
 const MODE_CONFIG: Record<Mode, ModeConfig> = {
   hard: {
-    label: 'Hard',
+    label: 'Hard 9x9',
     size: 9,
     subgrid: 3,
     empties: 50,
@@ -42,7 +42,7 @@ const MODE_CONFIG: Record<Mode, ModeConfig> = {
     symbols: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
   },
   master: {
-    label: 'Master',
+    label: 'Master 16x16',
     size: 16,
     subgrid: 4,
     empties: 170,
@@ -705,9 +705,27 @@ export default function SudokuGame() {
           </div>
 
           {isWon && (
-            <div className="mt-4 flex items-center justify-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-5 py-2 text-sm font-medium text-amber-200">
-              <Trophy className="h-4 w-4 text-amber-300" />
-              Puzzle solved!
+            <div className="mt-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-5 text-sm font-medium text-amber-200">
+              <div className="flex items-center gap-2 text-base pb-1">
+                <Trophy className="h-5 w-5 text-amber-300" />
+                Puzzle solved! What would you like to play next?
+              </div>
+              <div className="flex flex-wrap gap-3 justify-center items-center w-full">
+                <button
+                  type="button"
+                  onClick={() => startNewGame('hard')}
+                  className="flex-1 min-w-[140px] rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/20 text-center"
+                >
+                  Play Hard 9x9
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startNewGame('master')}
+                  className="flex-1 min-w-[140px] rounded-full border border-amber-400/60 bg-amber-400/20 px-5 py-2.5 text-sm font-semibold text-amber-100 transition-all hover:bg-amber-400/30 text-center"
+                >
+                  Play Master 16x16
+                </button>
+              </div>
             </div>
           )}
         </div>
