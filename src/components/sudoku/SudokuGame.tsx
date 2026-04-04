@@ -628,7 +628,7 @@ export default function SudokuGame() {
       <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
           <div className="w-full relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden">
             <div className="overflow-x-auto pb-4 pt-1 px-1 touch-pan-x [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
-              <div className="w-auto mx-auto border-[2px] border-amber-400/80 bg-[#0A1220]">
+              <div className="w-fit mx-auto border-[2px] border-amber-400/80 bg-[#0A1220]">
                 {board.map((row, rowIndex) => (
                   <div key={rowIndex} className="flex">
                     {row.map((cell, colIndex) => {
@@ -654,15 +654,17 @@ export default function SudokuGame() {
                         const isConflict = conflicts[rowIndex][colIndex];
 
                         const borderRight =
-                          (colIndex + 1) % activeConfig.subgrid === 0 &&
-                          colIndex < activeConfig.size - 1
-                            ? 'border-r-[2px] border-r-amber-400/80'
-                            : 'border-r-[1px] border-r-slate-700/80';
+                          colIndex === activeConfig.size - 1
+                            ? ''
+                            : (colIndex + 1) % activeConfig.subgrid === 0
+                              ? 'border-r-[2px] border-r-amber-400/80'
+                              : 'border-r-[1px] border-r-slate-700/80';
                         const borderBottom =
-                          (rowIndex + 1) % activeConfig.subgrid === 0 &&
-                          rowIndex < activeConfig.size - 1
-                            ? 'border-b-[2px] border-b-amber-400/80'
-                            : 'border-b-[1px] border-b-slate-700/80';
+                          rowIndex === activeConfig.size - 1
+                            ? ''
+                            : (rowIndex + 1) % activeConfig.subgrid === 0
+                              ? 'border-b-[2px] border-b-amber-400/80'
+                              : 'border-b-[1px] border-b-slate-700/80';
 
                         let bgClass = 'bg-transparent';
                         if (isRelated) bgClass = 'bg-white/[0.04]';
