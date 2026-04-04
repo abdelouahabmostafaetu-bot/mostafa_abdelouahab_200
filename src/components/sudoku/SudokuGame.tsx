@@ -606,21 +606,18 @@ export default function SudokuGame() {
                         let bgClass = 'bg-transparent';
                         if (isRelated) bgClass = 'bg-white/[0.04]';
                         if (isSameValue) bgClass = 'bg-amber-300/15';
-                        if (isConflict) bgClass = 'bg-rose-300/20';
                         if (isSelected) bgClass = 'bg-amber-300/25';
 
                         let textClass = isFixed
                           ? 'font-semibold text-slate-100'
                           : 'font-semibold text-amber-200';
                         if (isConflict && !isFixed) {
-                          textClass = 'font-semibold text-rose-300';
+                          textClass = 'font-semibold text-rose-500';
                         }
 
                         const ringClass = isSelected
                           ? 'ring-2 ring-inset ring-amber-300/80'
-                          : isConflict
-                            ? 'ring-1 ring-inset ring-rose-300/60'
-                            : '';
+                          : '';
 
                         return (
                           <button
