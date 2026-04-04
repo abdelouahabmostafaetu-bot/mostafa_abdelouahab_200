@@ -29,19 +29,19 @@ export default function BlogPage({
   const posts = filteredPosts.slice(startIdx, startIdx + POSTS_PER_PAGE);
 
   return (
-    <div className="pt-28 pb-20">
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="mb-10">
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-3">
+    <div className="pt-20 pb-20">
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
+        <div className="mb-8">
+          <p className="text-[10px] md:text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-2">
             Writing
           </p>
           <h1
-            className="text-3xl md:text-4xl font-semibold text-[var(--color-text)] mb-4"
+            className="text-2xl md:text-4xl font-semibold text-[var(--color-text)] mb-3"
             style={{ fontFamily: 'var(--font-serif)' }}
           >
             Blog
           </h1>
-          <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)]">
+          <p className="max-w-2xl text-[12px] md:text-sm leading-6 md:leading-7 text-[var(--color-text-secondary)]">
             {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
             {activeTag ? ` tagged "${activeTag}"` : ''}
             {totalPages > 1 ? ` \u00b7 Page ${safePage} of ${totalPages}` : ''}
