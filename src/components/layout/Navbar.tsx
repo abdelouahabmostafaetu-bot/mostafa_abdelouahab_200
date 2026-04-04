@@ -68,16 +68,29 @@ export default function Navbar() {
         </div>
 
         <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isOpen ? 'max-h-56 opacity-100 pb-4' : 'max-h-0 opacity-0'
+          className={`md:hidden fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${
+            isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+
+        <aside
+          className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-64 border-r border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl transform transition-transform duration-300 ease-in-out ${
+            isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="mb-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
+          <div className="flex h-16 items-center px-6 border-b border-[var(--color-border)]">
+            <span className="text-base font-semibold text-[var(--color-text)]">
+              Menu
+            </span>
+          </div>
+          <div className="flex flex-col p-4 gap-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`block rounded-md px-3 py-2.5 text-sm transition-colors duration-150 ${
+                className={`block rounded-md px-4 py-3 text-sm transition-colors duration-150 ${
                   isActive(link.href)
                     ? 'bg-[var(--color-bg-muted)] font-medium text-[var(--color-text)]'
                     : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
@@ -87,7 +100,7 @@ export default function Navbar() {
               </Link>
             ))}
           </div>
-        </div>
+        </aside>
       </nav>
     </header>
   );
