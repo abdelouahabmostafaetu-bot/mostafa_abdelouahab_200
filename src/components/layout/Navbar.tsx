@@ -8,6 +8,7 @@ import { Menu, X } from 'lucide-react';
 const navLinks = [
   { href: '/', label: 'About' },
   { href: '/blog', label: 'Blog' },
+  { href: '/sudoku', label: 'Sudoku' },
 ];
 
 export default function Navbar() {
