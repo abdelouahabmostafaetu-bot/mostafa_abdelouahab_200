@@ -512,8 +512,8 @@ export default function SudokuGame() {
 
   const cellSizeClass =
     activeConfig.size === 16
-      ? 'h-[20px] w-[20px] sm:h-7 sm:w-7 md:h-8 md:w-8 text-[9px] sm:text-[11px] md:text-sm'
-      : 'h-[9vw] w-[9vw] sm:h-[3.1rem] sm:w-[3.1rem] max-w-[44px] max-h-[44px] text-base md:text-lg lg:text-xl';
+      ? 'w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 shrink-0 text-[10px] sm:text-xs md:text-sm'
+      : 'w-10 h-10 sm:w-12 sm:h-12 md:w-[52px] md:h-[52px] shrink-0 text-base md:text-xl lg:text-2xl';
   const keypadButtonSizeClass =
     activeConfig.size === 16
       ? 'h-9 w-9 text-sm sm:h-10 sm:w-10 sm:text-base'
@@ -566,8 +566,8 @@ export default function SudokuGame() {
           ) : null}
 
           <div className="w-full relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden">
-            <div className="overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
-              <div className="w-auto mx-auto border-2 border-slate-400 bg-[#0A1220]">
+            <div className="overflow-x-auto pb-4 pt-1 px-1 [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
+              <div className="w-auto mx-auto border-[2px] border-amber-400/80 bg-[#0A1220]">
                 {board.map((row, rowIndex) => (
                   <div key={rowIndex} className="flex">
                     {row.map((cell, colIndex) => {
@@ -595,12 +595,12 @@ export default function SudokuGame() {
                         const borderRight =
                           (colIndex + 1) % activeConfig.subgrid === 0 &&
                           colIndex < activeConfig.size - 1
-                            ? 'border-r-2 border-slate-400'
-                            : 'border-r flex-1 border-slate-700/80';
+                            ? 'border-r-[2px] border-amber-400/80'
+                            : 'border-r border-slate-700/80';
                         const borderBottom =
                           (rowIndex + 1) % activeConfig.subgrid === 0 &&
                           rowIndex < activeConfig.size - 1
-                            ? 'border-b-2 border-slate-400'
+                            ? 'border-b-[2px] border-amber-400/80'
                             : 'border-b border-slate-700/80';
 
                         let bgClass = 'bg-transparent';
