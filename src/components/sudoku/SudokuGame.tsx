@@ -592,8 +592,8 @@ export default function SudokuGame() {
 
   const cellSizeClass =
     activeConfig.size === 16
-      ? 'w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 shrink-0 text-[10px] sm:text-xs md:text-sm'
-      : 'w-10 h-10 sm:w-12 sm:h-12 md:w-[52px] md:h-[52px] shrink-0 text-base md:text-xl lg:text-2xl';
+      ? 'text-[9px] sm:text-xs md:text-sm'
+      : 'text-sm sm:text-base md:text-xl lg:text-2xl';
   const keypadButtonSizeClass =
     activeConfig.size === 16
       ? 'h-9 w-9 text-sm sm:h-10 sm:w-10 sm:text-base'
@@ -626,78 +626,81 @@ export default function SudokuGame() {
 
       {/* Board Section */}
       <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
-          <div className="w-full relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden">
-            <div className="overflow-x-auto pb-4 pt-1 px-1 touch-pan-x [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
-              <div className="w-fit mx-auto border-[2px] border-amber-400/80 bg-[#0A1220]">
-                {board.map((row, rowIndex) => (
-                  <div key={rowIndex} className="flex">
-                    {row.map((cell, colIndex) => {
-                        const isFixed = initialBoard[rowIndex][colIndex] !== 0;
-                        const isSelected =
-                          selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex;
+          <div className="w-full max-w-[500px] relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden p-1 sm:p-2">
+            <div 
+              className="w-full mx-auto border-[2px] border-amber-400/80 bg-[#0A1220] aspect-square"
+              style={{
+                display: 'grid',
+                gridTemplateRows: `repeat(${activeConfig.size}, minmax(0, 1fr))`,
+                gridTemplateColumns: `repeat(${activeConfig.size}, minmax(0, 1fr))`
+              }}
+            >
+              {board.flatMap((row, rowIndex) =>
+                row.map((cell, colIndex) => {
+                  const isFixed = initialBoard[rowIndex][colIndex] !== 0;
+                  const isSelected =
+                    selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex;
 
-                        const selectedRow = selectedCell?.[0];
-                        const selectedCol = selectedCell?.[1];
-                        const inSameBox =
-                          selectedCell &&
-                          Math.floor(rowIndex / activeConfig.subgrid) ===
-                            Math.floor(selectedRow! / activeConfig.subgrid) &&
-                          Math.floor(colIndex / activeConfig.subgrid) ===
-                            Math.floor(selectedCol! / activeConfig.subgrid);
-                        const isRelated =
-                          selectedCell &&
-                          (rowIndex === selectedRow ||
-                            colIndex === selectedCol ||
-                            inSameBox);
-                        const isSameValue =
-                          selectedCell && selectedValue !== 0 && cell === selectedValue;
-                        const isConflict = conflicts[rowIndex][colIndex];
+                  const selectedRow = selectedCell?.[0];
+                  const selectedCol = selectedCell?.[1];
+                  const inSameBox =
+                    selectedCell &&
+                    Math.floor(rowIndex / activeConfig.subgrid) ===
+                      Math.floor(selectedRow! / activeConfig.subgrid) &&
+                    Math.floor(colIndex / activeConfig.subgrid) ===
+                      Math.floor(selectedCol! / activeConfig.subgrid);
+                  const isRelated =
+                    selectedCell &&
+                    (rowIndex === selectedRow ||
+                      colIndex === selectedCol ||
+                      inSameBox);
+                  const isSameValue =
+                    selectedCell && selectedValue !== 0 && cell === selectedValue;
+                  const isConflict = conflicts[rowIndex][colIndex];
 
-                        const borderRight =
-                          colIndex === activeConfig.size - 1
-                            ? ''
-                            : (colIndex + 1) % activeConfig.subgrid === 0
-                              ? 'border-r-[2px] border-r-amber-400/80'
-                              : 'border-r-[1px] border-r-slate-700/80';
-                        const borderBottom =
-                          rowIndex === activeConfig.size - 1
-                            ? ''
-                            : (rowIndex + 1) % activeConfig.subgrid === 0
-                              ? 'border-b-[2px] border-b-amber-400/80'
-                              : 'border-b-[1px] border-b-slate-700/80';
+                  const borderRight =
+                    colIndex === activeConfig.size - 1
+                      ? ''
+                      : (colIndex + 1) % activeConfig.subgrid === 0
+                        ? 'border-r-[2px] border-r-amber-400/80'
+                        : 'border-r-[1px] border-r-slate-700/80';
+                  const borderBottom =
+                    rowIndex === activeConfig.size - 1
+                      ? ''
+                      : (rowIndex + 1) % activeConfig.subgrid === 0
+                        ? 'border-b-[2px] border-b-amber-400/80'
+                        : 'border-b-[1px] border-b-slate-700/80';
 
-                        let bgClass = 'bg-transparent';
-                        if (isRelated) bgClass = 'bg-white/[0.04]';
-                        if (isSameValue) bgClass = 'bg-amber-300/15';
-                        if (isSelected) bgClass = 'bg-amber-300/25';
+                  let bgClass = 'bg-transparent';
+                  if (isRelated) bgClass = 'bg-white/[0.04]';
+                  if (isSameValue) bgClass = 'bg-amber-300/15';
+                  if (isSelected) bgClass = 'bg-amber-300/25';
 
-                        let textClass = isFixed
-                          ? 'font-semibold text-slate-100'
-                          : 'font-semibold text-amber-200';
-                        if (isConflict && !isFixed) {
-                          textClass = 'font-semibold text-rose-500';
-                        }
+                  let textClass = isFixed
+                    ? 'font-semibold text-slate-100'
+                    : 'font-semibold text-amber-200';
+                  if (isConflict && !isFixed) {
+                    textClass = 'font-semibold text-rose-500';
+                  }
 
-                        const ringClass = isSelected
-                          ? 'ring-2 ring-inset ring-amber-300/80'
-                          : '';
+                  const ringClass = isSelected
+                    ? 'ring-2 ring-inset ring-amber-300/80 z-10'
+                    : '';
 
-                        return (
-                          <button
-                            type="button"
-                            key={`${rowIndex}-${colIndex}`}
-                            onClick={() => handleCellClick(rowIndex, colIndex)}
-                            className={`touch-manipulation flex ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-all duration-150 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
-                            aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
-                            aria-selected={isSelected}
-                          >
-                            {toSymbol(cell, activeConfig.symbols)}
-                          </button>
-                        );
-                      })}
-                  </div>
-                ))}
-              </div>
+                  return (
+                    <button
+                      type="button"
+                      key={`${rowIndex}-${colIndex}`}
+                      onClick={() => handleCellClick(rowIndex, colIndex)}
+                      className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-all duration-150 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
+                      aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
+                      aria-selected={isSelected}
+                    >
+                      {toSymbol(cell, activeConfig.symbols)}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
