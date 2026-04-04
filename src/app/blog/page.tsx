@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import PostCard from '@/components/blog/PostCard';
-import { getBlogPosts, getAllTags } from '@/lib/content';
-import TagFilter from '@/components/blog/TagFilter';
+import { getBlogPosts } from '@/lib/content';
 import Pagination from '@/components/blog/Pagination';
 
 const POSTS_PER_PAGE = 15;
@@ -17,7 +16,6 @@ export default function BlogPage({
   searchParams: { tag?: string; page?: string };
 }) {
   const allPosts = getBlogPosts();
-  const allTags = getAllTags();
   const activeTag = searchParams.tag || '';
 
   const filteredPosts = activeTag
@@ -33,8 +31,7 @@ export default function BlogPage({
   return (
     <div className="pt-28 pb-20">
       <div className="max-w-5xl mx-auto px-6">
-        {/* Header */}
-        <div className="mb-10 fade-in-up">
+        <div className="mb-10">
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-3">
             Writing
           </p>
@@ -51,10 +48,6 @@ export default function BlogPage({
           </p>
         </div>
 
-        {/* Tag Filter */}
-        <TagFilter tags={allTags} activeTag={activeTag} />
-
-        {/* Posts */}
         {posts.length > 0 ? (
           <div>
             {posts.map((post, index) => (
@@ -72,14 +65,13 @@ export default function BlogPage({
             ))}
           </div>
         ) : (
-          <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] text-center py-20">
+          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-20 text-center">
             <p className="text-sm text-[var(--color-text-secondary)]">
               No posts found for this tag.
             </p>
           </div>
         )}
 
-        {/* Pagination */}
         <Pagination currentPage={safePage} totalPages={totalPages} activeTag={activeTag} />
       </div>
     </div>

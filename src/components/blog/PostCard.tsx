@@ -27,18 +27,13 @@ export default function PostCard({
     <article className={!isLast ? 'mb-4' : ''}>
       <Link
         href={`/blog/${slug}`}
-        className="group block rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
+        className="group block rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 transition-colors duration-150 hover:bg-[var(--color-bg-muted)]"
       >
         <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-tertiary)]">
-          <time>{date}</time>
-          <span>{category}</span>
-          <span className="inline-flex items-center gap-1">
-            <Clock size={11} />
-            {readingTime}
-          </span>
+          <span className="font-medium uppercase tracking-widest">{category}</span>
         </div>
 
-        <h3 className="mt-4 text-2xl font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)] leading-snug">
+        <h3 className="mt-4 text-2xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-accent)]">
           {title}
         </h3>
 

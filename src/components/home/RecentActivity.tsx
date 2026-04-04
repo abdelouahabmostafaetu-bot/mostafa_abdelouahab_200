@@ -1,72 +1,49 @@
+import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Calendar } from 'lucide-react';
 import { getBlogPosts } from '@/lib/content';
 
 export default function RecentActivity() {
-  const posts = getBlogPosts().slice(0, 3);
+  const posts = getBlogPosts().slice(0, 5);
 
   return (
-    <section className="pb-24 pt-8">
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="mb-10 flex flex-col gap-4 border-t border-[var(--color-border)] pt-10 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-              Latest Writing
-            </p>
-            <h2
-              className="text-2xl font-semibold text-[var(--color-text)] md:text-3xl"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              Latest Posts
-            </h2>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Recent articles and notes from the blog.
-            </p>
-          </div>
+    <section className="py-16">
+      <div className="max-w-4xl mx-auto px-6">
+        <div className="mb-12 flex items-baseline justify-between border-b border-[var(--color-border)] pb-4">
+          <h2
+            className="text-3xl font-bold text-[var(--color-text)]"
+            style={{ fontFamily: 'var(--font-serif)' }}
+          >
+            Publications & Notes
+          </h2>
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--color-accent)] transition-colors duration-200 hover:text-[var(--color-accent-light)]"
+            className="text-sm font-semibold uppercase tracking-widest text-[var(--color-accent)] hover:text-[#000]"
           >
-            View all posts
-            <ArrowRight size={14} />
+            Archive
           </Link>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="space-y-10">
           {posts.length > 0 ? (
             posts.map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                className="group rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)]"
-              >
-                <div className="flex min-h-0 md:min-h-[220px] flex-col">
-                  <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
-                    <Calendar size={12} />
-                    <span>{post.date}</span>
-                  </div>
-                  <h3 className="mt-4 text-lg md:text-xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
-                    {post.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 md:leading-7 text-[var(--color-text-secondary)]">
+              <article key={post.slug} className="group">
+                <Link href={`/blog/${post.slug}`} className="block">
+                  <header className="mb-3">
+                    <div className="flex items-center text-xs text-[var(--color-text-secondary)] uppercase tracking-widest font-medium mb-3">
+                      <span>{post.category}</span>
+                    </div>
+                    <h3 className="text-2xl font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent)] transition-colors mb-4" style={{ fontFamily: 'var(--font-serif)' }}>
+                      {post.title}
+                    </h3>
+                  </header>
+                  <p className="text-base text-[var(--color-text-secondary)] leading-relaxed max-w-3xl">
                     {post.excerpt}
                   </p>
-                  <div className="mt-auto flex items-center justify-between pt-6 text-sm font-semibold text-[var(--color-accent)]">
-                    <span>{post.category}</span>
-                    <span className="inline-flex items-center gap-1">
-                      Read
-                      <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
-                    </span>
-                  </div>
-                </div>
-              </Link>
+                </Link>
+              </article>
             ))
           ) : (
-            <div className="col-span-full rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] py-12 text-center">
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                No posts yet. Check back soon.
-              </p>
-            </div>
+            <p className="text-[var(--color-text-secondary)] italic">No publications yet.</p>
           )}
         </div>
       </div>

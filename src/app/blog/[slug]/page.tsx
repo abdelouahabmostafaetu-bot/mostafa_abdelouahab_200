@@ -43,21 +43,16 @@ export default async function BlogPostPage({
           href="/blog"
           className="group mb-6 md:mb-10 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors duration-200"
         >
-          <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
+          <ArrowLeft size={12} />
           All Posts
         </Link>
 
         <div className="flex gap-10 xl:gap-14">
           <article className="flex-grow min-w-0">
-            <div className="rounded-[24px] md:rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-10">
+            <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-10">
               <header className="mb-12 border-b border-[var(--color-border)]/60 pb-8">
-                <div className="mb-4 md:mb-5 flex flex-wrap items-center gap-2.5 text-xs text-[var(--color-text-tertiary)]">
-                  <time className="font-medium">{formatDate(post.date)}</time>
+                <div className="mb-4 md:mb-5 flex flex-wrap items-center gap-2.5 text-xs text-[var(--color-text-tertiary)] uppercase tracking-widest font-medium">
                   <span>{post.category}</span>
-                  <span className="inline-flex items-center gap-1">
-                    <Clock size={11} />
-                    {post.readingTime}
-                  </span>
                 </div>
 
                 <h1
@@ -90,7 +85,7 @@ export default async function BlogPostPage({
                   href="/blog"
                   className="group inline-flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors duration-200 font-medium"
                 >
-                  <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
+                  <ArrowLeft size={14} />
                   Back to all posts
                 </Link>
               </div>

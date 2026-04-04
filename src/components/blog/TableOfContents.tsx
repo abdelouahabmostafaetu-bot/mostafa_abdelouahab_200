@@ -38,7 +38,7 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
   if (headings.length === 0) return null;
 
   return (
-    <nav className="sticky top-28 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+    <nav className="sticky top-28 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
       <p className="mb-3 text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-secondary)]">
         On this page
       </p>

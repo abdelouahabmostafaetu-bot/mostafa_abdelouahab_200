@@ -8,59 +8,59 @@
 /* ===== Base Styles ===== */
 @layer base {
   :root {
-    --font-sans: 'Manrope', system-ui, sans-serif;
-    --font-serif: 'Newsreader', Georgia, serif;
-    --color-primary: #1d3e38;
-    --color-accent: #1d5a4e;
-    --color-accent-light: #2d7a6a;
-    --color-surface: #fbf8f1;
-    --color-bg: #f4efe6;
-    --color-bg-muted: #ede6da;
-    --color-text: #1b2420;
-    --color-text-secondary: #53605a;
-    --color-text-tertiary: #7a877f;
-    --color-border: #d8d0c3;
-    --color-border-light: #e7e0d5;
-    --color-hover: #efe7da;
-    --color-gold: #9f7a31;
-    --shadow-soft: 0 20px 40px rgba(30, 41, 34, 0.08);
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-serif: 'Latin Modern Roman', 'Computer Modern', 'Georgia', serif;
+    --color-primary: #000000;
+    --color-accent: #00509e;
+    --color-accent-light: #3b82f6;
+    --color-surface: #ffffff;
+    --color-bg: #ffffff;
+    --color-bg-muted: #f4f4f4;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #4a4a4a;
+    --color-text-tertiary: #6c6c6c;
+    --color-border: #e0e0e0;
+    --color-border-light: #f0f0f0;
+    --color-hover: #f9f9f9;
+    --color-gold: #b78b32;
+    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.05);
 
-    --tag-bg: #f3ede2;
-    --tag-border: #d9cfbf;
-    --tag-text: #4b5953;
-    --tag-bg-hover: #ebe2d2;
-    --tag-border-hover: #cabcaa;
-    --tag-text-hover: #1d5a4e;
-    --tag-bg-active: #1d5a4e;
-    --tag-border-active: #1d5a4e;
-    --tag-text-active: #fffdf8;
+    --tag-bg: #f9f9f9;
+    --tag-border: #e0e0e0;
+    --tag-text: #4a4a4a;
+    --tag-bg-hover: #eeeeee;
+    --tag-border-hover: #cccccc;
+    --tag-text-hover: #1a1a1a;
+    --tag-bg-active: #00509e;
+    --tag-border-active: #00509e;
+    --tag-text-active: #ffffff;
   }
 
   .dark {
-    --color-primary: #e9ece8;
-    --color-accent: #8fd1bf;
-    --color-accent-light: #b0e4d6;
-    --color-surface: #18211d;
-    --color-bg: #0d1210;
-    --color-bg-muted: #121915;
-    --color-text: #edf2ee;
-    --color-text-secondary: #b0bbb5;
-    --color-text-tertiary: #7f8a84;
-    --color-border: #26312b;
-    --color-border-light: #1a231f;
-    --color-hover: #18211d;
-    --color-gold: #d3b978;
-    --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.28);
+    --color-primary: #e0e0e0;
+    --color-accent: #60a5fa;
+    --color-accent-light: #93c5fd;
+    --color-surface: #121212;
+    --color-bg: #121212;
+    --color-bg-muted: #1e1e1e;
+    --color-text: #e0e0e0;
+    --color-text-secondary: #a0a0a0;
+    --color-text-tertiary: #757575;
+    --color-border: #333333;
+    --color-border-light: #222222;
+    --color-hover: #1c1c1c;
+    --color-gold: #e0bb64;
+    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.5);
 
-    --tag-bg: #18211d;
-    --tag-border: #2c3933;
-    --tag-text: #b7c9c1;
-    --tag-bg-hover: #202a25;
-    --tag-border-hover: #3a4a43;
-    --tag-text-hover: #8fd1bf;
-    --tag-bg-active: #8fd1bf;
-    --tag-border-active: #8fd1bf;
-    --tag-text-active: #10201b;
+    --tag-bg: #1e1e1e;
+    --tag-border: #333333;
+    --tag-text: #a0a0a0;
+    --tag-bg-hover: #2a2a2a;
+    --tag-border-hover: #444444;
+    --tag-text-hover: #e0e0e0;
+    --tag-bg-active: #1d4ed8;
+    --tag-border-active: #1d4ed8;
+    --tag-text-active: #ffffff;
   }
 
   html {
@@ -71,9 +71,6 @@
 
   body {
     @apply bg-[var(--color-bg)] text-[var(--color-text)] transition-colors duration-300;
-    background-image:
-      radial-gradient(circle at top, rgba(29, 90, 78, 0.08), transparent 38%),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.32), transparent 20%);
     font-family: var(--font-sans);
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     letter-spacing: -0.01em;
@@ -82,11 +79,11 @@
 
   /* Better selection color */
   ::selection {
-    background-color: rgba(29, 90, 78, 0.18);
+    background-color: rgba(37, 99, 235, 0.18);
   }
 
   .dark ::selection {
-    background-color: rgba(143, 209, 191, 0.28);
+    background-color: rgba(96, 165, 250, 0.28);
   }
 
   /* Elegant scrollbar */
@@ -215,23 +212,23 @@
 /* ===== Animations ===== */
 @layer utilities {
   .fade-in {
-    animation: fadeIn 0.45s ease forwards;
-    opacity: 0;
+    animation: none;
+    opacity: 1;
   }
 
   .fade-in-up {
-    animation: fadeInUp 0.5s ease forwards;
-    opacity: 0;
+    animation: none;
+    opacity: 1;
   }
 
   .slide-in-left {
-    animation: slideInLeft 0.5s ease forwards;
-    opacity: 0;
+    animation: none;
+    opacity: 1;
   }
 
   .slide-in-right {
-    animation: slideInRight 0.5s ease forwards;
-    opacity: 0;
+    animation: none;
+    opacity: 1;
   }
 
   .stagger-1 { animation-delay: 0.1s; }

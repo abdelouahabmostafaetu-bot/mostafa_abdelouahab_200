@@ -7,9 +7,8 @@ import { Menu, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
-  { href: '/', label: 'Home' },
+  { href: '/', label: 'About' },
   { href: '/blog', label: 'Blog' },
-  { href: '/contact', label: 'Contact' },
 ];
 
 export default function Navbar() {
@@ -26,9 +25,9 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-border)]/85 bg-[var(--color-bg)]/95 backdrop-blur-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
       <nav className="max-w-5xl mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-16 items-center justify-between">
           <Link href="/" className="group flex flex-col leading-none">
             <span className="text-base font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
               Abdelouahab Mostafa
@@ -43,10 +42,10 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3.5 py-2 text-sm rounded-full border transition-all duration-200 ${
+                className={`rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
                   isActive(link.href)
-                    ? 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]'
-                    : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]'
+                    ? 'bg-[var(--color-bg-muted)] text-[var(--color-text)]'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
                 {link.label}
@@ -61,7 +60,7 @@ export default function Navbar() {
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-full border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-hover)] transition-all duration-200"
+              className="rounded-md border border-[var(--color-border)] p-2 text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
               aria-label="Toggle menu"
             >
               {isOpen ? <X size={18} /> : <Menu size={18} />}
@@ -74,15 +73,15 @@ export default function Navbar() {
             isOpen ? 'max-h-56 opacity-100 pb-4' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="mb-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
+          <div className="mb-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`block px-3 py-2.5 text-sm rounded-xl transition-all duration-200 ${
+                className={`block rounded-md px-3 py-2.5 text-sm transition-colors duration-150 ${
                   isActive(link.href)
-                    ? 'text-[var(--color-text)] font-medium bg-[var(--color-bg)]'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)]'
+                    ? 'bg-[var(--color-bg-muted)] font-medium text-[var(--color-text)]'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
                 {link.label}

@@ -18,11 +18,11 @@ export default function Tag({
   clickable = true,
 }: TagProps) {
   const baseClasses = `
-    inline-flex items-center gap-1.5 rounded-full border transition-colors duration-150
+    inline-flex items-center gap-1.5 rounded-md border transition-colors duration-150
     ${size === 'sm' ? 'px-2.5 py-1 text-[11px]' : 'px-3 py-1.5 text-xs'}
     ${
       active
-        ? 'bg-[var(--tag-bg-active)] border-[var(--tag-border-active)] text-[var(--tag-text-active)]'
+        ? 'bg-[var(--tag-bg-active)] border-[var(--tag-border-active)] text-[var(--color-accent)] dark:text-[var(--tag-text-active)]'
         : 'bg-[var(--tag-bg)] border-[var(--tag-border)] text-[var(--tag-text)] hover:bg-[var(--tag-bg-hover)] hover:border-[var(--tag-border-hover)] hover:text-[var(--tag-text-hover)]'
     }
   `.trim();
@@ -31,11 +31,13 @@ export default function Tag({
     <>
       <span>{tag}</span>
       {count !== undefined && (
-        <span className={`
-          font-medium opacity-70
-          ${size === 'sm' ? 'text-[10px]' : 'text-[11px]'}
-        `}>
-          ×{count}
+        <span
+          className={`
+            font-medium opacity-70
+            ${size === 'sm' ? 'text-[10px]' : 'text-[11px]'}
+          `}
+        >
+          x{count}
         </span>
       )}
     </>
