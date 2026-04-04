@@ -7,6 +7,9 @@ interface PdfDownloadProps {
   title?: string;
 }
 
+const AUTHOR_NAME = 'Abdelouahab Mostafa';
+const AUTHOR_SUBTITLE = 'Independent Mathematical Researcher';
+
 export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -33,7 +36,8 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       }
 
       const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
-      const canvasScale = isSmallScreen ? 1.5 : 2;
+      // Higher scale = sharper text in the PDF (but heavier). Keep it moderate for long articles.
+      const canvasScale = isSmallScreen ? 1.8 : 2.3;
 
       // Generate the PDF file with proper settings
       const opt: any = {
@@ -52,80 +56,182 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
               const clone = doc.querySelector('.prose-academic') as HTMLElement;
               if (!clone) return;
 
+              // Inject paper-like CSS rules into the cloned document (PDF-only).
+              const styleTag = doc.createElement('style');
+              styleTag.textContent = `
+                .prose-academic {
+                  font-family: 'Latin Modern Roman', 'Computer Modern', 'Times New Roman', Times, serif !important;
+                  font-size: 12pt !important;
+                  line-height: 1.6 !important;
+                  color: #000 !important;
+                  background: #fff !important;
+                }
+
+                .prose-academic p {
+                  margin: 0 0 10pt 0 !important;
+                  text-align: justify !important;
+                }
+
+                .prose-academic h2,
+                .prose-academic h3,
+                .prose-academic h4 {
+                  text-align: left !important;
+                  color: #000 !important;
+                  font-family: inherit !important;
+                }
+
+                .prose-academic h2 { font-size: 15pt !important; margin: 18pt 0 8pt 0 !important; }
+                .prose-academic h3 { font-size: 13pt !important; margin: 14pt 0 6pt 0 !important; }
+                .prose-academic h4 { font-size: 12pt !important; margin: 12pt 0 6pt 0 !important; }
+
+                .prose-academic ul,
+                .prose-academic ol {
+                  margin: 0 0 10pt 18pt !important;
+                }
+
+                .prose-academic li {
+                  margin: 0 0 4pt 0 !important;
+                  text-align: justify !important;
+                }
+
+                .prose-academic a {
+                  color: #000 !important;
+                  text-decoration: underline !important;
+                }
+
+                .prose-academic hr {
+                  border: none !important;
+                  border-top: 1px solid #000 !important;
+                  margin: 14pt 0 !important;
+                }
+
+                .prose-academic blockquote {
+                  border-left: 3px solid #000 !important;
+                  background: transparent !important;
+                  margin: 12pt 0 !important;
+                  padding-left: 12pt !important;
+                  font-style: italic;
+                }
+
+                .prose-academic code {
+                  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;
+                  font-size: 10.5pt !important;
+                  color: #000 !important;
+                }
+
+                .prose-academic pre {
+                  background: #f7f7f7 !important;
+                  border: 1px solid #d0d0d0 !important;
+                  border-radius: 8px !important;
+                  padding: 12pt !important;
+                }
+
+                .prose-academic table {
+                  border-collapse: collapse !important;
+                }
+
+                .prose-academic th,
+                .prose-academic td {
+                  border: 1px solid #000 !important;
+                  padding: 6pt 8pt !important;
+                }
+
+                .prose-academic img {
+                  max-width: 100% !important;
+                  height: auto !important;
+                }
+
+                .katex { color: #000 !important; }
+              `;
+              doc.head.appendChild(styleTag);
+
               // 1. Force PDF layout styles (Overrides CSS rules)
-              clone.style.width = '800px'; 
-              clone.style.maxWidth = 'none'; 
+              // A4 width at 96dpi is ~794px. Keeping a stable width prevents layout shifts.
+              clone.style.width = '794px';
+              clone.style.maxWidth = 'none';
               clone.style.margin = '0 auto';
-              clone.style.padding = '30px 40px';
-              clone.style.fontFamily = "'Latin Modern Roman', 'Computer Modern', 'Georgia', serif";
+              clone.style.padding = '54px 72px';
+              clone.style.fontFamily = "'Latin Modern Roman', 'Computer Modern', 'Times New Roman', Times, serif";
               clone.style.color = '#000000';
               clone.style.backgroundColor = '#ffffff';
+              clone.style.textAlign = 'left';
 
-              // 2. Add Title to the top
-              const titleEl = doc.createElement('h1');
-              titleEl.innerText = title;
-              titleEl.style.textAlign = 'center';
-              titleEl.style.fontSize = '24pt';
-              titleEl.style.fontWeight = 'bold';
-              titleEl.style.marginBottom = '10px';
+              // 2. Add a clean LaTeX-like title block (big title + name)
+              const titleBlock = doc.createElement('div');
+              titleBlock.style.textAlign = 'center';
+              titleBlock.style.marginBottom = '18pt';
+
+              const titleEl = doc.createElement('div');
+              titleEl.textContent = title;
+              titleEl.style.fontSize = '28pt';
+              titleEl.style.fontWeight = '600';
+              titleEl.style.lineHeight = '1.15';
+              titleEl.style.marginBottom = '10pt';
               titleEl.style.color = '#000000';
-              clone.insertBefore(titleEl, clone.firstChild);
 
-              // 3. Add Author to the top
-              const authorEl = doc.createElement('p');
-              authorEl.innerText = 'Abdelouahab Mostafa';
-              authorEl.style.textAlign = 'center';
+              const authorEl = doc.createElement('div');
+              authorEl.textContent = AUTHOR_NAME;
               authorEl.style.fontSize = '14pt';
               authorEl.style.fontStyle = 'italic';
-              authorEl.style.marginBottom = '40px';
+              authorEl.style.marginBottom = '4pt';
               authorEl.style.color = '#000000';
-              clone.insertBefore(authorEl, clone.children[1]);
+
+              const subtitleEl = doc.createElement('div');
+              subtitleEl.textContent = AUTHOR_SUBTITLE;
+              subtitleEl.style.fontSize = '11pt';
+              subtitleEl.style.marginBottom = '4pt';
+              subtitleEl.style.color = '#333333';
+
+              const dateEl = doc.createElement('div');
+              dateEl.textContent = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              });
+              dateEl.style.fontSize = '11pt';
+              dateEl.style.marginBottom = '14pt';
+              dateEl.style.color = '#333333';
+
+              const rule = doc.createElement('div');
+              rule.style.borderTop = '1px solid #000000';
+              rule.style.width = '100%';
+
+              titleBlock.appendChild(titleEl);
+              titleBlock.appendChild(authorEl);
+              titleBlock.appendChild(subtitleEl);
+              titleBlock.appendChild(dateEl);
+              titleBlock.appendChild(rule);
+              clone.insertBefore(titleBlock, clone.firstChild);
 
               // 4. Force colors & cleanup interactive elements
               clone.querySelectorAll('button').forEach(btn => btn.remove());
-              
-              const allElements = clone.querySelectorAll('*');
-              for (let i = 0; i < allElements.length; i++) {
-                const el = allElements[i] as HTMLElement;
-                if (el.style) {
-                  el.style.color = '#000000'; // Override Dark Mode
-                }
-                const tag = el.tagName.toLowerCase();
-                if (tag === 'pre') {
-                  el.style.backgroundColor = '#f7f7f7';
-                  el.style.border = '1px solid #ddd';
-                }
-                const accent = '#00509e';
-                if (tag === 'a') {
-                  el.style.color = accent;
-                  el.style.textDecoration = 'underline';
-                  (el.style as any).textDecorationColor = accent;
-                }
-                if (tag === 'blockquote') {
-                  el.style.borderColor = accent;
-                }
-              }
 
-              // 5. Add Signature at Bottom
-              const signatureEl = doc.createElement('p');
-              signatureEl.innerText = '\u2014 Abdelouahab Mostafa';
-              signatureEl.style.textAlign = 'right';
-              signatureEl.style.marginTop = '60px';
-              signatureEl.style.fontSize = '12pt';
-              signatureEl.style.fontStyle = 'italic';
-              signatureEl.style.color = '#000000';
-              signatureEl.style.borderTop = '1px solid #000000';
-              signatureEl.style.paddingTop = '10px';
-              signatureEl.style.display = 'inline-block';
-              
-              const sigWrapper = doc.createElement('div');
-              sigWrapper.style.display = 'flex';
-              sigWrapper.style.justifyContent = 'flex-end';
-              sigWrapper.style.width = '100%';
-              sigWrapper.style.marginTop = '40px';
-              sigWrapper.appendChild(signatureEl);
-              
-              clone.appendChild(sigWrapper);
+              // Neutralize colorful MDX callout boxes (inline-styled divs) to match a paper look.
+              const styledNodes = clone.querySelectorAll<HTMLElement>('[style]');
+              styledNodes.forEach((el) => {
+                const tag = el.tagName.toLowerCase();
+
+                // Remove gradients / tinted panels (paper look)
+                if (tag !== 'pre') {
+                  el.style.background = 'transparent';
+                  el.style.backgroundColor = 'transparent';
+                  (el.style as any).backgroundImage = 'none';
+                }
+                (el.style as any).boxShadow = 'none';
+
+                // Make colored borders black/neutral
+                if (el.style.border) el.style.borderColor = '#000000';
+                if (el.style.borderTop) el.style.borderTopColor = '#000000';
+                if (el.style.borderRight) el.style.borderRightColor = '#000000';
+                if (el.style.borderBottom) el.style.borderBottomColor = '#000000';
+                if (el.style.borderLeft) el.style.borderLeftColor = '#000000';
+              });
+
+              // Ensure all text is black (including KaTeX)
+              const allElements = clone.querySelectorAll<HTMLElement>('*');
+              allElements.forEach((el) => {
+                el.style.color = '#000000';
+              });
             } catch {
               // ignore clone errors to prevent complete crash
             }
@@ -136,8 +242,28 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
 
       // Generate a PDF Blob directly from the rendered page using onclone modifications.
       // This is safe, doesn't flash the screen, and avoids empty capture bugs.
-      const worker = html2pdf().set(opt).from(sourceElement);
-      const pdfBlob: Blob = await worker.outputPdf('blob');
+      const worker = html2pdf().set(opt).from(sourceElement).toPdf();
+      const pdf: any = await worker.get('pdf');
+      try {
+        const pageCount = typeof pdf?.internal?.getNumberOfPages === 'function'
+          ? pdf.internal.getNumberOfPages()
+          : 0;
+        if (pageCount > 0) {
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          pdf.setFontSize(9);
+          pdf.setTextColor(0, 0, 0);
+
+          for (let page = 1; page <= pageCount; page++) {
+            pdf.setPage(page);
+            pdf.text(`${page} / ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+          }
+        }
+      } catch {
+        // Ignore footer errors; PDF content is still valid.
+      }
+
+      const pdfBlob: Blob = pdf.output('blob');
       const dlFilename: string = opt.filename;
 
       const url = URL.createObjectURL(pdfBlob);

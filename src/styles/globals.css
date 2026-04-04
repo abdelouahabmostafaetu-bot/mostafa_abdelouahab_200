@@ -143,10 +143,10 @@
 
   .prose-academic a {
     @apply text-[var(--color-accent)] underline underline-offset-[3px] decoration-1 hover:decoration-2 transition-all duration-200;
-    text-decoration-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+    text-decoration-color: currentColor;
   }
   .prose-academic a:hover {
-    text-decoration-color: var(--color-accent);
+    text-decoration-color: currentColor;
   }
 
   .prose-academic ul, .prose-academic ol {
@@ -167,7 +167,7 @@
 
   .prose-academic blockquote {
     @apply border-l-[3px] pl-4 md:pl-5 italic my-5 md:my-6 text-[var(--color-text-secondary)];
-    border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+    border-color: var(--color-accent);
   }
 
   .prose-academic code {

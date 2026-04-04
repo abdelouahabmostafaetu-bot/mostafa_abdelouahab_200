@@ -8,17 +8,15 @@ export const metadata: Metadata = {
 
 export default function SudokuPage() {
   return (
-    <div className="relative overflow-hidden pb-20 pt-20">
+    <div className="relative min-h-[calc(100vh-4rem)] bg-[#07111f] overflow-hidden sm:pb-20 sm:pt-20 pt-4 pb-8">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-0 top-24 h-72 w-72 rounded-full bg-amber-400/10 blur-3xl" />
-        <div className="absolute right-0 top-40 h-80 w-80 rounded-full bg-amber-300/10 blur-3xl" />
-        <div className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.12),transparent_58%)]" />
+        <div className="absolute left-[-10%] top-[10%] h-[40vh] w-[40vw] rounded-full bg-amber-400/10 blur-[100px]" />
+        <div className="absolute right-[-10%] top-[40%] h-[50vh] w-[50vw] rounded-full bg-amber-300/10 blur-[100px]" />
+        <div className="absolute inset-x-0 top-0 h-[60vh] bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.12),transparent_60%)]" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 md:px-6">
-        <div className="rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,28,0.96),rgba(10,18,32,0.92))] p-4 shadow-[0_32px_90px_rgba(0,0,0,0.32)] md:p-6">
-          <SudokuGame />
-        </div>
+      <div className="relative mx-auto h-full w-full max-w-7xl px-2 sm:px-6">
+        <SudokuGame />
       </div>
     </div>
   );
