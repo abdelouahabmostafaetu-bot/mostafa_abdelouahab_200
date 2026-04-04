@@ -15,12 +15,6 @@ export default function RecentActivity() {
           >
             Publications & Notes
           </h2>
-          <Link
-            href="/blog"
-            className="text-sm font-semibold uppercase tracking-widest text-[var(--color-accent)] hover:text-[#000]"
-          >
-            Archive
-          </Link>
         </div>
 
         <div className="space-y-10">
