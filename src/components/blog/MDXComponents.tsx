@@ -3,22 +3,22 @@ import type { MDXComponents } from 'mdx/types';
 export function getMDXComponents(components: MDXComponents): MDXComponents {
   return {
     h1: ({ children, ...props }) => (
-      <h1 className="text-2xl font-bold mt-10 mb-4 text-[var(--color-text)]" {...props}>
+      <h1 className="text-[1.35rem] leading-[1.3] md:text-2xl font-bold mt-10 mb-4 text-[var(--color-text)]" {...props}>
         {children}
       </h1>
     ),
     h2: ({ children, ...props }) => (
-      <h2 className="text-xl font-bold mt-8 mb-3 text-[var(--color-text)]" {...props}>
+      <h2 className="text-lg md:text-[1.35rem] md:leading-[1.35] font-bold mt-8 mb-3 text-[var(--color-text)]" {...props}>
         {children}
       </h2>
     ),
     h3: ({ children, ...props }) => (
-      <h3 className="text-lg font-semibold mt-6 mb-2 text-[var(--color-text)]" {...props}>
+      <h3 className="text-base md:text-lg font-semibold mt-6 mb-2 text-[var(--color-text)]" {...props}>
         {children}
       </h3>
     ),
     p: ({ children, ...props }) => (
-      <p className="mb-4 text-[var(--color-text-secondary)] leading-7" {...props}>
+      <p className="mb-4 text-[14px] md:text-[15px] leading-[1.8] text-[var(--color-text-secondary)]" {...props}>
         {children}
       </p>
     ),
