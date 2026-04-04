@@ -520,10 +520,10 @@ export default function SudokuGame() {
       : 'h-10 w-10 text-base sm:h-12 sm:w-12 sm:text-xl';
 
   return (
-    <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl">
-      {/* Top Header & Stats */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        <div className="flex-1 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin] w-full">
+    <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl flex flex-col items-center">
+      {/* Top Header: Difficulty & Timer */}
+      <div className="w-full flex items-center justify-between gap-2 mb-4 px-1">
+        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none]">
           {(Object.keys(MODE_CONFIG) as Mode[]).map((level) => {
             const isActive = mode === level;
             return (
@@ -531,9 +531,9 @@ export default function SudokuGame() {
                 key={level}
                 type="button"
                 onClick={() => startNewGame(level)}
-                className={`flex-none touch-manipulation rounded-full border px-5 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`touch-manipulation rounded-full border px-4 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'border-amber-300/50 bg-amber-400/20 text-white shadow-[0_4px_20px_rgba(251,191,36,0.15)]'
+                    ? 'border-amber-300/50 bg-amber-400/20 text-white shadow-[0_2px_10px_rgba(251,191,36,0.15)]'
                     : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:bg-white/10'
                 }`}
               >
@@ -542,11 +542,18 @@ export default function SudokuGame() {
             );
           })}
         </div>
+
+        {/* Compact Timer */}
+        <div className="shrink-0 flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1.5">
+          <Clock3 className="h-3 w-3 text-amber-400" />
+          <span className={`text-xs font-medium text-slate-200 ${NUMBER_FONT_CLASS}`}>
+            {formatTime(elapsedSeconds)}
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-center lg:items-start justify-center">
-        {/* Board Section */}
-        <div className="flex flex-col items-center w-full max-w-[100vw] relative">
+      {/* Board Section */}
+      <div className="w-full flex-col flex items-center max-w-[100vw]">
           {hasStatus ? (
             <div className="mb-4 w-full text-center">
               {statusLabel ? (
@@ -635,63 +642,46 @@ export default function SudokuGame() {
           </div>
 
           {isWon && (
-            <div className="mt-6 flex items-center justify-center gap-3 rounded-full border border-amber-300/30 bg-amber-400/10 px-6 py-3 text-sm font-medium text-amber-200 shadow-lg">
-              <Trophy className="h-5 w-5 text-amber-300" />
-              Puzzle solved! Amazing work.
+            <div className="mt-4 flex items-center justify-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-5 py-2 text-sm font-medium text-amber-200">
+              <Trophy className="h-4 w-4 text-amber-300" />
+              Puzzle solved!
             </div>
           )}
-
-          {/* Compact Right-Side Timer */}
-          <div className="absolute -bottom-8 right-2 sm:right-6 lg:-right-4 my-2 lg:bottom-auto lg:top-0 lg:mt-0 flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 shadow-md">
-            <Clock3 className="h-3 w-3 text-amber-400" />
-            <span className={`text-xs font-medium text-slate-200 ${NUMBER_FONT_CLASS}`}>
-              {formatTime(elapsedSeconds)}
-            </span>
-          </div>
         </div>
+      </div>
 
-        {/* Keypad Section */}
-        <aside className="w-full max-w-[500px] lg:w-[400px] lg:mt-8 shrink-0 pb-10">
-          <div className="rounded-[24px] border border-white/5 bg-white/5 p-4 sm:p-5 backdrop-blur-xl shadow-2xl">
-            <div className="mb-4 flex items-center justify-between px-2">
-              <div>
-                <p className="text-sm font-medium text-slate-300">Number Pad</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleNumberInput(0)}
-                disabled={!selectedIsEditable}
-                className="touch-manipulation inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Clear cell"
-              >
-                <Eraser className="h-3 w-3" />
-                Clear
-              </button>
-            </div>
+      {/* Ultra-Fast Compact Keypad directly under the board */}
+      <div className="w-full max-w-[450px] mt-6 pb-12 flex flex-wrap justify-center gap-2 sm:gap-3 px-1">
+        {numberPadValues.map((num) => {
+          const isActive = selectedValue === num && selectedIsEditable;
 
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-              {numberPadValues.map((num) => {
-                const isActive = selectedValue === num && selectedIsEditable;
-
-                return (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => handleNumberInput(num)}
-                    disabled={!selectedIsEditable}
-                    className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
-                      isActive
-                        ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
-                        : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {toSymbol(num, activeConfig.symbols)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </aside>
+          return (
+            <button
+              key={num}
+              type="button"
+              onClick={() => handleNumberInput(num)}
+              disabled={!selectedIsEditable}
+              className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
+                isActive
+                  ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
+                  : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {toSymbol(num, activeConfig.symbols)}
+            </button>
+          );
+        })}
+        
+        {/* Simple Eraser in line with numbers */}
+        <button
+          type="button"
+          onClick={() => handleNumberInput(0)}
+          disabled={!selectedIsEditable}
+          className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 transition-all duration-200 hover:border-rose-500/50 hover:bg-rose-500/20 disabled:opacity-50 disabled:cursor-not-allowed`}
+          aria-label="Clear cell"
+        >
+          <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
+        </button>
       </div>
     </div>
   );
