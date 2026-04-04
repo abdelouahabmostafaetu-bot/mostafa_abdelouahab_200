@@ -143,12 +143,15 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       }
 
       // Generate the PDF file with the proper settings
+      const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
+      const canvasScale = isSmallScreen ? 1.25 : 2;
+
       const opt: any = {
         margin: [15, 10, 20, 10], // top, right, bottom, left
         filename: `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
-          scale: 2,
+          scale: canvasScale,
           useCORS: true,
           backgroundColor: '#ffffff',
           scrollX: 0,
