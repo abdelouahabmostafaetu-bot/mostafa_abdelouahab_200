@@ -34,9 +34,10 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       // Create a temporary unmounted DOM node for styling the actual PDF structure
       pdfContainer = document.createElement('div');
       // Mount to body off-screen so html2canvas can compute layout and dimensions properly
-      pdfContainer.style.position = 'absolute';
-      pdfContainer.style.left = '-9999px';
-      pdfContainer.style.top = '0';
+      pdfContainer.style.position = 'absolute'; 
+      pdfContainer.style.left = '0'; 
+      pdfContainer.style.top = '0'; 
+      pdfContainer.style.zIndex = '2147483647'; 
       pdfContainer.style.width = '800px'; // Render like a desktop page
       pdfContainer.style.padding = '40px 60px';
       pdfContainer.style.fontFamily = "'Latin Modern Roman', 'Computer Modern', 'Georgia', serif";
@@ -104,7 +105,7 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
 
       // 4. Append End Signature
       const signatureEl = document.createElement('p');
-      signatureEl.innerText = '— Abdelouahab Mostafa';
+      signatureEl.innerText = '\u2014 Abdelouahab Mostafa';
       signatureEl.style.textAlign = 'right';
       signatureEl.style.marginTop = '60px';
       signatureEl.style.fontSize = '12pt';
@@ -129,6 +130,12 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       // Let the browser layout the off-screen content before capture
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
+      // Basic sanity check: if the container has zero size, PDF will be blank.
+      const rect = pdfContainer.getBoundingClientRect();
+      if (rect.width < 10 || rect.height < 10) {
+        throw new Error('PDF layout has zero size.');
+      }
+
       // Generate the PDF file with the proper settings
       const opt: any = {
         margin: [15, 10, 20, 10], // top, right, bottom, left
@@ -138,6 +145,8 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
           onclone: (doc: Document) => {
             try {
               const accent = '#00509e';
