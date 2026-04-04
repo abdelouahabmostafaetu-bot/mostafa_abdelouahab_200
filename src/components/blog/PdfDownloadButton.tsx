@@ -84,6 +84,22 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
         }
       }
 
+      // html2canvas can crash on modern CSS color functions (like color-mix).
+      // Override the few places we use them (links + blockquotes) with plain colors.
+      const accentColor = '#00509e';
+      contentClone.querySelectorAll('a').forEach((node) => {
+        const a = node as HTMLElement;
+        a.style.color = accentColor;
+        a.style.textDecoration = 'underline';
+        // Ensure text-decoration-color is a plain value (not color-mix)
+        (a.style as any).textDecorationColor = accentColor;
+      });
+
+      contentClone.querySelectorAll('blockquote').forEach((node) => {
+        const bq = node as HTMLElement;
+        bq.style.borderColor = accentColor;
+      });
+
       pdfContainer.appendChild(contentClone);
 
       // 4. Append End Signature
@@ -118,7 +134,29 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
         margin: [15, 10, 20, 10], // top, right, bottom, left
         filename: `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`,
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          onclone: (doc: Document) => {
+            try {
+              const accent = '#00509e';
+              doc.querySelectorAll('a').forEach((node) => {
+                const a = node as HTMLElement;
+                a.style.color = accent;
+                a.style.textDecoration = 'underline';
+                (a.style as any).textDecorationColor = accent;
+              });
+
+              doc.querySelectorAll('blockquote').forEach((node) => {
+                const bq = node as HTMLElement;
+                bq.style.borderColor = accent;
+              });
+            } catch {
+              // ignore
+            }
+          },
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
