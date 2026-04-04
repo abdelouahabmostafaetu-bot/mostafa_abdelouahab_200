@@ -9,24 +9,30 @@ interface PdfDownloadProps {
 
 export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleDownload = async () => {
+    setErrorMessage(null);
     setIsGenerating(true);
+    let pdfContainer: HTMLDivElement | null = null;
     try {
       // Dynamically import html2pdf to avoid SSR issues
       const html2pdfModule = await import('html2pdf.js');
       // @ts-ignore - Handle different module resolution between Next/Webpack and standard modules
-      const html2pdf = html2pdfModule.default || html2pdfModule;
+      const html2pdf = (html2pdfModule as any).default || (html2pdfModule as any);
+
+      if (typeof html2pdf !== 'function') {
+        throw new Error('html2pdf.js failed to load (module export is not a function).');
+      }
 
       // Ensure we explicitly grab the article body
       const contentElement = document.querySelector('.prose-academic');
       if (!contentElement) {
-        setIsGenerating(false);
-        return;
+        throw new Error('Could not find article content (.prose-academic).');
       }
 
       // Create a temporary unmounted DOM node for styling the actual PDF structure
-      const pdfContainer = document.createElement('div');
+      pdfContainer = document.createElement('div');
       // Mount to body off-screen so html2canvas can compute layout and dimensions properly
       pdfContainer.style.position = 'absolute';
       pdfContainer.style.left = '-9999px';
@@ -104,12 +110,15 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       // Append to the body so html2canvas can measure things properly (needs to be in DOM)
       document.body.appendChild(pdfContainer);
 
+      // Let the browser layout the off-screen content before capture
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
       // Generate the PDF file with the proper settings
       const opt: any = {
         margin: [15, 10, 20, 10], // top, right, bottom, left
         filename: `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`,
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
@@ -123,20 +132,34 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
 
     } catch (error) {
       console.error('Failed to generate PDF:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error while generating PDF.';
+      setErrorMessage(message);
     } finally {
+      // Clean up DOM after generation
+      if (pdfContainer && document.body.contains(pdfContainer)) {
+        document.body.removeChild(pdfContainer);
+      }
       setIsGenerating(false);
     }
   };
 
   return (
-    <button
-      onClick={handleDownload}
-      disabled={isGenerating}
-      className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-text)] hover:text-[var(--color-text)] print:hidden mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-      title="Save Article as PDF"
-    >
-      {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-      <span>{isGenerating ? 'Generating...' : 'Save PDF'}</span>
-    </button>
+    <div className="mt-6 print:hidden">
+      <button
+        onClick={handleDownload}
+        disabled={isGenerating}
+        className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-text)] hover:text-[var(--color-text)] disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Save Article as PDF"
+      >
+        {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+        <span>{isGenerating ? 'Generating...' : 'Save PDF'}</span>
+      </button>
+
+      {errorMessage && (
+        <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
+          PDF error: {errorMessage}
+        </p>
+      )}
+    </div>
   );
 }
