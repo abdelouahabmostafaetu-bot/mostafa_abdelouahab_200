@@ -567,7 +567,7 @@ export default function SudokuGame() {
 
           <div className="w-full relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden">
             <div className="overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
-              <div className="w-auto mx-auto border-2 border-slate-700 bg-[#0A1220]">
+              <div className="w-auto mx-auto border-2 border-slate-400 bg-[#0A1220]">
                 {board.map((row, rowIndex) => (
                   <div key={rowIndex} className="flex">
                     {row.map((cell, colIndex) => {
@@ -595,13 +595,13 @@ export default function SudokuGame() {
                         const borderRight =
                           (colIndex + 1) % activeConfig.subgrid === 0 &&
                           colIndex < activeConfig.size - 1
-                            ? 'border-r-[3px] border-slate-200/40'
-                            : 'border-r border-slate-200/10';
+                            ? 'border-r-2 border-slate-400'
+                            : 'border-r flex-1 border-slate-700/80';
                         const borderBottom =
                           (rowIndex + 1) % activeConfig.subgrid === 0 &&
                           rowIndex < activeConfig.size - 1
-                            ? 'border-b-[3px] border-slate-200/40'
-                            : 'border-b border-slate-200/10';
+                            ? 'border-b-2 border-slate-400'
+                            : 'border-b border-slate-700/80';
 
                         let bgClass = 'bg-transparent';
                         if (isRelated) bgClass = 'bg-white/[0.04]';

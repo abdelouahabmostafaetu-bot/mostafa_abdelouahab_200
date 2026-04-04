@@ -15,7 +15,7 @@ export default function SudokuPage() {
         <div className="absolute inset-x-0 top-0 h-[60vh] bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.12),transparent_60%)]" />
       </div>
 
-      <div className="relative mx-auto h-full w-full max-w-7xl px-2 sm:px-6">
+      <div className="relative mx-auto h-full w-full max-w-7xl px-0 sm:px-6 pb-6">
         <SudokuGame />
       </div>
     </div>
