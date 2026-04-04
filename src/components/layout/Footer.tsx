@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Github, ExternalLink } from 'lucide-react';
+import { Mail, Github } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -53,10 +53,6 @@ export default function Footer() {
 
         <div className="mt-6 flex flex-col gap-3 text-xs text-[var(--color-text-tertiary)] sm:flex-row sm:items-center sm:justify-between">
           <span>&copy; {currentYear} Abdelouahab Mostafa</span>
-          <span className="flex items-center gap-1">
-            Built with Next.js
-            <ExternalLink size={10} className="opacity-50" />
-          </span>
         </div>
       </div>
     </footer>

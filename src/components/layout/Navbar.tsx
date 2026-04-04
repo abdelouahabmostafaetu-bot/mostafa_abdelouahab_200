@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
   { href: '/', label: 'About' },
@@ -52,12 +51,12 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="ml-2 pl-2 border-l border-[var(--color-border)]">
-              <ThemeToggle />
+              
             </div>
           </div>
 
           <div className="md:hidden flex items-center gap-2">
-            <ThemeToggle />
+            
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="rounded-md border border-[var(--color-border)] p-2 text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
