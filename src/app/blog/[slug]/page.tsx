@@ -37,11 +37,11 @@ export default async function BlogPostPage({
   const headings = extractHeadings(post.content);
 
   return (
-    <div className="pt-28 pb-20">
-      <div className="max-w-5xl mx-auto px-6">
+    <div className="pt-16 md:pt-28 pb-12 md:pb-20">
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
         <Link
           href="/blog"
-          className="group mb-6 md:mb-10 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors duration-200"
+          className="group mb-6 md:mb-10 inline-flex items-center gap-1.5 text-[10px] md:text-xs uppercase tracking-[0.16em] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
         >
           <ArrowLeft size={12} />
           All Posts
@@ -49,8 +49,8 @@ export default async function BlogPostPage({
 
         <div className="flex gap-10 xl:gap-14">
           <article className="flex-grow min-w-0">
-            <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-10">
-              <header className="mb-12 border-b border-[var(--color-border)]/60 pb-8">
+            <div className="md:rounded-xl border-none md:border md:border-[var(--color-border)] bg-transparent md:bg-[var(--color-surface)] py-2 md:p-10">
+              <header className="mb-8 md:mb-12 border-b border-[var(--color-border)]/60 pb-6 md:pb-8">
                 <div className="mb-4 md:mb-5 flex flex-wrap items-center gap-2.5 text-xs text-[var(--color-text-tertiary)] uppercase tracking-widest font-medium">
                   <span>{post.category}</span>
                 </div>
