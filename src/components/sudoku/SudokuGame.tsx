@@ -166,6 +166,8 @@ const toSymbol = (value: number, symbols: string[]) => {
   return symbols[value - 1] ?? String(value);
 };
 
+const NUMBER_FONT_CLASS = 'font-mono font-semibold tabular-nums';
+
 export default function SudokuGame() {
   const [mode, setMode] = useState<Mode>('hard');
   const activeConfig = MODE_CONFIG[mode];
@@ -186,10 +188,6 @@ export default function SudokuGame() {
   const selectedIsEditable = selectedCell
     ? initialBoard[selectedCell[0]]?.[selectedCell[1]] === 0
     : false;
-  const filledCells = useMemo(
-    () => board.flat().filter((value) => value !== 0).length,
-    [board]
-  );
   const conflictCount = useMemo(
     () => conflicts.flat().filter(Boolean).length,
     [conflicts]
@@ -253,7 +251,7 @@ export default function SudokuGame() {
 
       setBoard((current) => {
         const next = current.map((nextRow) => [...nextRow]);
-        next[row][col] = num;
+        next[row][col] = next[row][col] === num ? 0 : num;
         return next;
       });
     },
@@ -348,12 +346,12 @@ export default function SudokuGame() {
 
   const cellSizeClass =
     activeConfig.size === 16
-      ? 'h-8 w-8 text-sm sm:h-10 sm:w-10 sm:text-base'
-      : 'h-[2.85rem] w-[2.85rem] text-base sm:h-[3.4rem] sm:w-[3.4rem] sm:text-lg';
+      ? 'h-6 w-6 text-[11px] sm:h-8 sm:w-8 sm:text-sm'
+      : 'h-9 w-9 text-base sm:h-[3.1rem] sm:w-[3.1rem] sm:text-lg';
 
   return (
     <div className="w-full">
-      <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+      <div className="grid gap-3 sm:max-w-[320px]">
         {statCards.map((card) => (
           <div
             key={card.title}
@@ -363,17 +361,17 @@ export default function SudokuGame() {
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{card.title}</p>
               <card.icon className="h-4 w-4 text-amber-300/80" />
             </div>
-            <p className="mt-3 text-xl font-semibold text-white">{card.value}</p>
+            <p className={`mt-3 text-xl text-white ${NUMBER_FONT_CLASS}`}>{card.value}</p>
             <p className="mt-1 text-xs text-slate-400">{card.hint}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 rounded-[30px] border border-white/10 bg-[linear-gradient(145deg,rgba(15,23,42,0.72),rgba(10,18,32,0.9))] p-4 md:p-5">
+      <div className="mt-5 rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(15,23,42,0.72),rgba(10,18,32,0.9))] p-3 sm:p-4 md:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Difficulty</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               {(Object.keys(MODE_CONFIG) as Mode[]).map((level) => {
                 const isActive = mode === level;
 
@@ -401,15 +399,15 @@ export default function SudokuGame() {
                 );
               })}
             </div>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
+            <p className="mt-2 text-sm leading-6 text-slate-400">
               {MODE_CONFIG[mode].description}
             </p>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="mt-4 grid gap-4 lg:gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
           <div className="flex flex-col items-center">
-            <div className="mb-4 w-full max-w-[720px] rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-4">
+            <div className="mb-3 w-full max-w-[720px] rounded-[20px] border border-white/10 bg-white/[0.03] px-3 py-3 sm:px-4 sm:py-4">
               <div>
                 {statusLabel ? (
                   <p className="text-sm font-semibold text-white">{statusLabel}</p>
@@ -420,9 +418,9 @@ export default function SudokuGame() {
               </div>
             </div>
 
-            <div className="w-full max-w-[720px] rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-3 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
-              <div className="overflow-x-auto">
-                <div className="w-max overflow-hidden rounded-[24px] border border-white/10 bg-[#07111f]">
+            <div className="w-full max-w-[720px] rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-2 sm:p-3 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+              <div className="overflow-x-auto pb-1 [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
+                <div className="mx-auto w-max overflow-hidden rounded-[18px] border border-white/10 bg-[#07111f] sm:rounded-[24px]">
                   {board.map((row, rowIndex) => (
                     <div key={rowIndex} className="flex">
                       {row.map((cell, colIndex) => {
@@ -482,7 +480,7 @@ export default function SudokuGame() {
                             type="button"
                             key={`${rowIndex}-${colIndex}`}
                             onClick={() => handleCellClick(rowIndex, colIndex)}
-                            className={`flex ${cellSizeClass} select-none items-center justify-center transition-all duration-150 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
+                            className={`flex ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-all duration-150 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
                             aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
                             aria-selected={isSelected}
                           >
@@ -505,7 +503,7 @@ export default function SudokuGame() {
           </div>
 
           <aside className="grid gap-4">
-            <section className="rounded-[26px] border border-white/10 bg-white/[0.03] p-5">
+            <section className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 sm:rounded-[26px] sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Keypad</p>
@@ -513,6 +511,10 @@ export default function SudokuGame() {
                 </div>
                 <RefreshCcw className="h-4 w-4 text-amber-300/80" />
               </div>
+
+              <p className="mt-2 text-xs text-slate-400">
+                Tap a cell, then tap a number.
+              </p>
 
               <div
                 className={`mt-4 grid ${
@@ -528,7 +530,7 @@ export default function SudokuGame() {
                       type="button"
                       onClick={() => handleNumberInput(num)}
                       disabled={!selectedIsEditable}
-                      className={`h-14 rounded-2xl border text-lg font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${
+                      className={`h-11 rounded-xl border text-base transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:h-12 sm:text-lg ${NUMBER_FONT_CLASS} ${
                         isActive
                           ? 'border-amber-300/50 bg-amber-400/20 text-white'
                           : 'border-white/10 bg-slate-950/40 text-slate-100 hover:border-white/20 hover:bg-white/[0.06]'
@@ -542,7 +544,7 @@ export default function SudokuGame() {
                   type="button"
                   onClick={() => handleNumberInput(0)}
                   disabled={!selectedIsEditable}
-                  className={`${activeConfig.size === 16 ? 'col-span-4' : 'col-span-3'} inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-slate-950/40 text-sm font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:bg-slate-950/20 disabled:text-slate-600`}
+                  className={`${activeConfig.size === 16 ? 'col-span-4' : 'col-span-3'} inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 text-sm font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:bg-slate-950/20 disabled:text-slate-600`}
                   aria-label="Clear cell"
                   title="Clear cell"
                 >
