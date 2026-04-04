@@ -542,29 +542,10 @@ export default function SudokuGame() {
             );
           })}
         </div>
-
-        {/* Compact Timer */}
-        <div className="shrink-0 flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1.5">
-          <Clock3 className="h-3 w-3 text-amber-400" />
-          <span className={`text-xs font-medium text-slate-200 ${NUMBER_FONT_CLASS}`}>
-            {formatTime(elapsedSeconds)}
-          </span>
-        </div>
       </div>
 
       {/* Board Section */}
       <div className="w-full flex-col flex items-center max-w-[100vw]">
-          {hasStatus ? (
-            <div className="mb-4 w-full text-center">
-              {statusLabel ? (
-                <p className="text-sm font-medium text-amber-300/90">{statusLabel}</p>
-              ) : null}
-              {statusDescription ? (
-                <p className="mt-1 text-xs text-slate-400">{statusDescription}</p>
-              ) : null}
-            </div>
-          ) : null}
-
           <div className="w-full relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden">
             <div className="overflow-x-auto pb-4 pt-1 px-1 [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
               <div className="w-auto mx-auto border-[2px] border-amber-400/80 bg-[#0A1220]">
@@ -647,7 +628,7 @@ export default function SudokuGame() {
         </div>
 
       {/* Ultra-Fast Compact Keypad directly under the board */}
-      <div className="w-full max-w-[450px] mt-6 pb-12 flex flex-wrap justify-center gap-2 sm:gap-3 px-1">
+      <div className="w-full max-w-[450px] mt-6 pb-2 flex flex-wrap justify-center gap-2 sm:gap-3 px-1">
         {numberPadValues.map((num) => {
           const isActive = selectedValue === num && selectedIsEditable;
 
@@ -678,6 +659,24 @@ export default function SudokuGame() {
         >
           <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
         </button>
+      </div>
+
+      {/* Bottom Info Row: Timer & Status */}
+      <div className="mt-8 flex w-full max-w-[450px] items-center justify-between px-4 pb-12">
+        <div className="flex flex-col">
+          {hasStatus ? (
+            <span className="text-xs font-medium text-amber-300/90">{statusLabel}</span>
+          ) : (
+            <span className="text-xs text-slate-500">Playing {MODE_CONFIG[mode].label}</span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1.5">
+          <Clock3 className="h-3 w-3 text-amber-400" />
+          <span className={`text-xs font-medium text-slate-200 ${NUMBER_FONT_CLASS}`}>
+            {formatTime(elapsedSeconds)}
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -29,13 +29,11 @@ export default function Navbar() {
       <nav className="max-w-5xl mx-auto px-6">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="group flex flex-col leading-none">
-            {pathname !== '/sudoku' && (
-              <span className="text-base font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
-                Abdelouahab Mostafa
-              </span>
-            )}
-            <span className={`hidden sm:block mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-tertiary)] ${pathname === '/sudoku' ? 'text-base font-semibold tracking-normal normal-case' : ''}`}>
-              {pathname === '/sudoku' ? 'Sudoku' : 'Mathematics Notes'}
+            <span className="text-base font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
+              Abdelouahab Mostafa
+            </span>
+            <span className="hidden sm:block mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
+              Mathematics Notes
             </span>
           </Link>
 
