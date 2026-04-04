@@ -348,12 +348,18 @@ export default function SudokuGame() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [gameVersion, setGameVersion] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [fastModeNumber, setFastModeNumber] = useState<number | null>(null);
 
   const conflicts = useMemo(
     () => computeConflicts(board, activeConfig.subgrid),
     [board, activeConfig.subgrid]
   );
-  const selectedValue = selectedCell ? board[selectedCell[0]]?.[selectedCell[1]] ?? 0 : 0;
+  const selectedValue =
+    fastModeNumber !== null
+      ? fastModeNumber
+      : selectedCell
+        ? board[selectedCell[0]]?.[selectedCell[1]] ?? 0
+        : 0;
   const selectedIsEditable = selectedCell
     ? initialBoard[selectedCell[0]]?.[selectedCell[1]] === 0
     : false;
@@ -384,6 +390,7 @@ export default function SudokuGame() {
     setBoard(puzzle.map((row) => [...row]));
     setIsWon(false);
     setSelectedCell(null);
+    setFastModeNumber(null);
     setElapsedSeconds(0);
     setGameVersion((version) => version + 1);
   }, []);
@@ -450,22 +457,48 @@ export default function SudokuGame() {
   }, [gameVersion, isHydrated, isWon]);
 
   const handleCellClick = (row: number, col: number) => {
-    setSelectedCell([row, col]);
+    if (fastModeNumber !== null) {
+      if (initialBoard[row]?.[col] === 0) {
+        setBoard((current) => {
+          const next = current.map((nextRow) => [...nextRow]);
+          next[row][col] = next[row][col] === fastModeNumber ? 0 : fastModeNumber;
+          return next;
+        });
+      }
+      return;
+    }
+
+    if (selectedCell && selectedCell[0] === row && selectedCell[1] === col) {
+      setSelectedCell(null);
+    } else {
+      setSelectedCell([row, col]);
+    }
   };
 
   const handleNumberInput = useCallback(
     (num: number) => {
-      if (!selectedCell) return;
       if (num < 0 || num > activeConfig.size) return;
 
+      if (!selectedCell) {
+        setFastModeNumber((current) => (current === num ? null : num));
+        return;
+      }
+
       const [row, col] = selectedCell;
-      if (initialBoard[row]?.[col] !== 0) return;
+      if (initialBoard[row]?.[col] !== 0) {
+        setFastModeNumber((current) => (current === num ? null : num));
+        setSelectedCell(null);
+        return;
+      }
 
       setBoard((current) => {
         const next = current.map((nextRow) => [...nextRow]);
         next[row][col] = next[row][col] === num ? 0 : num;
         return next;
       });
+
+      setFastModeNumber(num);
+      setSelectedCell(null);
     },
     [activeConfig.size, initialBoard, selectedCell]
   );
@@ -592,9 +625,9 @@ export default function SudokuGame() {
       </div>
 
       {/* Board Section */}
-      <div className="w-full flex-col flex items-center max-w-[100vw]">
+      <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
           <div className="w-full relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[12px] sm:rounded-[20px] overflow-hidden">
-            <div className="overflow-x-auto pb-4 pt-1 px-1 [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
+            <div className="overflow-x-auto pb-4 pt-1 px-1 touch-pan-x [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
               <div className="w-auto mx-auto border-[2px] border-amber-400/80 bg-[#0A1220]">
                 {board.map((row, rowIndex) => (
                   <div key={rowIndex} className="flex">
