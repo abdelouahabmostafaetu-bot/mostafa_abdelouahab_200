@@ -677,8 +677,19 @@ export default function SudokuGame() {
                     <button
                       type="button"
                       key={`${rowIndex}-${colIndex}`}
-                      onClick={() => handleCellClick(rowIndex, colIndex)}
-                      className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-all duration-150 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
+                      onPointerDown={(e) => {
+                        // Only trigger directly on touch devices, else fallback to standard click
+                        if (e.pointerType === 'touch') {
+                           handleCellClick(rowIndex, colIndex);
+                        }
+                      }}
+                      onClick={(e) => {
+                         // Only handle mouse clicks (or fallback) via standard onClick
+                         if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') {
+                            handleCellClick(rowIndex, colIndex);
+                         }
+                      }}
+                      className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-colors duration-75 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] active:bg-amber-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
                       aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
                       aria-selected={isSelected}
                     >
@@ -725,13 +736,22 @@ export default function SudokuGame() {
             <button
               key={num}
               type="button"
-              onClick={() => handleNumberInput(num)}
+              onPointerDown={(e) => {
+                 if (e.pointerType === 'touch') {
+                   handleNumberInput(num);
+                 }
+              }}
+              onClick={(e) => {
+                 if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') {
+                   handleNumberInput(num);
+                 }
+              }}
               disabled={!selectedIsEditable}
-              className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
+              className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border transition-transform transition-colors duration-75 active:scale-[0.92] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
                 isActive
                   ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
-                  : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10 active:bg-white/20'
+              } disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed`}
             >
               {toSymbol(num, activeConfig.symbols)}
             </button>
@@ -741,9 +761,18 @@ export default function SudokuGame() {
         {/* Simple Eraser in line with numbers */}
         <button
           type="button"
-          onClick={() => handleNumberInput(0)}
+          onPointerDown={(e) => {
+             if (e.pointerType === 'touch') {
+               handleNumberInput(0);
+             }
+          }}
+          onClick={(e) => {
+             if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') {
+               handleNumberInput(0);
+             }
+          }}
           disabled={!selectedIsEditable}
-          className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 transition-all duration-200 hover:border-rose-500/50 hover:bg-rose-500/20 disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 transition-transform transition-colors duration-75 active:scale-[0.92] active:bg-rose-500/30 hover:border-rose-500/50 hover:bg-rose-500/20 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed`}
           aria-label="Clear cell"
         >
           <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
