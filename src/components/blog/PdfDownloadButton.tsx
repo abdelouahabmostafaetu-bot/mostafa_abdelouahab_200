@@ -14,8 +14,9 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
     setIsGenerating(true);
     try {
       // Dynamically import html2pdf to avoid SSR issues
-      const html2pdfFile = await import('html2pdf.js');
-      const html2pdf = html2pdfFile.default;
+      const html2pdfModule = await import('html2pdf.js');
+      // @ts-ignore - Handle different module resolution between Next/Webpack and standard modules
+      const html2pdf = html2pdfModule.default || html2pdfModule;
 
       // Ensure we explicitly grab the article body
       const contentElement = document.querySelector('.prose-academic');
@@ -26,6 +27,11 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
 
       // Create a temporary unmounted DOM node for styling the actual PDF structure
       const pdfContainer = document.createElement('div');
+      // Mount to body off-screen so html2canvas can compute layout and dimensions properly
+      pdfContainer.style.position = 'absolute';
+      pdfContainer.style.left = '-9999px';
+      pdfContainer.style.top = '0';
+      pdfContainer.style.width = '800px'; // Render like a desktop page
       pdfContainer.style.padding = '40px 60px';
       pdfContainer.style.fontFamily = "'Latin Modern Roman', 'Computer Modern', 'Georgia', serif";
       pdfContainer.style.color = '#000000'; // Force black text on PDF output 
@@ -95,6 +101,9 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
       
       pdfContainer.appendChild(sigWrapper);
 
+      // Append to the body so html2canvas can measure things properly (needs to be in DOM)
+      document.body.appendChild(pdfContainer);
+
       // Generate the PDF file with the proper settings
       const opt: any = {
         margin: [15, 10, 20, 10], // top, right, bottom, left
@@ -106,6 +115,11 @@ export default function PdfDownloadButton({ title = "Article" }: PdfDownloadProp
 
       // Call html2pdf chain to convert cloned body to blob and download directly
       await html2pdf().set(opt).from(pdfContainer).save();
+
+      // Clean up DOM after generation
+      if (document.body.contains(pdfContainer)) {
+        document.body.removeChild(pdfContainer);
+      }
 
     } catch (error) {
       console.error('Failed to generate PDF:', error);
