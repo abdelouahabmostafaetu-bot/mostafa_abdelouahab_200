@@ -1,8 +1,16 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Mail, Github } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  if (pathname === '/sudoku') {
+    return null;
+  }
 
   return (
     <footer className="mt-auto border-t border-[var(--color-border)] bg-[var(--color-surface)]">
