@@ -9,7 +9,11 @@ export default function Footer() {
   const pathname = usePathname();
 
   if (pathname === '/sudoku') {
-    return null;
+    return (
+      <div className="py-4 text-center mt-auto">
+        <p className="text-xs text-slate-500">&copy; {currentYear} Abdelouahab Mostafa</p>
+      </div>
+    );
   }
 
   return (
