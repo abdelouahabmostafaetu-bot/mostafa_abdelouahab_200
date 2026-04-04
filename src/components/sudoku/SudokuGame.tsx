@@ -645,7 +645,6 @@ export default function SudokuGame() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Ultra-Fast Compact Keypad directly under the board */}
       <div className="w-full max-w-[450px] mt-6 pb-12 flex flex-wrap justify-center gap-2 sm:gap-3 px-1">
