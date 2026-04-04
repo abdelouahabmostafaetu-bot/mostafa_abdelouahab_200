@@ -6,6 +6,22 @@ import { Clock3, Eraser, RefreshCcw, Trophy } from 'lucide-react';
 
 type Mode = 'hard' | 'master';
 
+type PersistedSudokuState = {
+  version: 1;
+  mode: Mode;
+  initialBoard: number[][];
+  board: number[][];
+  selectedCell: [number, number] | null;
+  isWon: boolean;
+  elapsedSeconds: number;
+};
+
+interface SudokuStateStorage {
+  load(): Promise<PersistedSudokuState | null>;
+  save(state: PersistedSudokuState): Promise<void>;
+  clear(): Promise<void>;
+}
+
 type ModeConfig = {
   label: string;
   size: number;
@@ -33,6 +49,111 @@ const MODE_CONFIG: Record<Mode, ModeConfig> = {
     symbols: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G'],
   },
 };
+
+const STORAGE_KEY = 'sudoku-state-v1';
+
+const isMode = (value: unknown): value is Mode =>
+  value === 'hard' || value === 'master';
+
+const isValidBoard = (value: unknown, size: number): value is number[][] => {
+  if (!Array.isArray(value) || value.length !== size) return false;
+
+  return value.every((row) => {
+    if (!Array.isArray(row) || row.length !== size) return false;
+    return row.every(
+      (cell) =>
+        typeof cell === 'number' &&
+        Number.isInteger(cell) &&
+        cell >= 0 &&
+        cell <= size
+    );
+  });
+};
+
+const isValidSelectedCell = (
+  value: unknown,
+  size: number
+): value is [number, number] | null => {
+  if (value === null) return true;
+  if (!Array.isArray(value) || value.length !== 2) return false;
+
+  const [row, col] = value;
+  return (
+    typeof row === 'number' &&
+    Number.isInteger(row) &&
+    row >= 0 &&
+    row < size &&
+    typeof col === 'number' &&
+    Number.isInteger(col) &&
+    col >= 0 &&
+    col < size
+  );
+};
+
+const parsePersistedState = (raw: string): PersistedSudokuState | null => {
+  try {
+    const parsed = JSON.parse(raw) as Partial<PersistedSudokuState>;
+    if (parsed.version !== 1 || !isMode(parsed.mode)) return null;
+
+    const size = MODE_CONFIG[parsed.mode].size;
+    if (!isValidBoard(parsed.initialBoard, size) || !isValidBoard(parsed.board, size)) {
+      return null;
+    }
+    if (!isValidSelectedCell(parsed.selectedCell, size)) return null;
+    if (typeof parsed.isWon !== 'boolean') return null;
+    if (
+      typeof parsed.elapsedSeconds !== 'number' ||
+      !Number.isFinite(parsed.elapsedSeconds) ||
+      parsed.elapsedSeconds < 0
+    ) {
+      return null;
+    }
+
+    return {
+      version: 1,
+      mode: parsed.mode,
+      initialBoard: parsed.initialBoard,
+      board: parsed.board,
+      selectedCell: parsed.selectedCell,
+      isWon: parsed.isWon,
+      elapsedSeconds: Math.floor(parsed.elapsedSeconds),
+    };
+  } catch {
+    return null;
+  }
+};
+
+class LocalStorageSudokuStateStorage implements SudokuStateStorage {
+  constructor(private readonly key: string) {}
+
+  async load() {
+    if (typeof window === 'undefined') return null;
+
+    const raw = window.localStorage.getItem(this.key);
+    if (!raw) return null;
+
+    const state = parsePersistedState(raw);
+    if (!state) {
+      window.localStorage.removeItem(this.key);
+      return null;
+    }
+
+    return state;
+  }
+
+  async save(state: PersistedSudokuState) {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(this.key, JSON.stringify(state));
+  }
+
+  async clear() {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(this.key);
+  }
+}
+
+// Swap this adapter later for IndexedDB or backend sync without touching game logic.
+const sudokuStateStorage: SudokuStateStorage = new LocalStorageSudokuStateStorage(STORAGE_KEY);
 
 const createEmptyBoard = (size: number) =>
   Array.from({ length: size }, () => Array(size).fill(0));
@@ -179,6 +300,7 @@ export default function SudokuGame() {
   const [isWon, setIsWon] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [gameVersion, setGameVersion] = useState(0);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const conflicts = useMemo(
     () => computeConflicts(board, activeConfig.subgrid),
@@ -210,6 +332,7 @@ export default function SudokuGame() {
     const config = MODE_CONFIG[nextMode];
     const puzzle = generatePuzzle(config);
 
+    setMode(nextMode);
     setInitialBoard(puzzle.map((row) => [...row]));
     setBoard(puzzle.map((row) => [...row]));
     setIsWon(false);
@@ -219,8 +342,50 @@ export default function SudokuGame() {
   }, []);
 
   useEffect(() => {
-    startNewGame(mode);
-  }, [mode, startNewGame]);
+    let cancelled = false;
+
+    const hydrate = async () => {
+      const saved = await sudokuStateStorage.load();
+      if (cancelled) return;
+
+      if (saved) {
+        setMode(saved.mode);
+        setInitialBoard(saved.initialBoard.map((row) => [...row]));
+        setBoard(saved.board.map((row) => [...row]));
+        setSelectedCell(
+          saved.selectedCell ? [saved.selectedCell[0], saved.selectedCell[1]] : null
+        );
+        setIsWon(saved.isWon);
+        setElapsedSeconds(saved.elapsedSeconds);
+        setGameVersion((version) => version + 1);
+      } else {
+        startNewGame('hard');
+      }
+      setIsHydrated(true);
+    };
+
+    void hydrate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [startNewGame]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const snapshot: PersistedSudokuState = {
+      version: 1,
+      mode,
+      initialBoard,
+      board,
+      selectedCell,
+      isWon,
+      elapsedSeconds,
+    };
+
+    void sudokuStateStorage.save(snapshot);
+  }, [isHydrated, mode, initialBoard, board, selectedCell, isWon, elapsedSeconds]);
 
   useEffect(() => {
     const complete = board.every((row) => row.every((value) => value !== 0));
@@ -228,14 +393,14 @@ export default function SudokuGame() {
   }, [board, conflictCount]);
 
   useEffect(() => {
-    if (isWon) return;
+    if (!isHydrated || isWon) return;
 
     const interval = window.setInterval(() => {
       setElapsedSeconds((current) => current + 1);
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [gameVersion, isWon]);
+  }, [gameVersion, isHydrated, isWon]);
 
   const handleCellClick = (row: number, col: number) => {
     setSelectedCell([row, col]);
@@ -379,14 +544,7 @@ export default function SudokuGame() {
                   <button
                     key={level}
                     type="button"
-                    onClick={() => {
-                      if (level === mode) {
-                        startNewGame(level);
-                        return;
-                      }
-
-                      setMode(level);
-                    }}
+                    onClick={() => startNewGame(level)}
                     className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? 'border-amber-300/50 bg-amber-400/20 text-white shadow-[0_12px_30px_rgba(251,191,36,0.18)]'
