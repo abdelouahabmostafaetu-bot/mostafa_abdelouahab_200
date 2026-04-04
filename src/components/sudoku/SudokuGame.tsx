@@ -14,6 +14,7 @@ type PersistedSudokuState = {
   selectedCell: [number, number] | null;
   isWon: boolean;
   elapsedSeconds: number;
+  hintUsed?: boolean;
 };
 
 interface SudokuStateStorage {
@@ -117,6 +118,7 @@ const parsePersistedState = (raw: string): PersistedSudokuState | null => {
       selectedCell: parsed.selectedCell,
       isWon: parsed.isWon,
       elapsedSeconds: Math.floor(parsed.elapsedSeconds),
+      hintUsed: typeof parsed.hintUsed === 'boolean' ? parsed.hintUsed : false,
     };
   } catch {
     return null;
@@ -271,6 +273,51 @@ const computeConflicts = (board: number[][], subgrid: number) => {
   }
 
   return conflicts;
+};
+
+const solveSudokuRecursive = (board: number[][], size: number, subgrid: number): boolean => {
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (board[r][c] === 0) {
+        for (let num = 1; num <= size; num++) {
+          // Check valid
+          let isValid = true;
+          for (let i = 0; i < size; i++) {
+            if (board[r][i] === num || board[i][c] === num) {
+              isValid = false;
+              break;
+            }
+          }
+          if (isValid) {
+            const startRow = r - (r % subgrid);
+            const startCol = c - (c % subgrid);
+            for (let i = 0; i < subgrid; i++) {
+              for (let j = 0; j < subgrid; j++) {
+                if (board[i + startRow][j + startCol] === num) {
+                  isValid = false;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (isValid) {
+            board[r][c] = num;
+            if (solveSudokuRecursive(board, size, subgrid)) return true;
+            board[r][c] = 0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+const getBoardSolution = (initialBoard: number[][], size: number, subgrid: number) => {
+  const copy = initialBoard.map((row) => [...row]);
+  solveSudokuRecursive(copy, size, subgrid);
+  return copy;
 };
 
 const formatTime = (totalSeconds: number) => {
@@ -576,13 +623,13 @@ export default function SudokuGame() {
                         const borderRight =
                           (colIndex + 1) % activeConfig.subgrid === 0 &&
                           colIndex < activeConfig.size - 1
-                            ? 'border-r-[2px] border-amber-400/80'
-                            : 'border-r border-slate-700/80';
+                            ? 'border-r-[2px] border-r-amber-400/80'
+                            : 'border-r-[1px] border-r-slate-700/80';
                         const borderBottom =
                           (rowIndex + 1) % activeConfig.subgrid === 0 &&
                           rowIndex < activeConfig.size - 1
-                            ? 'border-b-[2px] border-amber-400/80'
-                            : 'border-b border-slate-700/80';
+                            ? 'border-b-[2px] border-b-amber-400/80'
+                            : 'border-b-[1px] border-b-slate-700/80';
 
                         let bgClass = 'bg-transparent';
                         if (isRelated) bgClass = 'bg-white/[0.04]';
