@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils';
 import TableOfContents from '@/components/blog/TableOfContents';
 import { TagList } from '@/components/blog/Tag';
 import MathCopyButton from '@/components/blog/MathCopyButton';
+import PdfDownloadButton from '@/components/blog/PdfDownloadButton';
 
 export async function generateStaticParams() {
   const posts = getBlogPosts();
@@ -73,6 +74,8 @@ export default async function BlogPostPage({
                     <TagList tags={post.tags} size="md" />
                   </div>
                 )}
+                
+                <PdfDownloadButton />
               </header>
 
               <div className="prose-academic">

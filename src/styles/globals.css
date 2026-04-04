@@ -375,3 +375,29 @@
   content: counter(line);
   @apply inline-block w-8 mr-4 text-right text-gray-500;
 }
+
+/* ===== Print Styles ===== */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .dark {
+    --color-primary: #000000;
+    --color-surface: #ffffff;
+    --color-bg: #ffffff;
+    --color-text: #000000;
+    --color-text-secondary: #333333;
+    --color-border: #e0e0e0;
+  }
+  header, footer, nav, aside, .print\:hidden {
+    display: none !important;
+  }
+  .prose-academic {
+    font-size: 11pt !important;
+  }
+  @page {
+    margin: 2cm;
+  }
+}
+
