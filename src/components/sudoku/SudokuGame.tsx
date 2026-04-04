@@ -287,7 +287,7 @@ const toSymbol = (value: number, symbols: string[]) => {
   return symbols[value - 1] ?? String(value);
 };
 
-const NUMBER_FONT_CLASS = 'font-mono font-semibold tabular-nums';
+const NUMBER_FONT_CLASS = 'font-mono font-semibold tabular-nums leading-none tracking-normal';
 
 export default function SudokuGame() {
   const [mode, setMode] = useState<Mode>('hard');
@@ -494,6 +494,7 @@ export default function SudokuGame() {
     : conflictCount > 0
       ? 'Review the amber cells to remove repeated values.'
       : '';
+  const hasStatus = Boolean(statusLabel || statusDescription);
 
   const statCards: Array<{
     title: string;
@@ -513,21 +514,25 @@ export default function SudokuGame() {
     activeConfig.size === 16
       ? 'h-6 w-6 text-[11px] sm:h-8 sm:w-8 sm:text-sm'
       : 'h-9 w-9 text-base sm:h-[3.1rem] sm:w-[3.1rem] sm:text-lg';
+  const keypadButtonSizeClass =
+    activeConfig.size === 16
+      ? 'h-10 text-sm sm:h-11 sm:text-base'
+      : 'h-11 text-base sm:h-12 sm:text-lg';
 
   return (
     <div className="w-full">
-      <div className="grid gap-3 sm:max-w-[320px]">
+      <div className="grid gap-3 sm:max-w-[300px]">
         {statCards.map((card) => (
           <div
             key={card.title}
-            className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4"
+            className="rounded-[18px] border border-white/10 bg-white/[0.04] px-3 py-2.5 sm:rounded-[22px] sm:p-4"
           >
             <div className="flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{card.title}</p>
               <card.icon className="h-4 w-4 text-amber-300/80" />
             </div>
             <p className={`mt-3 text-xl text-white ${NUMBER_FONT_CLASS}`}>{card.value}</p>
-            <p className="mt-1 text-xs text-slate-400">{card.hint}</p>
+            <p className="mt-1 hidden text-xs text-slate-400 sm:block">{card.hint}</p>
           </div>
         ))}
       </div>
@@ -545,7 +550,7 @@ export default function SudokuGame() {
                     key={level}
                     type="button"
                     onClick={() => startNewGame(level)}
-                    className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                    className={`touch-manipulation rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? 'border-amber-300/50 bg-amber-400/20 text-white shadow-[0_12px_30px_rgba(251,191,36,0.18)]'
                         : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:bg-white/[0.06]'
@@ -565,16 +570,18 @@ export default function SudokuGame() {
 
         <div className="mt-4 grid gap-4 lg:gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
           <div className="flex flex-col items-center">
-            <div className="mb-3 w-full max-w-[720px] rounded-[20px] border border-white/10 bg-white/[0.03] px-3 py-3 sm:px-4 sm:py-4">
-              <div>
-                {statusLabel ? (
-                  <p className="text-sm font-semibold text-white">{statusLabel}</p>
-                ) : null}
-                {statusDescription ? (
-                  <p className="mt-1 text-xs text-slate-400">{statusDescription}</p>
-                ) : null}
+            {hasStatus ? (
+              <div className="mb-3 w-full max-w-[720px] rounded-[20px] border border-white/10 bg-white/[0.03] px-3 py-3 sm:px-4 sm:py-4">
+                <div>
+                  {statusLabel ? (
+                    <p className="text-sm font-semibold text-white">{statusLabel}</p>
+                  ) : null}
+                  {statusDescription ? (
+                    <p className="mt-1 text-xs text-slate-400">{statusDescription}</p>
+                  ) : null}
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div className="w-full max-w-[720px] rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-2 sm:p-3 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
               <div className="overflow-x-auto pb-1 [scrollbar-width:thin] [scrollbar-color:#6b7280_transparent]">
@@ -606,12 +613,12 @@ export default function SudokuGame() {
                         const borderRight =
                           (colIndex + 1) % activeConfig.subgrid === 0 &&
                           colIndex < activeConfig.size - 1
-                            ? 'border-r-2 border-slate-200/20'
+                            ? 'border-r-[3px] border-slate-200/40'
                             : 'border-r border-slate-200/10';
                         const borderBottom =
                           (rowIndex + 1) % activeConfig.subgrid === 0 &&
                           rowIndex < activeConfig.size - 1
-                            ? 'border-b-2 border-slate-200/20'
+                            ? 'border-b-[3px] border-slate-200/40'
                             : 'border-b border-slate-200/10';
 
                         let bgClass = 'bg-transparent';
@@ -638,7 +645,7 @@ export default function SudokuGame() {
                             type="button"
                             key={`${rowIndex}-${colIndex}`}
                             onClick={() => handleCellClick(rowIndex, colIndex)}
-                            className={`flex ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-all duration-150 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
+                            className={`touch-manipulation flex ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center transition-all duration-150 ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
                             aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
                             aria-selected={isSelected}
                           >
@@ -688,7 +695,7 @@ export default function SudokuGame() {
                       type="button"
                       onClick={() => handleNumberInput(num)}
                       disabled={!selectedIsEditable}
-                      className={`h-11 rounded-xl border text-base transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:h-12 sm:text-lg ${NUMBER_FONT_CLASS} ${
+                      className={`touch-manipulation ${keypadButtonSizeClass} rounded-xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
                         isActive
                           ? 'border-amber-300/50 bg-amber-400/20 text-white'
                           : 'border-white/10 bg-slate-950/40 text-slate-100 hover:border-white/20 hover:bg-white/[0.06]'
@@ -702,7 +709,7 @@ export default function SudokuGame() {
                   type="button"
                   onClick={() => handleNumberInput(0)}
                   disabled={!selectedIsEditable}
-                  className={`${activeConfig.size === 16 ? 'col-span-4' : 'col-span-3'} inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 text-sm font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:bg-slate-950/20 disabled:text-slate-600`}
+                  className={`${activeConfig.size === 16 ? 'col-span-4' : 'col-span-3'} touch-manipulation inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 text-sm font-medium text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:bg-slate-950/20 disabled:text-slate-600`}
                   aria-label="Clear cell"
                   title="Clear cell"
                 >
