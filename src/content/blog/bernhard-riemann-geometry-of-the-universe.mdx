@@ -1,0 +1,177 @@
+---
+title: "Bernhard Riemann: The Geometry of the Universe"
+date: "2026-02-15"
+category: "Mathematics"
+excerpt: "The life and revolutionary ideas of Bernhard Riemann, whose short career produced some of the most profound concepts in mathematics — from Riemannian geometry to the Riemann hypothesis, the greatest unsolved problem in mathematics."
+tags: ["Profiles", "Geometry"]
+---
+
+## A Shy Boy from Hanover
+
+Georg Friedrich Bernhard Riemann was born on 17 September 1826 in Breselenz, a village in the Kingdom of Hanover (now part of Lower Saxony, Germany). His father, Friedrich Bernhard Riemann, was a Lutheran pastor, and the family was poor. Bernhard was the second of six children.
+
+Riemann was painfully shy and suffered from chronic anxiety throughout his life. As a child, he showed an intense interest in mathematics but initially followed his father's wishes by studying theology at the University of Göttingen. He quickly switched to mathematics, however, with his father's blessing.
+
+After a year at Göttingen, Riemann transferred to the University of Berlin, where he studied under Peter Gustav Lejeune Dirichlet, Carl Gustav Jacob Jacobi, and Jakob Steiner. Dirichlet's influence was particularly important — his conceptual, idea-driven approach to mathematics shaped Riemann's own style.
+
+---
+
+## The Doctoral Thesis: Riemann Surfaces
+
+Riemann returned to Göttingen for his doctoral work under Carl Friedrich Gauss. His 1851 thesis, *Grundlagen für eine allgemeine Theorie der Functionen einer veränderlichen complexen Grösse* ("Foundations for a general theory of functions of a complex variable"), introduced the concept of a **Riemann surface**.
+
+A **Riemann surface** is a one-dimensional complex manifold — a surface on which multi-valued functions of a complex variable become single-valued. For example, the square root function $w = \sqrt{z}$, which is double-valued on $\mathbb{C}$, becomes single-valued on a two-sheeted Riemann surface obtained by cutting and gluing two copies of the complex plane.
+
+Gauss, who was notoriously hard to impress, described Riemann's thesis as displaying "a gloriously fertile originality."
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> "The thesis submitted by Herr Riemann offers convincing evidence of the author's thorough and penetrating investigations... a substantial and valuable work which not only meets the standards for a doctoral dissertation but far exceeds them."
+> — Carl Friedrich Gauss, examiner's report on Riemann's thesis
+
+</div>
+
+---
+
+## The Habilitation Lecture: A New Geometry
+
+For his habilitation — the qualification to lecture at a German university — Riemann prepared three possible topics for his lecture, expecting Gauss to choose one of the first two. Instead, Gauss chose the third: "On the hypotheses which lie at the foundations of geometry."
+
+The resulting lecture, delivered on 10 June 1854, was one of the most important in the history of mathematics. In it, Riemann generalized geometry from the flat spaces of Euclid and the curved surfaces of Gauss to spaces of any dimension.
+
+### Riemannian Geometry
+
+Riemann introduced the concept of a **Riemannian manifold**: a smooth manifold $M$ equipped with a **metric tensor** $g$ that defines distances and angles. In local coordinates $(x^1, \ldots, x^n)$, the infinitesimal distance element is:
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**The Riemannian Metric**
+
+$$ds^2 = \sum_{i,j=1}^{n} g_{ij}(x) \, dx^i \, dx^j$$
+
+where $g_{ij}$ is a positive-definite symmetric matrix that varies smoothly from point to point.
+
+</div>
+
+This single idea — that geometry is determined by a smoothly varying inner product on the tangent space at each point — unified and generalized all previously known geometries. Euclidean geometry corresponds to $g_{ij} = \delta_{ij}$; Gauss's surface theory corresponds to $n = 2$; hyperbolic and spherical geometries arise as special cases.
+
+### Curvature in Higher Dimensions
+
+Riemann generalized Gauss's notion of curvature to higher dimensions through the **Riemann curvature tensor** $R^i_{\ jkl}$, which measures how parallel transport around an infinitesimal loop rotates a vector. The **sectional curvature** of a two-dimensional plane $\sigma$ in the tangent space is:
+
+$$K(\sigma) = \frac{R(u, v, u, v)}{|u|^2 |v|^2 - \langle u, v \rangle^2}$$
+
+where $u, v$ span $\sigma$. Riemann noted that a space has constant curvature if and only if it is locally isometric to a sphere, Euclidean space, or hyperbolic space.
+
+The vision articulated in the habilitation lecture — that the geometry of physical space is an empirical question, not an a priori truth — was decades ahead of its time. Sixty years later, Einstein used Riemannian geometry as the mathematical framework for general relativity.
+
+---
+
+## The Riemann Hypothesis
+
+In his only paper on number theory, published in 1859, Riemann transformed the subject. The paper, "Über die Anzahl der Primzahlen unter einer gegebenen Grösse" ("On the Number of Primes Less Than a Given Magnitude"), is only eight pages long but contains ideas that have dominated analytic number theory ever since.
+
+Riemann studied the **zeta function**, previously considered only for real values of $s$ by Euler and Dirichlet, as a function of a complex variable:
+
+$$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s} \quad \text{for } \operatorname{Re}(s) > 1$$
+
+He showed that $\zeta(s)$ extends to a meromorphic function on all of $\mathbb{C}$ (with a single pole at $s = 1$) and satisfies a **functional equation**:
+
+$$\zeta(s) = 2^s \pi^{s-1} \sin\left(\frac{\pi s}{2}\right) \Gamma(1-s) \zeta(1-s)$$
+
+The key insight was an explicit formula connecting the distribution of prime numbers to the **zeros of the zeta function**. The "trivial" zeros are at $s = -2, -4, -6, \ldots$ The remaining "nontrivial" zeros all lie in the **critical strip** $0 \leq \operatorname{Re}(s) \leq 1$.
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**The Riemann Hypothesis**
+
+All nontrivial zeros of the Riemann zeta function have real part equal to $\frac{1}{2}$:
+
+$$\zeta(\rho) = 0 \implies \operatorname{Re}(\rho) = \frac{1}{2}$$
+
+</div>
+
+The Riemann hypothesis remains **unproved** after more than 165 years. It is one of the Clay Mathematics Institute's seven Millennium Prize Problems, carrying a prize of one million dollars. Computational verification has confirmed that the first ten trillion or so nontrivial zeros all lie on the critical line, but no proof is known.
+
+---
+
+## Contributions to Analysis
+
+### The Riemann Integral
+
+In his habilitation thesis (1854, distinct from the lecture), Riemann defined the integral that bears his name. The **Riemann integral** of a function $f$ on $[a,b]$ is defined as the limit of Riemann sums:
+
+$$\int_a^b f(x) \, dx = \lim_{|\mathcal{P}| \to 0} \sum_{i=1}^{n} f(c_i)(x_i - x_{i-1})$$
+
+where $\mathcal{P}$ is a partition and $c_i \in [x_i, x_{i-1}]$. Riemann gave the first precise characterization of when this limit exists, and constructed an example of an integrable function that is discontinuous at every rational point.
+
+### Trigonometric Series
+
+Riemann's work on trigonometric series — representing functions as sums of sines and cosines — led to foundational questions about convergence, integrability, and the nature of functions. This work paved the way for Lebesgue's theory of measure and integration.
+
+---
+
+## Other Contributions
+
+- **The Cauchy–Riemann equations**: conditions for a function of a complex variable to be analytic (holomorphic): $\frac{\partial u}{\partial x} = \frac{\partial v}{\partial y}$ and $\frac{\partial u}{\partial y} = -\frac{\partial v}{\partial x}$.
+- **The Riemann mapping theorem**: any simply connected open subset of $\mathbb{C}$ (other than $\mathbb{C}$ itself) can be conformally mapped onto the open unit disk.
+- **Riemann–Roch theorem**: a fundamental result relating the dimension of the space of meromorphic functions on a Riemann surface to its genus, later generalized by Hirzebruch and Grothendieck.
+
+---
+
+## Illness and Death
+
+Riemann suffered from poor health throughout his life. He contracted tuberculosis and spent his later years seeking recovery in the warmer climate of Italy. He died on 20 July 1866 in Selasca, on the shores of Lake Maggiore, at the age of 39.
+
+His housekeeper reportedly burned some of his unpublished manuscripts after his death — a devastating loss for mathematics. What survives of his work fills barely one volume, yet its influence has been incalculable.
+
+---
+
+## Legacy
+
+Riemann's ideas reshaped mathematics in ways that continue to unfold. Riemannian geometry became the language of general relativity; his work on complex analysis underpins modern algebraic geometry; his zeta function paper launched analytic number theory. Few mathematicians have achieved so much in so few years.
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**"If only I had the theorems! Then I should find the proofs easily enough."**
+
+— Bernhard Riemann
+
+</div>
+
+---
+
+## References
+
+- Riemann, B., "Über die Anzahl der Primzahlen unter einer gegebenen Grösse," *Monatsberichte der Berliner Akademie*, 1859.
+- Riemann, B., "Über die Hypothesen, welche der Geometrie zu Grunde liegen," 1854 (published 1868).
+- Laugwitz, D., *Bernhard Riemann 1826–1866: Turning Points in the Conception of Mathematics*, Birkhäuser, 1999.
+- Derbyshire, J., *Prime Obsession: Bernhard Riemann and the Greatest Unsolved Problem in Mathematics*, Plume, 2004.
+- [Wikipedia — Bernhard Riemann](https://en.wikipedia.org/wiki/Bernhard_Riemann)
+- [MacTutor — Bernhard Riemann](https://mathshistory.st-andrews.ac.uk/Biographies/Riemann/)
+- [Clay Mathematics Institute — Riemann Hypothesis](https://www.claymath.org/millennium-problems/riemann-hypothesis)

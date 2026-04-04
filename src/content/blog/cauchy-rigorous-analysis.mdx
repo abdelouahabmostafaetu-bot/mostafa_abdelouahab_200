@@ -1,0 +1,225 @@
+---
+title: "Augustin-Louis Cauchy: The Man Who Made Analysis Rigorous"
+date: "2026-03-02"
+category: "Mathematics"
+excerpt: "The story of Augustin-Louis Cauchy, the prolific French mathematician who single-handedly transformed calculus from a collection of powerful but loosely justified techniques into the rigorous discipline of mathematical analysis."
+tags: ["Profiles", "Analysis"]
+---
+
+## A Child of the Revolution
+
+Augustin-Louis Cauchy was born on 21 August 1789 in Paris — just five weeks after the storming of the Bastille that launched the French Revolution. His father, Louis François Cauchy, was a government official who managed to survive the Reign of Terror, partly by moving the family to the village of Arcueil, south of Paris.
+
+In Arcueil, the young Cauchy attracted the attention of two distinguished neighbors: Pierre-Simon Laplace and Joseph-Louis Lagrange, both towering figures in mathematics and physics. Lagrange reportedly told Cauchy's father:
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> "This young man will someday replace all of us."
+> — Joseph-Louis Lagrange, speaking about the young Cauchy
+
+</div>
+
+Cauchy was educated at the École Polytechnique (entering in 1805) and the École des Ponts et Chaussées, initially training as a civil engineer. In 1810, he was sent to Cherbourg to work on the construction of the port facilities for Napoleon's planned invasion of England. But mathematics called him back, and by 1813 he had returned to Paris to pursue mathematics full-time.
+
+---
+
+## The Rigorization of Analysis
+
+Cauchy's greatest contribution was bringing **rigor** to mathematical analysis. Throughout the eighteenth century, calculus had been developed by Euler, the Bernoullis, Lagrange, and others using intuitive and often informal arguments. Results were correct, but the foundations were shaky — concepts like "infinitely small quantities," limits, continuity, and convergence were used without precise definitions.
+
+Cauchy changed all of this. In his textbooks — particularly the *Cours d'Analyse* (1821) and the *Résumé des leçons données à l'École Royale Polytechnique sur le calcul infinitésimal* (1823) — he provided rigorous definitions of the fundamental concepts of analysis.
+
+### The Rigorous Definition of a Limit
+
+Cauchy defined the limit in precise terms that anticipated the modern $\varepsilon$-$\delta$ formulation (later made fully explicit by Weierstrass):
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0"
+}}>
+
+**Cauchy's Definition of a Limit**
+
+A variable quantity has the limit $L$ if the values taken by the variable approach $L$ indefinitely, in the sense that the absolute difference $|x_n - L|$ can be made smaller than any given positive quantity.
+
+In modern notation: $\lim_{n \to \infty} x_n = L$ if for every $\varepsilon > 0$, there exists $N$ such that $|x_n - L| < \varepsilon$ for all $n > N$.
+
+</div>
+
+### Continuity
+
+Cauchy defined a function $f$ to be **continuous** at a point $a$ if
+
+$$\lim_{x \to a} f(x) = f(a)$$
+
+or equivalently, if an infinitely small increment in $x$ produces an infinitely small change in $f(x)$. This was the first precise definition of continuity.
+
+### The Cauchy Convergence Criterion
+
+Cauchy introduced the concept of what we now call a **Cauchy sequence**: a sequence $(a_n)$ such that for every $\varepsilon > 0$, there exists $N$ with
+
+$$|a_m - a_n| < \varepsilon \quad \text{for all } m, n > N$$
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Cauchy Convergence Criterion**
+
+A sequence of real numbers converges if and only if it is a Cauchy sequence. More generally, a metric space is **complete** if every Cauchy sequence converges in it.
+
+</div>
+
+This criterion is fundamental because it allows one to establish convergence without knowing the limit in advance.
+
+---
+
+## Complex Analysis
+
+Cauchy is the founder of **complex analysis** — the study of functions of a complex variable. His contributions to this field are so extensive that his name appears in virtually every major theorem.
+
+### The Cauchy Integral Theorem
+
+If $f$ is a holomorphic (complex differentiable) function on a simply connected domain $D$, and $\gamma$ is a closed curve in $D$, then:
+
+$$\oint_\gamma f(z) \, dz = 0$$
+
+This theorem, first proved by Cauchy in 1825, is the foundation of complex analysis. It implies that the integral of a holomorphic function depends only on the endpoints, not on the path.
+
+### The Cauchy Integral Formula
+
+For a holomorphic function $f$ inside and on a simple closed curve $\gamma$, the value of $f$ at any interior point $a$ is:
+
+$$f(a) = \frac{1}{2\pi i} \oint_\gamma \frac{f(z)}{z - a} \, dz$$
+
+More generally, the $n$-th derivative is:
+
+$$f^{(n)}(a) = \frac{n!}{2\pi i} \oint_\gamma \frac{f(z)}{(z-a)^{n+1}} \, dz$$
+
+This formula has remarkable consequences: it implies that holomorphic functions are infinitely differentiable (analytic), and it provides the basis for the **residue calculus** — one of the most powerful computational tools in mathematics.
+
+### The Residue Theorem
+
+If $f$ has isolated singularities $z_1, \ldots, z_k$ inside a closed curve $\gamma$, then:
+
+$$\oint_\gamma f(z) \, dz = 2\pi i \sum_{j=1}^{k} \operatorname{Res}(f, z_j)$$
+
+where $\operatorname{Res}(f, z_j)$ is the residue of $f$ at $z_j$ — the coefficient $a_{-1}$ in the Laurent expansion of $f$ around $z_j$. The residue theorem is used throughout mathematics and physics to evaluate integrals, sum series, and solve differential equations.
+
+### The Cauchy–Riemann Equations
+
+A function $f(z) = u(x,y) + iv(x,y)$ is holomorphic if and only if its real and imaginary parts satisfy the **Cauchy–Riemann equations**:
+
+$$\frac{\partial u}{\partial x} = \frac{\partial v}{\partial y}, \quad \frac{\partial u}{\partial y} = -\frac{\partial v}{\partial x}$$
+
+These equations, combined with differentiability, characterize complex analytic functions and connect complex analysis to the theory of harmonic functions and potential theory.
+
+---
+
+## Other Major Contributions
+
+### The Cauchy–Schwarz Inequality
+
+In its modern form, the **Cauchy–Schwarz inequality** states that in any inner product space:
+
+$$|\langle u, v \rangle|^2 \leq \langle u, u \rangle \cdot \langle v, v \rangle$$
+
+or equivalently:
+
+$$\left|\sum_{i=1}^{n} a_i b_i\right|^2 \leq \left(\sum_{i=1}^{n} a_i^2\right)\left(\sum_{i=1}^{n} b_i^2\right)$$
+
+Cauchy proved the discrete version in 1821; Schwarz later proved the integral version.
+
+### Existence Theorems for Differential Equations
+
+The **Cauchy–Lipschitz theorem** (also called the Picard–Lindelöf theorem) guarantees the existence and uniqueness of solutions to initial value problems:
+
+$$\frac{dy}{dx} = f(x, y), \quad y(x_0) = y_0$$
+
+under the condition that $f$ is Lipschitz continuous in $y$.
+
+### Determinants and Linear Algebra
+
+Cauchy made significant contributions to the theory of determinants and established many of the properties of eigenvalues of symmetric matrices, including the **Cauchy interlacing theorem**.
+
+### Group Theory
+
+Cauchy proved the important theorem now known as **Cauchy's theorem in group theory**: if $G$ is a finite group and $p$ is a prime dividing $|G|$, then $G$ contains an element of order $p$.
+
+---
+
+## Prolific Output
+
+Cauchy was one of the most prolific mathematicians in history, second only to Euler in total output. He published 789 papers, and his collected works (*Oeuvres complètes*) fill 27 volumes. At one point, the journal *Comptes Rendus* of the French Academy of Sciences had to impose a page limit on submissions — reportedly because Cauchy was submitting so many papers that there was no room for anyone else.
+
+---
+
+## Character and Controversy
+
+Cauchy's personality was complex. He was deeply religious (a devout Catholic and Royalist), generous in charity, but often difficult as a colleague. He was rigid in his political views and could be dismissive of others' work — sometimes unfairly.
+
+His treatment of younger mathematicians was sometimes poor. He lost or failed to review manuscripts by both Abel and Galois — a fact that may have contributed to the delayed recognition of their groundbreaking work. Whether this was negligence or arrogance remains debated.
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> "Cauchy is mad, and there is no way of being on good terms with him, although at present he is the only man who knows how mathematics should be treated."
+> — Niels Henrik Abel, in a letter from Paris
+
+</div>
+
+---
+
+## Exile and Return
+
+After the July Revolution of 1830, Cauchy — as a staunch Royalist — refused to take an oath of allegiance to the new king Louis-Philippe. He went into self-imposed exile, spending time in Switzerland, Turin (where he held a chair), and Prague (where he tutored the grandson of the deposed King Charles X).
+
+He returned to France in 1838 and gradually regained his positions, though he never had to take the loyalty oath — an exemption was eventually made for him.
+
+---
+
+## Death and Legacy
+
+Cauchy died on 23 May 1857 in Sceaux, near Paris, at the age of 67. His last words were reportedly: "Men pass away, but their deeds abide."
+
+Cauchy's legacy is foundational. He transformed analysis from an intuitive art into a rigorous science. His definitions of limits, continuity, and convergence became the standard. His complex analysis remains, in its essentials, exactly as he created it. Virtually every student of mathematics encounters his name repeatedly — in the Cauchy sequence, the Cauchy integral formula, the Cauchy–Schwarz inequality, and many other results.
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**"Men pass away, but their deeds abide."**
+
+— Augustin-Louis Cauchy
+
+</div>
+
+---
+
+## References
+
+- Cauchy, A.-L., *Cours d'Analyse de l'École Royale Polytechnique*, 1821. English translation by R.E. Bradley and C.E. Sandifer, Springer, 2009.
+- Belhoste, B., *Augustin-Louis Cauchy: A Biography*, Springer, 1991.
+- Grabiner, J.V., *The Origins of Cauchy's Rigorous Calculus*, MIT Press, 1981.
+- [Wikipedia — Augustin-Louis Cauchy](https://en.wikipedia.org/wiki/Augustin-Louis_Cauchy)
+- [MacTutor — Augustin-Louis Cauchy](https://mathshistory.st-andrews.ac.uk/Biographies/Cauchy/)

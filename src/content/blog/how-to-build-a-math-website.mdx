@@ -1,0 +1,380 @@
+---
+title: "How to Build a Personal Academic Website as a Math Student"
+date: "2026-03-13"
+category: "Resources"
+excerpt: "A step-by-step guide to building a personal academic website as a mathematics student: why you need one, what to include, which tools to use, and how to host it for free using GitHub Pages, Hugo, or other platforms."
+tags: ["Tools", "Career"]
+---
+
+## Why You Need an Academic Website
+
+A personal academic website is one of the most valuable things you can build as a mathematics student. It serves as:
+
+- **Your professional identity online.** When people search your name, your website should be the first result.
+- **A portfolio of your work.** Papers, notes, talks, code, and projects in one place.
+- **A signal of professionalism.** Graduate programs, postdoc committees, and employers check candidates' websites.
+- **A platform for sharing mathematics.** Blog posts, expository notes, and teaching materials.
+
+You do not need to be a professional web developer. With modern tools, you can build a clean, professional website in an afternoon and host it for free.
+
+---
+
+## What to Include
+
+### Essential Pages
+
+Every academic website should have:
+
+**1. Home / About**
+- Your name, institution, department
+- Your research interests (even if tentative)
+- A professional photo
+- Contact information (university email)
+
+**2. CV / Resume**
+- Education
+- Research experience
+- Publications and preprints (with links)
+- Teaching experience
+- Awards and fellowships
+- Skills (programming languages, mathematical software)
+
+Provide both an HTML version and a downloadable PDF.
+
+**3. Research**
+- List of papers and preprints with:
+  - Title, coauthors, and publication status
+  - Links to arXiv, journal, or PDF
+  - Brief descriptions (one sentence per paper)
+
+**4. Teaching** (if applicable)
+- Courses you have taught or TA'd
+- Office hours and course materials
+- Student feedback or evaluations
+
+### Optional but Valuable Pages
+
+**5. Notes and Expository Writing**
+- Lecture notes you have written
+- Expository articles on topics you have studied
+- Solutions to interesting problems
+
+**6. Blog**
+- Mathematical exposition
+- Research updates
+- Reflections on learning and studying mathematics
+
+**7. Talks and Presentations**
+- Slides or recordings from talks you have given
+- Posters presented at conferences
+
+**8. Links and Resources**
+- Useful tools and references for other students in your area
+
+<div style={{
+  border: "2px solid #2563eb",
+  borderRadius: "12px",
+  padding: "22px",
+  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+  margin: "28px 0"
+}}>
+
+**Start small.** You do not need all of these pages immediately. Begin with a home page, CV, and one or two other sections. You can always add more later.
+
+</div>
+
+---
+
+## Choosing a Platform
+
+### Option 1: Hugo + GitHub Pages (Recommended)
+
+[Hugo](https://gohugo.io/) is a fast, flexible static site generator that is very popular among academics. Combined with [GitHub Pages](https://pages.github.com/) for free hosting, this is the most common setup for academic websites in mathematics.
+
+**Pros:**
+- Completely free (no hosting costs)
+- Full control over content and design
+- Write content in Markdown with LaTeX math support
+- Excellent academic themes available
+- Version controlled with Git
+
+**Cons:**
+- Requires some command-line familiarity
+- Initial setup takes 1–2 hours
+
+**Recommended Hugo themes for academics:**
+
+- [**Academic (Wowchemy)**](https://hugoblox.com/) — The most popular academic Hugo theme. Features sections for publications, talks, courses, and a blog. Highly customizable.
+- [**PaperMod**](https://github.com/adityatelange/hugo-PaperMod) — A clean, minimal theme that works well for simple academic sites.
+
+### Option 2: Jekyll + GitHub Pages
+
+[Jekyll](https://jekyllrb.com/) is another static site generator supported natively by GitHub Pages. It was the original default for GitHub Pages and remains popular.
+
+**Recommended themes:**
+- [**al-folio**](https://github.com/alshedivat/al-folio) — Specifically designed for academics. Beautiful, feature-rich, and actively maintained. Supports publications, blog posts, teaching pages, and more.
+- [**Minimal Mistakes**](https://mmistakes.github.io/minimal-mistakes/) — A flexible, well-documented theme.
+
+<div style={{
+  borderLeft: "4px solid #2563eb",
+  paddingLeft: "18px",
+  margin: "26px 0"
+}}>
+
+**Best choice for most math students:** The **al-folio** theme with Jekyll on GitHub Pages. It is designed specifically for academics, includes publication management, supports LaTeX math rendering, and has excellent documentation.
+
+</div>
+
+### Option 3: Quarto
+
+[Quarto](https://quarto.org/) is a newer publishing system that supports Markdown, LaTeX, and executable code. It can generate websites, documents, and presentations from the same source files.
+
+**Pros:**
+- Excellent LaTeX math rendering
+- Can include executable Python, R, or Julia code in pages
+- Modern and actively developed
+- Good integration with Jupyter notebooks
+
+### Option 4: WordPress or Squarespace
+
+If you want a simpler setup and do not mind limited customization:
+
+- [WordPress.com](https://wordpress.com/) — Free tier available. Many academic plugins. LaTeX support via plugins.
+- [Squarespace](https://www.squarespace.com/) — Beautiful templates, very easy to use, but paid ($16+/month).
+
+### Option 5: Simple HTML
+
+You can always write a simple HTML page with CSS. Many accomplished mathematicians have very simple websites that are just a few HTML pages. If your content is good, a fancy design is not necessary.
+
+---
+
+## Setting Up Hugo + GitHub Pages
+
+Here is a concise walkthrough:
+
+### Step 1: Install Hugo
+
+```bash
+# macOS
+brew install hugo
+
+# Linux (Ubuntu/Debian)
+sudo apt install hugo
+
+# Windows (with Chocolatey)
+choco install hugo
+```
+
+### Step 2: Create a New Site
+
+```bash
+hugo new site my-website
+cd my-website
+```
+
+### Step 3: Add a Theme
+
+```bash
+git init
+git submodule add https://github.com/HugoBlox/hugo-blox-builder.git themes/hugo-blox-builder
+```
+
+Or choose a different theme from [themes.gohugo.io](https://themes.gohugo.io/).
+
+### Step 4: Add Content
+
+Create pages in the `content/` directory using Markdown:
+
+```markdown
+---
+title: "About Me"
+---
+
+I am a graduate student in mathematics at [University Name].
+My research interests include algebraic topology and
+homotopy theory.
+
+I am currently studying the stable homotopy groups of spheres
+using chromatic methods.
+```
+
+### Step 5: Add LaTeX Math Support
+
+Most academic Hugo themes support LaTeX math rendering through KaTeX or MathJax. In your content:
+
+```markdown
+The Euler characteristic of a surface of genus $g$ is
+
+$$\chi = 2 - 2g.$$
+```
+
+### Step 6: Deploy to GitHub Pages
+
+1. Create a repository named `username.github.io` on GitHub
+2. Push your Hugo site to this repository
+3. Set up GitHub Actions to build and deploy automatically
+
+GitHub provides detailed instructions at [docs.github.com/en/pages](https://docs.github.com/en/pages).
+
+Your site will be live at `https://username.github.io`.
+
+---
+
+## Writing Mathematical Content for the Web
+
+### LaTeX Math Rendering
+
+For mathematical websites, you need a way to render LaTeX notation in the browser:
+
+- [**KaTeX**](https://katex.org/) — Fast rendering, supports most common LaTeX math commands. Preferred for performance.
+- [**MathJax**](https://www.mathjax.org/) — More comprehensive LaTeX support, slightly slower. Handles virtually any LaTeX math command.
+
+Most academic themes include one of these by default.
+
+### Writing Blog Posts with Mathematics
+
+Markdown with LaTeX math support lets you write posts naturally:
+
+```markdown
+## The Basel Problem
+
+Euler proved in 1734 that
+
+$$\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}.$$
+
+This result was remarkable because it connected
+the sum of reciprocal squares — a purely arithmetic
+object — to $\pi$, a geometric constant.
+```
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  padding: "20px",
+  background: "#fafafa",
+  margin: "24px 0"
+}}>
+
+**Tip:** Always test your math rendering after deploying. Some LaTeX commands that work in your documents may not be supported by KaTeX or MathJax. Stick to standard commands from `amsmath` and `amssymb`.
+
+</div>
+
+---
+
+## Custom Domain Names
+
+While `username.github.io` works fine, a custom domain looks more professional:
+
+- `janedoe.com`
+- `janedoe-math.com`
+- `math.janedoe.com`
+
+Domain names cost $10–15/year from registrars like:
+- [Namecheap](https://www.namecheap.com/)
+- [Cloudflare Registrar](https://www.cloudflare.com/products/registrar/)
+- [Google Domains / Squarespace Domains](https://domains.squarespace.com/)
+
+GitHub Pages supports custom domains with free HTTPS. Follow the [GitHub Pages custom domain guide](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site).
+
+---
+
+## Examples of Good Academic Websites
+
+Looking at existing academic websites is the best way to get ideas. Here are some well-designed examples from the mathematics community:
+
+- **Terence Tao** ([terrytao.wordpress.com](https://terrytao.wordpress.com/)) — Blog-focused, content-rich
+- **Emily Riehl** ([emilyriehl.github.io](https://emilyriehl.github.io/)) — Clean, well-organized with publications and teaching
+- **Evan Chen** ([web.evanchen.cc](https://web.evanchen.cc/)) — Extensive personal site with notes, handouts, and a blog
+- **Tai-Danae Bradley** ([math3ma.com](https://www.math3ma.com/)) — Beautiful design combining a blog with research information
+
+Browse the websites of faculty and graduate students at mathematics departments you admire. Note what you find useful and appealing.
+
+---
+
+## SEO and Discoverability
+
+You want your website to appear when someone searches your name. Basic steps:
+
+1. **Use your real name** in the page title and headings
+2. **Add metadata** (title, description) to every page
+3. **Link to your website** from your university profile, Google Scholar, ORCID, and social media
+4. **Submit your site** to Google Search Console ([search.google.com/search-console](https://search.google.com/search-console))
+5. **Keep content updated** — search engines favor active sites
+
+---
+
+## Academic Profiles to Link From Your Website
+
+Maintain profiles on these platforms and link them from your website:
+
+- [**Google Scholar**](https://scholar.google.com/) — Create a profile to track your publications and citations
+- [**ORCID**](https://orcid.org/) — Get a unique researcher identifier
+- [**arXiv Author Page**](https://arxiv.org/) — Automatically generated based on your arXiv submissions
+- [**GitHub**](https://github.com/) — Your code and project portfolio
+- [**MathSciNet Author Profile**](https://mathscinet.ams.org/) — Automatically generated when you publish reviewed papers
+- [**LinkedIn**](https://www.linkedin.com/) — Important if you are considering industry positions
+
+---
+
+## Maintaining Your Website
+
+### Update Regularly
+
+At minimum, update your website when:
+- You post a new paper
+- You start or finish a position
+- You give a talk
+- Your contact information changes
+
+### Back Up Your Content
+
+If using GitHub Pages, your content is already version-controlled. For WordPress or Squarespace, set up regular backups.
+
+### Keep the Design Simple
+
+Mathematical content is the focus. A clean, readable design with good typography is far better than a flashy, distracting layout. Prioritize:
+
+- Readable fonts (serif for body text, sans-serif for headings)
+- Good contrast
+- Responsive design (works on mobile)
+- Fast loading times
+
+---
+
+## Timeline for Building Your Website
+
+| Timeline | Task |
+| --- | --- |
+| Day 1 | Choose a platform, install tools, pick a theme |
+| Day 1 | Create home page with name, institution, interests, photo |
+| Day 2 | Add CV page and research page |
+| Week 1 | Add teaching or notes section |
+| Ongoing | Write occasional blog posts or add new papers |
+| Eventually | Get a custom domain |
+
+---
+
+## Final Thoughts
+
+A personal academic website is a long-term investment in your career. It takes a few hours to set up and minimal ongoing effort to maintain, but it pays dividends in visibility, professionalism, and community connection.
+
+Start today. Your future self will thank you.
+
+---
+
+## References
+
+- [GitHub Pages](https://pages.github.com/)
+- [Hugo — Static Site Generator](https://gohugo.io/)
+- [Hugo Themes](https://themes.gohugo.io/)
+- [Wowchemy / Hugo Blox Academic Theme](https://hugoblox.com/)
+- [Jekyll](https://jekyllrb.com/)
+- [al-folio Jekyll Theme](https://github.com/alshedivat/al-folio)
+- [Quarto](https://quarto.org/)
+- [KaTeX — Fast Math Rendering](https://katex.org/)
+- [MathJax](https://www.mathjax.org/)
+- [GitHub Pages Custom Domain Guide](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site)
+- [Google Search Console](https://search.google.com/search-console)
+- [ORCID](https://orcid.org/)
+- [Google Scholar Profiles](https://scholar.google.com/)
+- [Namecheap — Domain Registration](https://www.namecheap.com/)

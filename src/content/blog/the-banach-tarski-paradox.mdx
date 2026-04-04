@@ -1,0 +1,227 @@
+---
+title: "The Banach-Tarski Paradox: Doubling a Sphere with Pure Mathematics"
+date: "2026-01-23"
+category: "Mathematics"
+excerpt: "We explain the Banach-Tarski paradox — how a solid ball in three-dimensional space can be decomposed into finitely many pieces and reassembled into two balls identical to the original — and explore the role of the Axiom of Choice."
+tags: ["Set Theory", "Geometry"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**The Banach-Tarski Paradox (1924)**
+
+A solid ball $B^3 \subset \mathbb{R}^3$ can be partitioned into finitely many pieces which can be rearranged — using only rotations and translations — to form two solid balls, each identical in size to the original.
+
+</div>
+
+More precisely: there exist disjoint sets $A_1, \ldots, A_k, B_1, \ldots, B_m$ with $B^3 = A_1 \sqcup \cdots \sqcup A_k \sqcup B_1 \sqcup \cdots \sqcup B_m$, and rigid motions $g_1, \ldots, g_k, h_1, \ldots, h_m$ such that:
+
+$$g_1(A_1) \sqcup \cdots \sqcup g_k(A_k) = B^3 \quad \text{and} \quad h_1(B_1) \sqcup \cdots \sqcup h_m(B_m) = B^3$$
+
+The minimum number of pieces required is **five** (proved by Raphael Robinson in 1947).
+
+---
+
+## Why It Sounds Impossible
+
+Our physical intuition rebels: how can you break a ball into pieces and get *two* balls of the same size? The answer lies in the nature of the pieces.
+
+<div style={{
+  borderLeft: "4px solid #e11d48",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+The pieces in the Banach-Tarski decomposition are **not measurable** in the sense of Lebesgue measure. They are so wildly scattered and fragmented that they have no well-defined volume. The "paradox" is not that volume is doubled — it is that the pieces have no volume at all, so the usual conservation of volume does not apply.
+
+</div>
+
+---
+
+## Paradoxical Decompositions and Free Groups
+
+The proof begins with a paradoxical decomposition of the **free group on two generators**.
+
+### The Free Group $F_2$
+
+Let $F_2 = \langle a, b \rangle$ be the free group on two generators. Every element is a reduced word in $\{a, a^{-1}, b, b^{-1}\}$, for example $aba^{-1}b^2$.
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0"
+}}>
+
+**Lemma (Paradoxical decomposition of $F_2$).**
+
+Define:
+- $W(a)$ = set of reduced words starting with $a$
+- $W(a^{-1})$ = set of reduced words starting with $a^{-1}$
+- $W(b)$ = set of reduced words starting with $b$
+- $W(b^{-1})$ = set of reduced words starting with $b^{-1}$
+
+Then $F_2 = \{e\} \sqcup W(a) \sqcup W(a^{-1}) \sqcup W(b) \sqcup W(b^{-1})$, and:
+
+$$F_2 = W(a) \sqcup a \cdot W(a^{-1}) \qquad \text{and} \qquad F_2 = W(b) \sqcup b \cdot W(b^{-1})$$
+
+</div>
+
+**Proof.** For the first equation: every reduced word either starts with $a$ (so it is in $W(a)$) or does not. If it does not start with $a$, then prepending $a^{-1}$ gives a word starting with $a^{-1}$, so the original word is $a \cdot w$ for some $w \in W(a^{-1})$. The identity and words starting with $b^{\pm 1}$ are all captured by $a \cdot W(a^{-1})$. $\square$
+
+This means $F_2$ can be "cut" into four pieces and reassembled (using left multiplication) into two disjoint copies of $F_2$.
+
+---
+
+## From $F_2$ to $\mathrm{SO}(3)$
+
+The next step is to embed $F_2$ into the rotation group of $\mathbb{R}^3$.
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**Lemma.** There exist rotations $A, B \in \mathrm{SO}(3)$ that generate a free subgroup. For example:
+
+$$A = \begin{pmatrix} 1/3 & -2\sqrt{2}/3 & 0 \\ 2\sqrt{2}/3 & 1/3 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \qquad B = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1/3 & -2\sqrt{2}/3 \\ 0 & 2\sqrt{2}/3 & 1/3 \end{pmatrix}$$
+
+These are rotations by $\arccos(1/3)$ about the $z$-axis and $x$-axis respectively.
+
+</div>
+
+The fact that $\mathrm{SO}(3)$ contains a free subgroup is what makes the paradox possible in three dimensions. In one and two dimensions, the rotation group is abelian, and no such embedding exists — which is why Banach-Tarski fails in dimensions 1 and 2.
+
+---
+
+## Proof Outline
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Step 1 — Paradoxical decomposition of $S^2 \setminus D$.**
+
+Let $\langle A, B \rangle \cong F_2 \subset \mathrm{SO}(3)$ and let $D \subset S^2$ be the countable set of points with a non-trivial stabilizer under the action of $\langle A, B \rangle$. The group acts freely on $S^2 \setminus D$, so the paradoxical decomposition of $F_2$ transfers to $S^2 \setminus D$.
+
+**Step 2 — Absorb the countable set $D$.**
+
+Using the Axiom of Choice, choose a rotation $\rho$ of infinite order whose axis avoids $D$. Then $D \subset \rho(S^2 \setminus D) \cup \rho^2(S^2 \setminus D) \cup \cdots$, allowing us to absorb $D$ into the decomposition.
+
+**Step 3 — Extend from $S^2$ to $B^3$.**
+
+Each point of the solid ball (except the center) lies on a unique ray from the origin through a point of $S^2$. The paradoxical decomposition of $S^2$ extends radially to all of $B^3 \setminus \{0\}$. The center is absorbed similarly to Step 2.
+
+**Step 4 — Conclusion.**
+
+We have partitioned $B^3$ into finitely many pieces and reassembled them into two copies of $B^3$ using rigid motions. $\square$
+
+</div>
+
+---
+
+## The Role of the Axiom of Choice
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+The Axiom of Choice is **essential** for the Banach-Tarski paradox. In models of set theory where the Axiom of Choice fails (e.g., Solovay's model, 1970), every subset of $\mathbb{R}^n$ is Lebesgue measurable, and paradoxical decompositions are impossible.
+
+</div>
+
+Specifically, the Axiom of Choice is used to:
+- Select orbit representatives in Step 2,
+- Construct the non-measurable pieces in Step 1.
+
+This is one of the most dramatic consequences of the Axiom of Choice and a major reason why some mathematicians are wary of accepting it.
+
+---
+
+## Why Dimension Matters
+
+| Dimension | Rotation Group | Contains $F_2$? | Banach-Tarski? |
+|---|---|---|---|
+| 1 | $\{1, -1\}$ | No | No |
+| 2 | $\mathrm{SO}(2) \cong S^1$ | No (abelian) | No |
+| $\geq 3$ | $\mathrm{SO}(n)$ | Yes | Yes |
+
+In dimensions 1 and 2, the Banach-Tarski paradox does not hold. The key difference: $\mathrm{SO}(2)$ is abelian, while $\mathrm{SO}(3)$ is not. The Hausdorff paradox (1914) — a predecessor that decomposes $S^2$ minus a countable set — was the first indication that dimension 3 behaves differently.
+
+---
+
+## Consequences for Measure Theory
+
+The Banach-Tarski paradox proves a foundational negative result:
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0",
+  textAlign: "center"
+}}>
+
+**There is no finitely additive, rotation-invariant measure defined on all subsets of $\mathbb{R}^3$ that assigns the unit ball a positive finite value.**
+
+</div>
+
+This is why Lebesgue measure cannot be extended to all subsets of $\mathbb{R}^n$ for $n \geq 3$ — non-measurable sets are unavoidable.
+
+In dimensions 1 and 2, the situation is different: Banach (1923) showed that a finitely additive, isometry-invariant measure on all subsets *does* exist (though it is not countably additive).
+
+---
+
+## The Von Neumann Perspective
+
+John von Neumann (1929) clarified the paradox by identifying the algebraic root cause: the group of isometries. A group $G$ is **amenable** if it admits a finitely additive, left-invariant probability measure on all its subsets.
+
+- Abelian groups are amenable — no paradox in dimensions 1 and 2.
+- $F_2$ is not amenable — paradox in dimension $\geq 3$.
+
+The study of amenable groups, initiated by von Neumann, has become a major area in geometric group theory and operator algebras.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&F_2 = W(a) \sqcup aW(a^{-1}) = W(b) \sqcup bW(b^{-1}) \\[6pt]
+&\Downarrow \quad \text{embed } F_2 \hookrightarrow \mathrm{SO}(3) \\[6pt]
+&S^2 \setminus D \text{ inherits paradoxical decomposition} \\[6pt]
+&\Downarrow \quad \text{Axiom of Choice absorbs } D \\[6pt]
+&S^2 \text{ is paradoxical} \implies B^3 \text{ is paradoxical} \\[6pt]
+&\Downarrow \\[6pt]
+&\text{One ball} = \text{Two balls (using 5 pieces)}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Wagon, S., *The Banach-Tarski Paradox*, Cambridge University Press, 1993.
+- Tomkowicz, G. and Wagon, S., *The Banach-Tarski Paradox*, 2nd edition, Cambridge University Press, 2016.
+- [Wikipedia — Banach-Tarski paradox](https://en.wikipedia.org/wiki/Banach%E2%80%93Tarski_paradox)
+- [Vsauce — "The Banach-Tarski Paradox" (YouTube)](https://www.youtube.com/watch?v=s86-Z-CbaHA)
+- [Wikipedia — Amenable group](https://en.wikipedia.org/wiki/Amenable_group)
+- Paterson, A., *Amenability*, AMS Mathematical Surveys and Monographs, 1988.

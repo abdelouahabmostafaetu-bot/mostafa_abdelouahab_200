@@ -1,0 +1,397 @@
+---
+title: "Overleaf and LaTeX: The Essential Tool for Math Students"
+date: "2026-02-01"
+category: "Resources"
+excerpt: "A comprehensive guide to LaTeX and Overleaf for mathematics students: getting started, writing mathematical notation, structuring documents, collaborating, and producing professional mathematical writing."
+tags: ["Tools", "Writing"]
+---
+
+## Why Every Math Student Needs LaTeX
+
+If you are studying mathematics at the university level, you will need to write mathematical documents — homework assignments, lab reports, theses, and eventually research papers. LaTeX (pronounced "LAH-tek" or "LAY-tek") is the standard typesetting system for mathematics and the sciences.
+
+Unlike word processors like Microsoft Word, LaTeX produces consistently beautiful mathematical notation. Compare:
+
+- **Word:** The integral from 0 to infinity of e^(-x^2) dx = sqrt(pi)/2
+- **LaTeX:** $\displaystyle\int_0^{\infty} e^{-x^2} \, dx = \frac{\sqrt{\pi}}{2}$
+
+Every professional mathematics journal, every graduate thesis, and virtually every research paper in mathematics is typeset in LaTeX. Learning it is not optional — it is a core skill.
+
+---
+
+## What Is Overleaf?
+
+[Overleaf](https://www.overleaf.com/) is a free, web-based LaTeX editor that makes it easy to write, compile, and collaborate on LaTeX documents without installing anything on your computer.
+
+Key features of Overleaf:
+
+- **No installation needed.** Everything runs in your browser.
+- **Real-time collaboration.** Multiple people can edit the same document simultaneously (like Google Docs).
+- **Instant preview.** See your compiled PDF alongside your LaTeX source code.
+- **Templates.** Hundreds of pre-made templates for articles, theses, presentations, and more.
+- **Version history.** Track changes and revert to previous versions.
+
+<div style={{
+  border: "2px solid #2563eb",
+  borderRadius: "12px",
+  padding: "22px",
+  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+  margin: "28px 0"
+}}>
+
+**Recommendation:** If you are new to LaTeX, start with Overleaf. It eliminates the friction of installation and configuration, letting you focus on learning the language itself. You can always switch to a local installation later.
+
+</div>
+
+---
+
+## Getting Started with LaTeX
+
+### Your First Document
+
+Every LaTeX document has the same basic structure:
+
+```latex
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\title{My First LaTeX Document}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This is my first LaTeX document. Here is an inline equation: $a^2 + b^2 = c^2$.
+
+And here is a displayed equation:
+\[
+  \int_0^1 x^n \, dx = \frac{1}{n+1}.
+\]
+
+\end{document}
+```
+
+The three `amsmath`, `amssymb`, and `amsthm` packages are essential for mathematics. Always include them.
+
+### Essential Math Notation
+
+Here is a quick reference for the most common mathematical LaTeX commands:
+
+**Basic operations:**
+
+| LaTeX | Output |
+| --- | --- |
+| `$a + b$` | $a + b$ |
+| `$a - b$` | $a - b$ |
+| `$a \cdot b$` | $a \cdot b$ |
+| `$\frac{a}{b}$` | $\frac{a}{b}$ |
+| `$a^n$` | $a^n$ |
+| `$a_n$` | $a_n$ |
+| `$\sqrt{x}$` | $\sqrt{x}$ |
+| `$\sqrt[3]{x}$` | $\sqrt[3]{x}$ |
+
+**Greek letters:**
+
+| LaTeX | Output |
+| --- | --- |
+| `$\alpha, \beta, \gamma, \delta$` | $\alpha, \beta, \gamma, \delta$ |
+| `$\epsilon, \varepsilon$` | $\epsilon, \varepsilon$ |
+| `$\phi, \varphi$` | $\phi, \varphi$ |
+| `$\Gamma, \Delta, \Sigma, \Omega$` | $\Gamma, \Delta, \Sigma, \Omega$ |
+
+**Calculus and analysis:**
+
+| LaTeX | Output |
+| --- | --- |
+| `$\int_a^b f(x) \, dx$` | $\int_a^b f(x) \, dx$ |
+| `$\sum_{n=1}^{\infty} a_n$` | $\sum_{n=1}^{\infty} a_n$ |
+| `$\prod_{i=1}^{n} x_i$` | $\prod_{i=1}^{n} x_i$ |
+| `$\lim_{x \to 0} \frac{\sin x}{x}$` | $\lim_{x \to 0} \frac{\sin x}{x}$ |
+| `$\frac{\partial f}{\partial x}$` | $\frac{\partial f}{\partial x}$ |
+
+**Sets and logic:**
+
+| LaTeX | Output |
+| --- | --- |
+| `$\mathbb{R}, \mathbb{Z}, \mathbb{Q}, \mathbb{C}$` | $\mathbb{R}, \mathbb{Z}, \mathbb{Q}, \mathbb{C}$ |
+| `$\in, \notin, \subset, \subseteq$` | $\in, \notin, \subset, \subseteq$ |
+| `$\cup, \cap, \setminus$` | $\cup, \cap, \setminus$ |
+| `$\forall, \exists, \nexists$` | $\forall, \exists, \nexists$ |
+| `$\implies, \iff$` | $\implies, \iff$ |
+
+**Matrices:**
+
+```latex
+\begin{pmatrix}
+  a & b \\
+  c & d
+\end{pmatrix}
+```
+
+This renders as $\begin{pmatrix} a & b \\ c & d \end{pmatrix}$.
+
+---
+
+## Structuring a Mathematics Document
+
+### Theorem Environments
+
+The `amsthm` package lets you define theorem-like environments:
+
+```latex
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+```
+
+Then in your document:
+
+```latex
+\begin{theorem}
+  Every bounded sequence in $\mathbb{R}^n$ has a convergent subsequence.
+\end{theorem}
+
+\begin{proof}
+  We proceed by induction on the dimension $n$...
+\end{proof}
+```
+
+<div style={{
+  borderLeft: "4px solid #2563eb",
+  paddingLeft: "18px",
+  margin: "26px 0"
+}}>
+
+**Tip:** The `\begin{proof}...\end{proof}` environment automatically adds a QED symbol ($\square$) at the end. If your proof ends with a displayed equation, use `\qedhere` before `\end{proof}` to place the symbol correctly.
+
+</div>
+
+### Sections and Organization
+
+LaTeX provides a hierarchy of sectioning commands:
+
+```latex
+\section{Groups}
+\subsection{Definition and Examples}
+\subsubsection{Cyclic Groups}
+```
+
+For longer documents (theses, books), you can also use `\chapter{}`.
+
+### Cross-References
+
+Label theorems, equations, and sections, then reference them:
+
+```latex
+\begin{theorem}\label{thm:bolzano-weierstrass}
+  Every bounded sequence in $\mathbb{R}$ has a convergent subsequence.
+\end{theorem}
+
+By Theorem~\ref{thm:bolzano-weierstrass}, we can extract...
+```
+
+The `~` prevents a line break between "Theorem" and the number.
+
+### Bibliographies with BibTeX
+
+For references, create a `.bib` file:
+
+```bibtex
+@book{rudin1976,
+  author    = {Walter Rudin},
+  title     = {Principles of Mathematical Analysis},
+  publisher = {McGraw-Hill},
+  year      = {1976},
+  edition   = {3rd}
+}
+```
+
+Then in your document:
+
+```latex
+As shown in \cite{rudin1976}, every Cauchy sequence in $\mathbb{R}$ converges.
+
+\bibliographystyle{plain}
+\bibliography{references}
+```
+
+---
+
+## Overleaf-Specific Features
+
+### Templates
+
+Overleaf provides templates for virtually every use case:
+
+- **Homework:** Clean templates for submitting problem sets
+- **Articles:** Journal-specific templates (AMS, Springer, Elsevier)
+- **Theses:** University-specific thesis templates
+- **Presentations:** Beamer templates for mathematical talks
+- **CVs:** Academic CV templates
+
+Browse templates at [overleaf.com/templates](https://www.overleaf.com/templates).
+
+### Real-Time Collaboration
+
+Overleaf's collaboration features are invaluable for:
+
+- Working on group projects
+- Getting feedback from your advisor
+- Collaborating on research papers with coauthors
+
+Share a link and multiple people can edit simultaneously. The free plan allows collaboration with one other person; paid plans allow more.
+
+### Rich Text Mode
+
+Overleaf offers a rich text mode that displays formatted output inline, making the editing experience closer to a word processor while retaining all of LaTeX's power.
+
+### Git Integration
+
+Overleaf projects can be synced with GitHub or other Git repositories, giving you:
+
+- Full version control beyond Overleaf's built-in history
+- The ability to work offline with a local LaTeX installation
+- Backup of your documents in a separate location
+
+---
+
+## Common Mistakes and How to Avoid Them
+
+### 1. Missing Dollar Signs
+
+Every piece of mathematical notation must be enclosed in math mode:
+
+```latex
+% Wrong:
+Let x be a real number.
+
+% Right:
+Let $x$ be a real number.
+```
+
+Even single variables like $x$, $n$, or $f$ should be in math mode.
+
+### 2. Using the Wrong Dash
+
+LaTeX distinguishes between:
+- Hyphen: `-` (used in compound words like "well-known")
+- En dash: `--` (used in ranges like "pages 1--10")
+- Em dash: `---` (used for parenthetical remarks)
+
+### 3. Not Using `\,` Before `dx`
+
+In integrals, add a thin space before the differential:
+
+```latex
+% Better:
+$\int_0^1 f(x) \, dx$
+
+% Not as good:
+$\int_0^1 f(x) dx$
+```
+
+### 4. Incorrect Spacing Around Operators
+
+Use `\colon` instead of `:` for function notation:
+
+```latex
+% Better:
+$f \colon X \to Y$
+
+% Less ideal:
+$f : X \to Y$
+```
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  padding: "20px",
+  background: "#fafafa",
+  margin: "24px 0"
+}}>
+
+**Debugging tip:** When your LaTeX fails to compile, read the error message carefully. The most common errors are missing closing braces `}`, missing `$` signs, and misspelled command names. Overleaf highlights errors in the source editor with red markers.
+
+</div>
+
+---
+
+## Local LaTeX Installations
+
+While Overleaf is excellent for getting started, many mathematicians eventually set up a local LaTeX installation for:
+
+- Faster compilation of large documents
+- Working offline
+- Full control over packages and configuration
+- Integration with their preferred text editor
+
+### TeX Distributions
+
+- **TeX Live** (Linux, macOS, Windows): The most comprehensive distribution. Install from [tug.org/texlive](https://tug.org/texlive/).
+- **MacTeX** (macOS): A macOS-specific distribution based on TeX Live. Install from [tug.org/mactex](https://tug.org/mactex/).
+- **MiKTeX** (Windows): A popular Windows distribution. Install from [miktex.org](https://miktex.org/).
+
+### Editors
+
+Popular LaTeX editors include:
+
+- **TeXstudio** — A full-featured LaTeX IDE with preview, autocomplete, and error highlighting ([texstudio.org](https://www.texstudio.org/))
+- **VS Code with LaTeX Workshop** — If you already use VS Code, the [LaTeX Workshop extension](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) provides excellent LaTeX support
+- **Vim/Neovim with VimTeX** — For users comfortable with Vim, [VimTeX](https://github.com/lervag/vimtex) provides powerful LaTeX editing capabilities
+- **Emacs with AUCTeX** — The classic choice for many mathematicians
+
+---
+
+## Learning Resources for LaTeX
+
+### Essential References
+
+- [Overleaf Documentation and Tutorials](https://www.overleaf.com/learn) — The best starting point, with tutorials on every aspect of LaTeX
+- [The Not So Short Introduction to LaTeX](https://tobi.oetiker.ch/lshort/lshort.pdf) — A classic free guide covering the fundamentals
+- [LaTeX Wikibook](https://en.wikibooks.org/wiki/LaTeX) — A comprehensive free reference
+
+### Symbol Lookup
+
+- [Detexify](https://detexify.kirelabs.org/classify.html) — Draw a symbol and it tells you the LaTeX command. This is indispensable when you know what a symbol looks like but not its command name.
+- [CTAN Comprehensive Symbol List](https://ctan.org/pkg/comprehensive) — The definitive reference for thousands of LaTeX symbols
+
+---
+
+## Summary
+
+LaTeX is the language of mathematical writing. Overleaf makes it accessible and collaborative. Together, they give you the tools to produce professional-quality mathematical documents from your very first homework assignment through your doctoral thesis and beyond.
+
+Start with Overleaf, learn the basics of mathematical notation, and gradually expand your skills. Within a few weeks, you will wonder how you ever tried to write mathematics without LaTeX.
+
+---
+
+## References
+
+- [Overleaf — Online LaTeX Editor](https://www.overleaf.com/)
+- [Overleaf Learning Resources](https://www.overleaf.com/learn)
+- [Overleaf Templates](https://www.overleaf.com/templates)
+- [The Not So Short Introduction to LaTeX](https://tobi.oetiker.ch/lshort/lshort.pdf)
+- [Detexify — LaTeX Symbol Recognition](https://detexify.kirelabs.org/classify.html)
+- [TeX Live](https://tug.org/texlive/)
+- [MacTeX](https://tug.org/mactex/)
+- [MiKTeX](https://miktex.org/)
+- [TeXstudio](https://www.texstudio.org/)
+- [LaTeX Workshop for VS Code](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)
+- [LaTeX Wikibook](https://en.wikibooks.org/wiki/LaTeX)
+- [CTAN — Comprehensive TeX Archive Network](https://ctan.org/)
+- [AMS LaTeX Packages](https://www.ams.org/arc/tex/amsmath/amsldoc.pdf)

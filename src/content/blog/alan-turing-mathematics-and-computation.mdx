@@ -1,0 +1,187 @@
+---
+title: "Alan Turing: Where Mathematics Meets Computation"
+date: "2026-02-21"
+category: "Mathematics"
+excerpt: "The story of Alan Turing — the mathematician who defined the concept of computation itself, broke the Enigma code, and laid the foundations for computer science and artificial intelligence, only to be persecuted for his identity."
+tags: ["Profiles", "Logic"]
+---
+
+## Early Life
+
+Alan Mathison Turing was born on 23 June 1912 in Maida Vale, London. His father, Julius Mathison Turing, was a member of the Indian Civil Service, and his mother, Ethel Sara Stoney, came from an Anglo-Irish family of scientists and engineers. Alan spent much of his childhood in foster care in England while his parents were in India.
+
+From an early age, Turing showed an aptitude for science and mathematics. At Sherborne School, a traditional English public school, his scientific interests were not always appreciated. He formed a close friendship with Christopher Morcom, a fellow student who shared his intellectual passions. Morcom's sudden death from tuberculosis in 1930 had a profound effect on Turing, deepening his interest in the nature of mind and consciousness.
+
+Turing studied mathematics at King's College, Cambridge, from 1931 to 1934, graduating with a distinguished degree. He was elected a Fellow of King's College in 1935, at the age of twenty-two, for his work on probability theory (specifically, an independent rediscovery of the central limit theorem).
+
+---
+
+## The Turing Machine: On Computable Numbers
+
+In 1936, Turing published what is arguably the most important paper in the history of computer science: "On Computable Numbers, with an Application to the Entscheidungsproblem." In it, he answered a question posed by David Hilbert: is there a mechanical procedure (algorithm) that can determine the truth or falsity of any mathematical statement?
+
+To answer this, Turing first had to define precisely what a "mechanical procedure" is. He did so by inventing an abstract mathematical model of computation — the **Turing machine**.
+
+### The Turing Machine
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0"
+}}>
+
+**Definition.** A **Turing machine** consists of:
+
+- An infinite **tape** divided into cells, each containing a symbol from a finite alphabet $\Sigma$
+- A **head** that reads and writes symbols on the tape and moves left or right
+- A finite set of **states** $Q$, with a designated start state $q_0$ and halt states
+- A **transition function** $\delta: Q \times \Sigma \to Q \times \Sigma \times \{L, R\}$ that determines, based on the current state and symbol, what to write, which direction to move, and what state to enter next
+
+</div>
+
+Despite its apparent simplicity, the Turing machine can compute anything that any conceivable computer can compute. This is the content of the **Church–Turing thesis**: any function that can be computed by an algorithm can be computed by a Turing machine.
+
+### The Universal Turing Machine
+
+Turing showed that there exists a **universal Turing machine** $U$ — a single machine that can simulate any other Turing machine. The universal machine takes as input a description (encoding) of another machine $M$ and an input $x$, and computes whatever $M$ would compute on $x$:
+
+$$U(\langle M \rangle, x) = M(x)$$
+
+This is precisely the concept of a **stored-program computer** — a machine that reads its own instructions from its tape (memory). The universal Turing machine is the theoretical blueprint for every modern computer.
+
+### The Halting Problem
+
+Turing proved that certain problems are **undecidable** — no algorithm can solve them. The most famous is the **halting problem**:
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**The Halting Problem is Undecidable (Turing, 1936)**
+
+There is no Turing machine $H$ that, given the description $\langle M \rangle$ of any Turing machine $M$ and input $x$, correctly determines whether $M$ halts on $x$.
+
+</div>
+
+The proof is a diagonal argument: assume $H$ exists, construct a machine $D$ that runs $H$ on itself and does the opposite, reaching a contradiction. As a corollary, Turing showed that Hilbert's **Entscheidungsproblem** (decision problem) has no solution — there is no algorithm to decide the truth of all mathematical statements in first-order logic.
+
+Turing's paper was submitted independently of, and nearly simultaneously with, Alonzo Church's equivalent result using lambda calculus. The two approaches were shown to be equivalent, establishing the foundations of **computability theory**.
+
+---
+
+## Bletchley Park and the Enigma
+
+During World War II, Turing played a central and possibly decisive role in the Allied war effort. From 1939, he worked at Bletchley Park, the British codebreaking center, where he led the effort to break the German Enigma cipher.
+
+The Enigma machine was an electromechanical cipher device that produced an astronomical number of possible settings — approximately $1.59 \times 10^{20}$ for the three-rotor naval version. Turing developed the **Bombe**, an electromechanical device that could rapidly search through Enigma settings to find the correct one. His method exploited the structure of Enigma's rotors and the patterns in German military communications.
+
+Historians estimate that the intelligence gained from breaking Enigma shortened the war by at least two years and saved millions of lives. Turing's specific contributions included:
+
+- The mathematical framework for the Bombe's operation, based on chains of logical deductions
+- The breaking of the far more complex naval Enigma, which was essential for the Battle of the Atlantic
+- **Banburismus**, a Bayesian statistical technique for eliminating Enigma settings
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> "No one will ever know the full extent of the debt that the Allied cause in the war owes to Professor Turing."
+> — Bletchley Park colleague, cited in Andrew Hodges's biography
+
+</div>
+
+---
+
+## The ACE and Early Computing
+
+After the war, Turing worked at the National Physical Laboratory (NPL), where he designed the **Automatic Computing Engine (ACE)** — one of the first designs for a stored-program electronic computer. His 1945 report on the ACE was remarkably detailed and forward-looking, describing not just the hardware but also programming techniques, subroutines, and floating-point arithmetic.
+
+He later moved to the University of Manchester, where he worked on the Manchester Mark 1 computer and wrote some of the earliest programs for chess-playing, musical composition, and other tasks that would later fall under the heading of artificial intelligence.
+
+---
+
+## The Turing Test: Can Machines Think?
+
+In his 1950 paper "Computing Machinery and Intelligence," published in *Mind*, Turing posed the question: "Can machines think?" Rather than attempting to define "thinking," he proposed a practical test — the **Turing test** (which he called the "imitation game"):
+
+A human interrogator communicates via text with two entities — a human and a machine. If the interrogator cannot reliably distinguish the machine from the human, the machine is said to exhibit intelligence.
+
+The Turing test remains one of the most influential and debated ideas in the philosophy of artificial intelligence.
+
+<div style={{
+  borderLeft: "4px solid #10b981",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> "We can only see a short distance ahead, but we can see plenty there that needs to be done."
+> — Alan Turing, "Computing Machinery and Intelligence"
+
+</div>
+
+---
+
+## Morphogenesis: Mathematics of Biological Pattern
+
+In one of his last major works, the 1952 paper "The Chemical Basis of Morphogenesis," Turing proposed a mathematical model for how patterns (such as stripes and spots) form in biological organisms. He showed that a system of two chemicals — an **activator** and an **inhibitor** — diffusing at different rates can produce stable spatial patterns. The reaction-diffusion system is:
+
+$$\frac{\partial u}{\partial t} = D_u \nabla^2 u + f(u, v)$$
+$$\frac{\partial v}{\partial t} = D_v \nabla^2 v + g(u, v)$$
+
+where $u$ and $v$ are the concentrations of the two chemicals, $D_u < D_v$ are diffusion rates, and $f, g$ describe the reaction kinetics. When $D_v / D_u$ is sufficiently large, a homogeneous equilibrium can become unstable, leading to **Turing patterns** — spatial structures that arise spontaneously from the dynamics.
+
+This work was decades ahead of its time and has become foundational in mathematical biology and developmental biology.
+
+---
+
+## Persecution and Death
+
+In 1952, Turing was arrested and charged with "gross indecency" under British law — his "crime" was being in a homosexual relationship. He was convicted and, as an alternative to prison, accepted chemical castration through injections of synthetic estrogen.
+
+The treatment had severe physical and psychological effects. On 7 June 1954, Alan Turing was found dead in his home in Wilmslow, Cheshire. The cause of death was cyanide poisoning. A half-eaten apple lay beside him. The official verdict was suicide, though some have suggested it may have been accidental.
+
+He was 41 years old.
+
+---
+
+## Posthumous Recognition
+
+In 2009, British Prime Minister Gordon Brown issued a formal public apology on behalf of the British government for the treatment of Alan Turing. In 2013, Queen Elizabeth II granted Turing a posthumous royal pardon.
+
+The **Turing Award**, established in 1966 by the Association for Computing Machinery, is the highest honor in computer science — often called the "Nobel Prize of computing." Turing's portrait appeared on the Bank of England's £50 note beginning in 2021.
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**"Sometimes it is the people no one imagines anything of who do the things that no one can imagine."**
+
+— Attributed to Alan Turing (popularized in the film *The Imitation Game*)
+
+</div>
+
+---
+
+## References
+
+- Turing, A.M., "On Computable Numbers, with an Application to the Entscheidungsproblem," *Proceedings of the London Mathematical Society*, 42(2), 1936.
+- Turing, A.M., "Computing Machinery and Intelligence," *Mind*, 59(236), 1950.
+- Turing, A.M., "The Chemical Basis of Morphogenesis," *Philosophical Transactions of the Royal Society of London B*, 237(641), 1952.
+- Hodges, A., *Alan Turing: The Enigma*, Simon & Schuster, 1983 (updated 2014).
+- [Wikipedia — Alan Turing](https://en.wikipedia.org/wiki/Alan_Turing)
+- [MacTutor — Alan Turing](https://mathshistory.st-andrews.ac.uk/Biographies/Turing/)
+- [The Turing Digital Archive — King's College, Cambridge](https://turingarchive.kings.cam.ac.uk/)

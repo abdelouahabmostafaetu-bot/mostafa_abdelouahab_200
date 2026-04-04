@@ -1,0 +1,260 @@
+---
+title: "Noether's Theorem: How Symmetry Creates Conservation Laws"
+date: "2026-02-14"
+category: "Mathematics"
+excerpt: "We explain and prove Noether's theorem — the profound result connecting continuous symmetries of a physical system to conservation laws — and explore how it unifies energy, momentum, and angular momentum under a single mathematical principle."
+tags: ["Algebra", "Physics"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Noether's Theorem (1918)**
+
+Every differentiable symmetry of the action of a physical system corresponds to a conserved quantity.
+
+</div>
+
+More precisely: if the action functional $S[q] = \int_{t_1}^{t_2} L(q, \dot{q}, t)\, dt$ is invariant under a continuous one-parameter family of transformations, then there exists a quantity that is constant along every solution of the Euler-Lagrange equations.
+
+---
+
+## The Symmetry-Conservation Dictionary
+
+<div style={{
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "16px",
+  margin: "24px 0"
+}}>
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  textAlign: "center"
+}}>
+
+**Symmetry**
+
+Time translation: $t \mapsto t + \varepsilon$
+
+Space translation: $q \mapsto q + \varepsilon$
+
+Rotation: $q \mapsto R(\varepsilon) q$
+
+Phase: $\psi \mapsto e^{i\varepsilon}\psi$
+
+</div>
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  textAlign: "center"
+}}>
+
+**Conserved Quantity**
+
+Energy
+
+Linear momentum
+
+Angular momentum
+
+Electric charge
+
+</div>
+
+</div>
+
+This dictionary is not a coincidence — it is a mathematical theorem.
+
+---
+
+## The Lagrangian Framework
+
+### The Action Functional
+
+A mechanical system with generalized coordinates $q = (q_1, \ldots, q_n)$ is described by a **Lagrangian** $L(q, \dot{q}, t)$. The **action** is:
+
+$$S[q] = \int_{t_1}^{t_2} L(q, \dot{q}, t)\, dt$$
+
+### The Euler-Lagrange Equations
+
+The physical trajectory extremizes $S$. The necessary condition is the **Euler-Lagrange equation**:
+
+$$\frac{d}{dt}\frac{\partial L}{\partial \dot{q}_i} - \frac{\partial L}{\partial q_i} = 0 \qquad i = 1, \ldots, n$$
+
+For example, with $L = \frac{1}{2}m|\dot{q}|^2 - V(q)$, the Euler-Lagrange equation gives Newton's second law: $m\ddot{q} = -\nabla V$.
+
+---
+
+## Formal Statement and Proof
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0"
+}}>
+
+**Noether's Theorem (Precise Statement)**
+
+Consider a one-parameter family of transformations:
+
+$$q_i(t) \mapsto Q_i(t, \varepsilon), \qquad t \mapsto T(t, \varepsilon)$$
+
+with $Q_i(t, 0) = q_i(t)$ and $T(t, 0) = t$. Define the infinitesimal generators:
+
+$$\delta q_i = \left.\frac{\partial Q_i}{\partial \varepsilon}\right|_{\varepsilon=0}, \qquad \delta t = \left.\frac{\partial T}{\partial \varepsilon}\right|_{\varepsilon=0}$$
+
+If the action is invariant under this family (up to boundary terms), then the following quantity is conserved along solutions of the Euler-Lagrange equations:
+
+$$J = \sum_{i=1}^n \frac{\partial L}{\partial \dot{q}_i} \delta q_i + \left(L - \sum_{i=1}^n \frac{\partial L}{\partial \dot{q}_i}\dot{q}_i\right)\delta t$$
+
+</div>
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+For simplicity, consider transformations with $\delta t = 0$ (pure coordinate transformations). The action is invariant to first order:
+
+$$0 = \delta S = \int_{t_1}^{t_2} \left[\frac{\partial L}{\partial q_i}\delta q_i + \frac{\partial L}{\partial \dot{q}_i}\delta \dot{q}_i\right] dt$$
+
+Since $\delta \dot{q}_i = \frac{d}{dt}(\delta q_i)$, integrate the second term by parts:
+
+$$0 = \int_{t_1}^{t_2} \left[\frac{\partial L}{\partial q_i} - \frac{d}{dt}\frac{\partial L}{\partial \dot{q}_i}\right]\delta q_i \, dt + \left[\frac{\partial L}{\partial \dot{q}_i}\delta q_i\right]_{t_1}^{t_2}$$
+
+The integral vanishes by the Euler-Lagrange equations, so:
+
+$$\left[\frac{\partial L}{\partial \dot{q}_i}\delta q_i\right]_{t_1}^{t_2} = 0$$
+
+Since $t_1, t_2$ are arbitrary, $J = \sum_i \frac{\partial L}{\partial \dot{q}_i}\delta q_i$ is constant along the trajectory:
+
+$$\frac{dJ}{dt} = 0 \qquad \square$$
+
+</div>
+
+---
+
+## Example 1: Energy Conservation
+
+If $L$ does not depend explicitly on $t$ (time-translation symmetry), set $\delta q_i = 0$ and $\delta t = 1$. The conserved quantity is:
+
+$$E = \sum_i \frac{\partial L}{\partial \dot{q}_i}\dot{q}_i - L$$
+
+This is the **total energy** (the Hamiltonian). For $L = T - V$ with $T$ a quadratic form in $\dot{q}$, we get $E = T + V$.
+
+---
+
+## Example 2: Momentum Conservation
+
+If $L$ does not depend on $q_k$ (translation symmetry in $q_k$), set $\delta q_k = 1$ and all other variations to zero. The conserved quantity is:
+
+$$p_k = \frac{\partial L}{\partial \dot{q}_k}$$
+
+This is the **generalized momentum** conjugate to $q_k$. For a free particle with $L = \frac{1}{2}m\dot{x}^2$, this gives $p = m\dot{x}$ — linear momentum.
+
+---
+
+## Example 3: Angular Momentum
+
+Consider a particle in $\mathbb{R}^3$ with a rotationally symmetric potential $V = V(|q|)$. The Lagrangian $L = \frac{1}{2}m|\dot{q}|^2 - V(|q|)$ is invariant under rotations about, say, the $z$-axis:
+
+$$\delta q_1 = -q_2, \qquad \delta q_2 = q_1, \qquad \delta q_3 = 0$$
+
+Noether's conserved quantity is:
+
+$$J_z = m(\dot{q}_1 \cdot (-q_2) + \dot{q}_2 \cdot q_1) = m(q_1 \dot{q}_2 - q_2 \dot{q}_1)$$
+
+This is the $z$-component of **angular momentum** $\mathbf{L} = m \mathbf{q} \times \dot{\mathbf{q}}$.
+
+---
+
+## Noether's Theorem in Field Theory
+
+For a field $\phi(x^\mu)$ with Lagrangian density $\mathcal{L}(\phi, \partial_\mu \phi)$, the action is:
+
+$$S[\phi] = \int \mathcal{L}(\phi, \partial_\mu \phi)\, d^4 x$$
+
+A continuous symmetry $\phi \mapsto \phi + \varepsilon \delta\phi$ yields a **conserved current** $J^\mu$:
+
+$$\partial_\mu J^\mu = 0$$
+
+where
+
+$$J^\mu = \frac{\partial \mathcal{L}}{\partial(\partial_\mu \phi)}\delta\phi$$
+
+The conserved *charge* is $Q = \int J^0\, d^3x$, satisfying $\frac{dQ}{dt} = 0$.
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+In quantum field theory, every continuous symmetry of the Lagrangian density yields a conserved current (Noether's theorem) and hence a conserved charge. The gauge symmetry $\psi \mapsto e^{i\alpha(x)}\psi$ gives rise to the electromagnetic current and charge conservation.
+
+</div>
+
+---
+
+## Historical Context
+
+Emmy Noether proved this theorem in 1918, while working at Göttingen. The result was published as *"Invariante Variationsprobleme"* in the *Nachrichten der Königlichen Gesellschaft der Wissenschaften zu Göttingen*.
+
+Her work was motivated by questions from Hilbert and Klein about energy conservation in general relativity. Noether actually proved two theorems: the first (described here) applies to global (finite-dimensional) symmetries; the second applies to local (gauge) symmetries and yields identities rather than conservation laws.
+
+Einstein wrote to Hilbert: *"Yesterday I received from Miss Noether a very interesting paper on invariant forms. I am impressed that one can comprehend these things from so general a viewpoint."*
+
+Despite her extraordinary contributions, Noether faced enormous institutional barriers as a woman in early 20th-century German academia.
+
+---
+
+## The Converse
+
+Is there a converse to Noether's theorem — does every conservation law come from a symmetry?
+
+In the Lagrangian framework, the answer is essentially **yes**: under mild regularity conditions, every conservation law of the Euler-Lagrange equations arises from a variational symmetry. This is made precise by the theory of **Lie symmetries** of differential equations.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&\text{Continuous symmetry of } L \iff \text{conserved quantity} \\[8pt]
+&\text{Time translation} \implies \text{energy } E = \sum p_i \dot{q}_i - L \\[4pt]
+&\text{Space translation} \implies \text{momentum } p_i = \partial L/\partial \dot{q}_i \\[4pt]
+&\text{Rotation} \implies \text{angular momentum } \mathbf{L} = m\mathbf{q} \times \dot{\mathbf{q}} \\[4pt]
+&\text{Phase rotation} \implies \text{electric charge}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Noether, E., "Invariante Variationsprobleme," *Nachrichten der Königlichen Gesellschaft der Wissenschaften zu Göttingen*, 1918. [English translation](https://arxiv.org/abs/physics/0503066)
+- Goldstein, H., Poole, C., and Safko, J., *Classical Mechanics*, 3rd edition, Addison-Wesley, 2001.
+- Arnold, V. I., *Mathematical Methods of Classical Mechanics*, 2nd edition, Springer, 1989.
+- [Wikipedia — Noether's theorem](https://en.wikipedia.org/wiki/Noether%27s_theorem)
+- [Emmy Noether — MacTutor biography](https://mathshistory.st-andrews.ac.uk/Biographies/Noether_Emmy/)
+- [Physics with Elliot — Noether's Theorem (YouTube)](https://www.youtube.com/watch?v=CxlHLqJ9I0A)

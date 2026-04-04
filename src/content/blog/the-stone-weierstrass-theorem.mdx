@@ -1,0 +1,220 @@
+---
+title: "The Stone-Weierstrass Theorem: Approximating Continuous Functions"
+date: "2026-02-28"
+category: "Mathematics"
+excerpt: "We state and prove the Stone-Weierstrass theorem — the powerful generalization of Weierstrass's classical approximation theorem that characterizes when subalgebras of continuous functions are dense — and explore its wide-ranging applications."
+tags: ["Analysis", "Topology"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Stone-Weierstrass Theorem (Real Version)**
+
+Let $X$ be a compact Hausdorff space and let $\mathcal{A} \subseteq C(X, \mathbb{R})$ be a subalgebra that:
+
+1. **Separates points:** for any $x \neq y$ in $X$, there exists $f \in \mathcal{A}$ with $f(x) \neq f(y)$.
+2. **Vanishes nowhere:** for every $x \in X$, there exists $f \in \mathcal{A}$ with $f(x) \neq 0$.
+
+Then $\mathcal{A}$ is dense in $C(X, \mathbb{R})$ with respect to the supremum norm.
+
+</div>
+
+In short: every continuous function on a compact space can be uniformly approximated by functions in any "sufficiently rich" subalgebra.
+
+---
+
+## The Classical Weierstrass Theorem
+
+The original theorem (Weierstrass, 1885) is a special case:
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Weierstrass Approximation Theorem**
+
+Every continuous function $f: [a, b] \to \mathbb{R}$ can be uniformly approximated by polynomials. That is, for every $\varepsilon > 0$ there exists a polynomial $p$ with:
+
+$$\sup_{x \in [a,b]} |f(x) - p(x)| < \varepsilon$$
+
+</div>
+
+This follows from Stone-Weierstrass by taking $X = [a,b]$ and $\mathcal{A} = \mathbb{R}[x]$ (the polynomials), which separate points (the identity $x$ does) and vanish nowhere (the constant $1$ does).
+
+---
+
+## Why It Matters
+
+The Stone-Weierstrass theorem is one of the most widely used results in analysis. Its power lies in reducing questions about *all* continuous functions to questions about a *specific* class:
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+- To prove a property holds for all continuous functions, prove it for the subalgebra and show it is preserved under uniform limits.
+- To construct approximation schemes, verify the Stone-Weierstrass hypotheses.
+
+</div>
+
+---
+
+## Key Lemma: Lattice Closure
+
+The proof hinges on showing that the closure $\bar{\mathcal{A}}$ is a **lattice**: it is closed under $\max$ and $\min$.
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**Lemma 1.** If $f \in \bar{\mathcal{A}}$, then $|f| \in \bar{\mathcal{A}}$.
+
+**Proof.** By the classical Weierstrass theorem, the function $|t|$ on $[-\|f\|, \|f\|]$ can be uniformly approximated by polynomials $p_n(t)$ with $p_n(0) = 0$. Then $p_n \circ f \in \bar{\mathcal{A}}$ (since $\bar{\mathcal{A}}$ is an algebra) and $p_n \circ f \to |f|$ uniformly. $\square$
+
+</div>
+
+**Corollary.** Since $\max(f, g) = \frac{f+g+|f-g|}{2}$ and $\min(f, g) = \frac{f+g-|f-g|}{2}$, the closure $\bar{\mathcal{A}}$ is closed under $\max$ and $\min$.
+
+---
+
+## Proof of the Stone-Weierstrass Theorem
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+Let $f \in C(X, \mathbb{R})$ and $\varepsilon > 0$. We must find $g \in \bar{\mathcal{A}}$ with $\|f - g\|_\infty < \varepsilon$.
+
+**Step 1 — Interpolation at two points.** For any $x, y \in X$, there exists $h_{xy} \in \bar{\mathcal{A}}$ with $h_{xy}(x) = f(x)$ and $h_{xy}(y) = f(y)$.
+
+*Proof:* Since $\mathcal{A}$ separates points and vanishes nowhere, for any two points $x \neq y$ and any values $\alpha, \beta$, we can find $h \in \mathcal{A}$ with $h(x) = \alpha$ and $h(y) = \beta$. (Use the separation and non-vanishing properties to build appropriate linear combinations.)
+
+**Step 2 — Approximation from below at each point.** Fix $x \in X$. For each $y \in X$, let $h_{xy}$ be as above. Since $h_{xy}(y) = f(y)$, continuity gives an open set $U_y \ni y$ with $h_{xy}(t) > f(t) - \varepsilon$ for $t \in U_y$.
+
+By compactness, finitely many $U_{y_1}, \ldots, U_{y_k}$ cover $X$. Define:
+
+$$g_x = \max(h_{xy_1}, \ldots, h_{xy_k}) \in \bar{\mathcal{A}}$$
+
+Then $g_x(t) > f(t) - \varepsilon$ for all $t \in X$ and $g_x(x) = f(x)$.
+
+**Step 3 — Approximation from above.** Since $g_x(x) = f(x)$, continuity gives an open set $V_x \ni x$ with $g_x(t) < f(t) + \varepsilon$ for $t \in V_x$.
+
+By compactness, finitely many $V_{x_1}, \ldots, V_{x_m}$ cover $X$. Define:
+
+$$g = \min(g_{x_1}, \ldots, g_{x_m}) \in \bar{\mathcal{A}}$$
+
+Then for all $t \in X$:
+- $g(t) > f(t) - \varepsilon$ (since each $g_{x_i}(t) > f(t) - \varepsilon$).
+- $g(t) < f(t) + \varepsilon$ (since for some $i$, $t \in V_{x_i}$ and $g_{x_i}(t) < f(t) + \varepsilon$).
+
+Therefore $\|f - g\|_\infty < \varepsilon$ and $g \in \bar{\mathcal{A}}$. $\square$
+
+</div>
+
+---
+
+## The Complex Version
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**Stone-Weierstrass (Complex Version).** Let $X$ be compact Hausdorff. A *self-adjoint* subalgebra $\mathcal{A} \subseteq C(X, \mathbb{C})$ that separates points and vanishes nowhere is dense in $C(X, \mathbb{C})$.
+
+Here "self-adjoint" means: $f \in \mathcal{A} \implies \bar{f} \in \mathcal{A}$.
+
+</div>
+
+Without the self-adjoint condition, the theorem fails: on the unit circle $S^1$, the algebra generated by $z = e^{i\theta}$ (without $\bar{z}$) consists of boundary values of holomorphic functions and is *not* dense in $C(S^1, \mathbb{C})$.
+
+---
+
+## Applications
+
+### Trigonometric Approximation
+
+The trigonometric polynomials $\sum_{k=-N}^{N} c_k e^{ik\theta}$ form a self-adjoint subalgebra of $C(S^1, \mathbb{C})$ that separates points and vanishes nowhere. By Stone-Weierstrass, they are dense — justifying Fourier analysis.
+
+### Polynomial Approximation on Products
+
+On $[0,1]^n$, the polynomials in $n$ variables separate points and form an algebra. Stone-Weierstrass gives uniform approximation by multivariate polynomials.
+
+### Müntz-Szász Theorem
+
+Which subsets $S \subseteq \{0, 1, 2, \ldots\}$ have the property that $\operatorname{span}\{x^n : n \in S\}$ is dense in $C[0,1]$? The Müntz-Szász theorem answers: if and only if $0 \in S$ and $\sum_{n \in S, n > 0} 1/n = \infty$. Stone-Weierstrass provides the framework.
+
+### Korovkin's Theorem
+
+If a sequence of positive linear operators satisfies $T_n(1) \to 1$, $T_n(x) \to x$, $T_n(x^2) \to x^2$ uniformly on $[a,b]$, then $T_n(f) \to f$ uniformly for all $f \in C[a,b]$. This powerful result, used to prove the Bernstein polynomial approximation, connects to Stone-Weierstrass.
+
+---
+
+## Bernstein's Constructive Proof
+
+While Stone-Weierstrass is an existence result, Bernstein (1912) gave a constructive proof of Weierstrass's theorem using the **Bernstein polynomials**:
+
+$$B_n(f)(x) = \sum_{k=0}^{n} f\!\left(\frac{k}{n}\right) \binom{n}{k} x^k (1-x)^{n-k}$$
+
+One can verify $B_n(f) \to f$ uniformly on $[0,1]$ using the law of large numbers (or direct estimation). This is an explicit approximation, unlike the abstract Stone-Weierstrass argument.
+
+---
+
+## Failure Without Hypotheses
+
+**Without point separation:** The constant functions $\mathcal{A} = \mathbb{R}$ on $[0,1]$ form an algebra but do not separate points. The closure is just $\mathbb{R}$, not all of $C[0,1]$.
+
+**Without non-vanishing:** The algebra $\{f \in C[0,1] : f(0) = 0\}$ separates points but vanishes at $0$. Its closure is itself — it misses all functions with $f(0) \neq 0$.
+
+**Without compactness:** On $\mathbb{R}$, polynomials separate points and vanish nowhere, but they are *not* dense in the bounded continuous functions (a polynomial that is close to a bounded function on all of $\mathbb{R}$ must itself be bounded, hence constant).
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&\mathcal{A} \subseteq C(X, \mathbb{R}), \;\; X \text{ compact Hausdorff} \\[6pt]
+&\mathcal{A} \text{ subalgebra, separates points, vanishes nowhere} \\[6pt]
+&\Downarrow \\[6pt]
+&\overline{\mathcal{A}} = C(X, \mathbb{R}) \quad \text{(uniform closure)} \\[8pt]
+&\text{Special case: } \overline{\mathbb{R}[x]} = C[a,b] \quad \text{(Weierstrass)}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Rudin, W., *Principles of Mathematical Analysis*, 3rd edition, McGraw-Hill, 1976.
+- Folland, G. B., *Real Analysis*, 2nd edition, Wiley, 1999.
+- Conway, J. B., *A Course in Functional Analysis*, 2nd edition, Springer, 1990.
+- [Wikipedia — Stone-Weierstrass theorem](https://en.wikipedia.org/wiki/Stone%E2%80%93Weierstrass_theorem)
+- [Wikipedia — Weierstrass approximation theorem](https://en.wikipedia.org/wiki/Weierstrass_approximation_theorem)
+- [MIT OpenCourseWare — Real Analysis](https://ocw.mit.edu/courses/18-100a-real-analysis-fall-2020/)

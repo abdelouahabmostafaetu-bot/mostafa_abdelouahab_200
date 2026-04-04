@@ -1,0 +1,240 @@
+---
+title: "The Prime Number Theorem: How Primes Are Distributed"
+date: "2026-01-19"
+category: "Mathematics"
+excerpt: "We explore the Prime Number Theorem — the asymptotic law governing the distribution of prime numbers — its history from Gauss and Legendre to the landmark proofs by Hadamard and de la Vallée-Poussin, and the deep connection between primes and the Riemann zeta function."
+tags: ["Number Theory", "Analysis"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**The Prime Number Theorem (Hadamard & de la Vallée-Poussin, 1896)**
+
+Let $\pi(x)$ denote the number of primes not exceeding $x$. Then:
+
+$$\pi(x) \sim \frac{x}{\ln x} \quad \text{as } x \to \infty$$
+
+Equivalently, $\displaystyle\lim_{x \to \infty} \frac{\pi(x)}{x / \ln x} = 1$.
+
+</div>
+
+In words: among the first $x$ positive integers, roughly $x / \ln x$ of them are prime, and this approximation becomes increasingly accurate (in relative terms) as $x$ grows.
+
+---
+
+## The Prime Counting Function
+
+For any real number $x \geq 1$, the **prime counting function** is:
+
+$$\pi(x) = \#\{p \leq x : p \text{ is prime}\}$$
+
+Some values:
+
+| $x$ | $\pi(x)$ | $x/\ln x$ | Ratio |
+|---|---|---|---|
+| $10^3$ | 168 | 145 | 1.16 |
+| $10^6$ | 78498 | 72382 | 1.08 |
+| $10^9$ | 50847534 | 48254942 | 1.05 |
+| $10^{12}$ | 37607912018 | 36191206825 | 1.04 |
+
+The ratio $\pi(x) / (x/\ln x)$ slowly approaches $1$, confirming the theorem.
+
+---
+
+## A Better Approximation: The Logarithmic Integral
+
+While $x / \ln x$ captures the leading behavior, a far better approximation is the **logarithmic integral**:
+
+$$\operatorname{Li}(x) = \int_2^x \frac{dt}{\ln t}$$
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Refined Prime Number Theorem**
+
+$$\pi(x) \sim \operatorname{Li}(x) \quad \text{as } x \to \infty$$
+
+</div>
+
+Integration by parts gives $\operatorname{Li}(x) = \frac{x}{\ln x} + \frac{x}{(\ln x)^2} + \frac{2x}{(\ln x)^3} + \cdots$, so $\operatorname{Li}(x)$ includes lower-order correction terms.
+
+For $x = 10^{12}$: $\pi(x) = 37607912018$ while $\operatorname{Li}(x) \approx 37607950281$, an error of only $0.0001\%$.
+
+---
+
+## Historical Background
+
+### Early Observations
+
+The ancient Greeks knew there are infinitely many primes (Euclid, c. 300 BC), but the *density* of primes remained mysterious for millennia.
+
+Around 1792, the 15-year-old **Carl Friedrich Gauss** examined tables of primes and conjectured that the density of primes near $x$ is approximately $1/\ln x$. He wrote in a letter much later:
+
+> *"I noticed as early as 1792 or 1793 that the density of primes around $t$ is approximately $1/\ln t$."*
+
+**Adrien-Marie Legendre** independently conjectured in 1798 that $\pi(x) \approx x / (\ln x - A)$ for a constant $A \approx 1.08366$.
+
+### Chebyshev's Bounds
+
+**Pafnuty Chebyshev** (1850) proved that if the limit $\lim_{x \to \infty} \pi(x) / (x / \ln x)$ exists, it must equal $1$. He also established the bounds:
+
+$$0.921 \cdot \frac{x}{\ln x} < \pi(x) < 1.106 \cdot \frac{x}{\ln x}$$
+
+for sufficiently large $x$, but could not prove the limit exists.
+
+### The 1896 Proofs
+
+The theorem was independently proved in 1896 by **Jacques Hadamard** and **Charles Jean de la Vallée-Poussin**, both using complex analysis and properties of the Riemann zeta function.
+
+---
+
+## The Riemann Zeta Function
+
+The key to proving PNT is the **Riemann zeta function**:
+
+$$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s} \quad \text{for } \operatorname{Re}(s) > 1$$
+
+### Euler's Product Formula
+
+Euler discovered that $\zeta(s)$ has a product over primes:
+
+$$\zeta(s) = \prod_{p \text{ prime}} \frac{1}{1 - p^{-s}} \quad \text{for } \operatorname{Re}(s) > 1$$
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+**Proof.** Each factor $(1 - p^{-s})^{-1} = \sum_{k=0}^{\infty} p^{-ks}$. Multiplying over all primes and using the fundamental theorem of arithmetic (unique prime factorization):
+
+$$\prod_p \sum_{k=0}^{\infty} p^{-ks} = \sum_{n=1}^{\infty} n^{-s} = \zeta(s) \quad \square$$
+
+</div>
+
+This product formula encodes the distribution of primes in the analytic properties of $\zeta(s)$.
+
+### The Critical Connection
+
+Taking logarithmic derivatives of the Euler product relates $\zeta'/\zeta$ to a sum over prime powers, which connects zeros of $\zeta(s)$ to the distribution of primes. Specifically, the **explicit formula** of Riemann gives:
+
+$$\psi(x) = x - \sum_\rho \frac{x^\rho}{\rho} - \ln(2\pi) - \frac{1}{2}\ln(1 - x^{-2})$$
+
+where $\psi(x) = \sum_{p^k \leq x} \ln p$ is the **Chebyshev function** and the sum runs over the non-trivial zeros $\rho$ of $\zeta(s)$.
+
+---
+
+## Why PNT Follows from Non-Vanishing on $\operatorname{Re}(s) = 1$
+
+The proof of PNT reduces to showing:
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0",
+  textAlign: "center"
+}}>
+
+$$\zeta(1 + it) \neq 0 \quad \text{for all } t \in \mathbb{R}, \; t \neq 0$$
+
+</div>
+
+That is, $\zeta(s)$ has no zeros on the line $\operatorname{Re}(s) = 1$. This is what Hadamard and de la Vallée-Poussin proved.
+
+The standard argument uses the inequality:
+
+$$\zeta(\sigma)^3 \cdot |\zeta(\sigma + it)|^4 \cdot |\zeta(\sigma + 2it)| \geq 1 \quad \text{for } \sigma > 1$$
+
+which follows from the identity $3 + 4\cos\theta + \cos 2\theta = 2(1 + \cos\theta)^2 \geq 0$.
+
+If $\zeta(1 + it_0) = 0$, then the factor $|\zeta(\sigma + it_0)|^4$ would vanish as $\sigma \to 1^+$ fast enough to force the product below $1$ — a contradiction.
+
+---
+
+## The Equivalent Formulation
+
+The PNT is equivalent to the statement about the Chebyshev function:
+
+$$\psi(x) \sim x \quad \text{as } x \to \infty$$
+
+where $\psi(x) = \sum_{n \leq x} \Lambda(n)$ and $\Lambda(n)$ is the **von Mangoldt function**:
+
+$$\Lambda(n) = \begin{cases} \ln p & \text{if } n = p^k \text{ for some prime } p \\ 0 & \text{otherwise} \end{cases}$$
+
+This formulation is often more natural for analytic proofs.
+
+---
+
+## The Erdős–Selberg Elementary Proof
+
+In 1949, **Atle Selberg** and **Paul Erdős** found an "elementary" proof of PNT that avoids complex analysis entirely. The key is Selberg's identity:
+
+$$\psi(x)\ln x + \sum_{p \leq x} (\ln p)\,\psi(x/p) = 2x\ln x + O(x)$$
+
+From this, PNT follows by careful estimation. The proof was elementary in the technical sense (no complex analysis) but not simple — it was a tour de force of real-variable methods.
+
+---
+
+## Error Terms and the Riemann Hypothesis
+
+The PNT with its best known error term is:
+
+$$\pi(x) = \operatorname{Li}(x) + O\!\left(x \exp\!\left(-c\sqrt{\ln x}\right)\right)$$
+
+for some constant $c > 0$.
+
+If the **Riemann Hypothesis** (all non-trivial zeros of $\zeta(s)$ have real part $1/2$) is true, then the error term improves dramatically:
+
+$$\pi(x) = \operatorname{Li}(x) + O(\sqrt{x}\, \ln x)$$
+
+This is the best possible up to the logarithmic factor — the zeros of $\zeta(s)$ on the critical line create oscillations of order $\sqrt{x}$ in $\pi(x)$.
+
+---
+
+## Primes in Arithmetic Progressions
+
+Dirichlet (1837) proved that every arithmetic progression $a, a+d, a+2d, \ldots$ with $\gcd(a,d) = 1$ contains infinitely many primes. The PNT generalizes to give the asymptotic count:
+
+$$\pi(x; d, a) \sim \frac{1}{\varphi(d)} \cdot \frac{x}{\ln x}$$
+
+where $\varphi(d)$ is Euler's totient function. Primes are equidistributed among the $\varphi(d)$ residue classes coprime to $d$.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&\pi(x) \sim \frac{x}{\ln x} \sim \operatorname{Li}(x) \\[8pt]
+&\text{Density of primes near } x \approx \frac{1}{\ln x} \\[8pt]
+&\text{Proved via: } \zeta(1+it) \neq 0 \text{ for all } t \neq 0 \\[8pt]
+&\text{Best error: } \pi(x) - \operatorname{Li}(x) = O(\sqrt{x}\ln x) \quad \text{(assuming RH)}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Hardy, G. H. and Wright, E. M., *An Introduction to the Theory of Numbers*, 6th edition, Oxford University Press, 2008.
+- Davenport, H., *Multiplicative Number Theory*, 3rd edition, Springer, 2000.
+- Iwaniec, H. and Kowalski, E., *Analytic Number Theory*, AMS, 2004.
+- [Wikipedia — Prime number theorem](https://en.wikipedia.org/wiki/Prime_number_theorem)
+- [Wikipedia — Riemann zeta function](https://en.wikipedia.org/wiki/Riemann_zeta_function)
+- [Tao, T., "254A: Analytic Prime Number Theorem"](https://terrytao.wordpress.com/2014/12/09/254a-analytic-prime-number-theorem/)

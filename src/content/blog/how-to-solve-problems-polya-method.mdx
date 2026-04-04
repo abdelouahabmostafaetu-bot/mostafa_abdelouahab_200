@@ -1,0 +1,260 @@
+---
+title: "How to Solve It: Pólya's Problem-Solving Framework"
+date: "2026-01-15"
+category: "Study Guide"
+excerpt: "An in-depth look at George Pólya's four-step problem-solving method, with concrete mathematical examples showing how to apply each step in practice."
+tags: ["Problem Solving"]
+---
+
+## The Book That Changed Problem Solving
+
+In 1945, the Hungarian-American mathematician George Pólya published *How to Solve It*, a slim book that became one of the most influential works on mathematical problem solving ever written. Over a million copies have been sold, and its ideas have shaped how mathematics is taught worldwide.
+
+Pólya's central insight was that problem solving is a **skill** that can be taught and learned, not just an innate talent. He distilled the process into four steps, each with a set of guiding questions.
+
+This post explains Pólya's framework in detail and shows how to apply it to real mathematical problems.
+
+---
+
+## The Four Steps
+
+<div style={{
+  border: "2px solid #2563eb",
+  borderRadius: "12px",
+  padding: "22px",
+  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+  margin: "28px 0"
+}}>
+
+**Pólya's Four Steps:**
+
+1. **Understand the problem.**
+2. **Devise a plan.**
+3. **Carry out the plan.**
+4. **Look back.**
+
+</div>
+
+These steps seem obvious, but the power lies in the specific questions Pólya associates with each step. Most students fail not because they lack knowledge, but because they skip Steps 1 and 4.
+
+---
+
+## Step 1: Understand the Problem
+
+This is the most underrated step. Many students read a problem once and immediately start calculating. Pólya insists that you must first understand the problem completely.
+
+### Key Questions
+
+- What is the **unknown**? What are you asked to find or prove?
+- What are the **data**? What information is given?
+- What are the **conditions**? What relationships connect the unknown to the data?
+- Is it possible to satisfy all the conditions simultaneously?
+- Can you **restate** the problem in your own words?
+- Can you draw a **figure** or **diagram**?
+
+### Example
+
+**Problem.** Prove that if $a_1, a_2, \ldots, a_n$ are positive real numbers with $a_1 a_2 \cdots a_n = 1$, then $a_1 + a_2 + \cdots + a_n \ge n$.
+
+**Understanding the problem:**
+- Unknown: We need to prove an inequality.
+- Data: $n$ positive real numbers whose product is 1.
+- Condition: The product constraint $a_1 a_2 \cdots a_n = 1$.
+- Restatement: The arithmetic mean of positive numbers with product 1 is at least 1.
+- Connection: This is the AM-GM inequality.
+
+Already, just by restating the problem, we have identified what tool to use.
+
+---
+
+## Step 2: Devise a Plan
+
+This is the creative step. Pólya lists many strategies, and an experienced problem solver has all of them available:
+
+### Strategy 1: Look for a Pattern
+
+Try small cases. If the problem involves $n$, try $n = 1, 2, 3$ and look for a pattern.
+
+For our example: when $n = 2$, we need $a + b \ge 2$ given $ab = 1$. We can write $b = 1/a$ and check that $a + 1/a \ge 2$ for $a > 0$, which is equivalent to $(a - 1)^2 \ge 0$. This suggests the general proof might use a similar algebraic trick — or induction.
+
+### Strategy 2: Use a Related Problem
+
+Have you seen a similar problem before? Can you use its result or method?
+
+The AM-GM inequality states:
+
+$$
+\frac{a_1 + a_2 + \cdots + a_n}{n} \ge \sqrt[n]{a_1 a_2 \cdots a_n}.
+$$
+
+Since the product is 1, the right side equals 1, and we immediately get $a_1 + a_2 + \cdots + a_n \ge n$.
+
+### Strategy 3: Work Backwards
+
+Start from the conclusion and ask: what would I need to prove this?
+
+### Strategy 4: Introduce Auxiliary Elements
+
+Sometimes adding a new variable, function, or construction reveals the solution.
+
+### Strategy 5: Decompose and Recombine
+
+Break the problem into smaller subproblems. Solve each one, then combine the results.
+
+### Strategy 6: Specialize, then Generalize
+
+Solve a simpler version of the problem first, then adapt the method to the general case.
+
+### Strategy 7: Draw a Picture
+
+In geometry, analysis, and many other areas, a good diagram can immediately suggest the proof.
+
+### Strategy 8: Consider Extreme Cases
+
+What happens when a variable is very large, very small, zero, or equal to another variable?
+
+---
+
+## Step 3: Carry Out the Plan
+
+Once you have a plan, execute it carefully. Check each step.
+
+### Key Advice
+
+- If you get stuck, go back to Step 2 — your plan might need revision.
+- Write clearly. Even in scratch work, sloppy notation leads to errors.
+- Check that each step follows logically from the previous one.
+
+### Example Continued
+
+Let us carry out the AM-GM approach.
+
+*Proof.* By the AM-GM inequality,
+
+$$
+\frac{a_1 + a_2 + \cdots + a_n}{n} \ge \sqrt[n]{a_1 a_2 \cdots a_n} = \sqrt[n]{1} = 1.
+$$
+
+Multiplying both sides by $n$ gives $a_1 + a_2 + \cdots + a_n \ge n$. $\square$
+
+Alternatively, we can prove this by induction, which is more elementary.
+
+*Proof by induction.* **Base case:** $n = 1$. If $a_1 = 1$, then $a_1 \ge 1$. ✓
+
+**Inductive step:** Assume the result holds for $n - 1$ positive reals. Let $a_1, \ldots, a_n$ be positive reals with product 1. Without loss of generality, assume $a_1 \le 1 \le a_2$ (such a pair must exist since the product is 1 and not all terms can be strictly greater than 1 or strictly less than 1).
+
+Define $b_1 = a_1 a_2$ and keep $b_i = a_i$ for $i = 3, \ldots, n$. Then $b_1 b_3 \cdots b_n = 1$ and by the inductive hypothesis:
+
+$$
+b_1 + b_3 + \cdots + b_n \ge n - 1.
+$$
+
+So
+
+$$
+a_1 + a_2 + \cdots + a_n = a_1 + a_2 + (a_3 + \cdots + a_n).
+$$
+
+We need to show that $a_1 + a_2 \ge 1 + a_1 a_2$. This is equivalent to $(1 - a_1)(a_2 - 1) \ge 0$, which holds because $a_1 \le 1 \le a_2$.
+
+Thus $a_1 + a_2 + \cdots + a_n \ge 1 + a_1 a_2 + a_3 + \cdots + a_n = 1 + b_1 + b_3 + \cdots + b_n \ge 1 + (n-1) = n$. $\square$
+
+---
+
+## Step 4: Look Back
+
+This step is what separates good problem solvers from great ones. After solving the problem:
+
+### Check the Result
+
+- Does the answer make sense?
+- Can you verify it with a specific example?
+- Can you derive the result differently?
+
+### Reflect on the Method
+
+- Can you solve it a different way?
+- Can you generalize the result?
+- What was the key idea?
+- Could you use this method on other problems?
+
+### For Our Example
+
+- **Check:** For $n = 2$, $a = 2, b = 1/2$: sum is $2.5 \ge 2$. ✓
+- **Generalize:** The result is the AM-GM inequality, which generalizes to weighted means.
+- **Key idea:** The constraint "product equals 1" combined with the inequality between arithmetic and geometric means.
+
+---
+
+## Pólya's Heuristics in Practice
+
+### Example: A Geometry Problem
+
+**Problem.** Prove that in any triangle, the sum of any two sides is greater than the third side.
+
+**Step 1: Understand.** We need to show $a + b > c$ for any sides $a, b, c$ of a triangle.
+
+**Step 2: Plan.** This is the triangle inequality. A direct proof uses the fact that the shortest path between two points is a straight line. Alternatively, use the definition of a triangle: three non-collinear points.
+
+**Step 3: Execute.** In a triangle with vertices $A, B, C$, the side $AB$ is a straight line segment of length $c$. The path from $A$ to $C$ to $B$ has length $a + b$. Since a straight line is the shortest path, $a + b \ge c$. Equality holds only if $A$, $C$, $B$ are collinear, which contradicts the triangle assumption. So $a + b > c$.
+
+**Step 4: Look back.** This proves one instance; by symmetry, $a + c > b$ and $b + c > a$ as well. The key idea is the shortest-path property.
+
+### Example: A Number Theory Problem
+
+**Problem.** Show that every integer greater than 1 has a prime divisor.
+
+**Step 1: Understand.** For any $n > 1$, there exists a prime $p$ with $p \mid n$.
+
+**Step 2: Plan.** Try strong induction. If $n$ is prime, we are done. If $n$ is composite, write $n = ab$ with $1 < a < n$, and apply the hypothesis to $a$.
+
+**Step 3: Execute.**
+
+*Proof by strong induction.* **Base case:** $n = 2$ is prime, so it is its own prime divisor.
+
+**Inductive step:** Assume every integer $k$ with $2 \le k < n$ has a prime divisor. If $n$ is prime, then $n$ itself is a prime divisor of $n$. If $n$ is not prime, then $n = ab$ with $1 < a, b < n$. By the inductive hypothesis, $a$ has a prime divisor $p$. Then $p \mid a$ and $a \mid n$, so $p \mid n$. $\square$
+
+**Step 4: Look back.** This is the first step toward proving the fundamental theorem of arithmetic. The key idea is reducing a composite number to a smaller factor.
+
+---
+
+## Beyond Pólya: Modern Problem-Solving Resources
+
+Pólya's framework has been expanded by many authors:
+
+- **Paul Zeitz**, *The Art and Craft of Problem Solving*, emphasizes tactical and strategic thinking.
+- **Arthur Engel**, *Problem-Solving Strategies*, catalogs hundreds of techniques with examples from mathematical olympiads.
+- **Terence Tao** has written extensively on problem-solving strategies in his blog and in *Solving Mathematical Problems: A Personal Perspective*.
+
+These books build on Pólya's foundation with more advanced techniques and harder problems.
+
+---
+
+## Why Pólya's Method Works
+
+The method works because it imposes **structure** on a process that otherwise feels chaotic. When you are stuck, instead of staring at the page, you have a checklist of specific actions to try.
+
+Over time, the four steps become automatic. You will find yourself naturally asking "What is the unknown?" and "Have I seen something like this before?" without consciously thinking about Pólya.
+
+That is the goal: to internalize the method so deeply that it becomes a natural part of how you think about mathematics.
+
+---
+
+## Summary
+
+| Step | Key Question | Action |
+| --- | --- | --- |
+| Understand | What am I asked to find or prove? | Restate, draw diagrams, identify data and conditions |
+| Plan | How can I connect the data to the unknown? | Use related problems, try special cases, work backwards |
+| Execute | Does each step follow logically? | Write carefully, check each deduction |
+| Look back | Can I verify? Can I generalize? | Test with examples, find alternative proofs |
+
+---
+
+## References
+
+- George Pólya, *How to Solve It*, Princeton University Press, 1945 (reprinted 2014).
+- George Pólya, *Mathematics and Plausible Reasoning* (2 volumes), Princeton University Press, 1954.
+- Paul Zeitz, *The Art and Craft of Problem Solving*, Wiley, 2017.
+- Arthur Engel, *Problem-Solving Strategies*, Springer, 1998.
+- Terence Tao, [*Solving Mathematical Problems: A Personal Perspective*](https://terrytao.wordpress.com/books/solving-mathematical-problems/), Oxford University Press, 2006.

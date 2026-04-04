@@ -1,0 +1,194 @@
+---
+title: "Andrew Wiles: The Man Who Conquered Fermat's Last Theorem"
+date: "2026-02-12"
+category: "Mathematics"
+excerpt: "The dramatic story of Andrew Wiles's seven-year secret quest to prove Fermat's Last Theorem — a problem that had defied the world's greatest mathematicians for over 350 years."
+tags: ["Profiles", "Number Theory"]
+---
+
+## A Ten-Year-Old's Dream
+
+Andrew John Wiles was born on 11 April 1953 in Cambridge, England. His father, Maurice Frank Wiles, was Regius Professor of Divinity at the University of Oxford. Growing up in an academic household, Andrew had access to books and intellectual stimulation from an early age.
+
+At the age of ten, browsing in the Milton Road Public Library in Cambridge, Wiles encountered Fermat's Last Theorem for the first time. The statement was deceptively simple: there are no positive integer solutions to
+
+$$x^n + y^n = z^n \quad \text{for any integer } n \geq 3$$
+
+Pierre de Fermat had famously written in the margin of his copy of Diophantus's *Arithmetica* around 1637: "I have discovered a truly marvellous proof of this, which this margin is too narrow to contain."
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> "It looked so simple, and yet all the great mathematicians in history couldn't solve it. Here was a problem that I, a ten-year-old, could understand and I knew from that moment that I would never let it go. I had to solve it."
+> — Andrew Wiles
+
+</div>
+
+---
+
+## Education and Early Career
+
+Wiles studied mathematics at Merton College, Oxford, earning his Bachelor's degree in 1974. He then moved to Clare College, Cambridge, for his PhD, supervised by John Coates. His doctoral thesis was on the Iwasawa theory of elliptic curves — work that would prove unexpectedly relevant to his later triumph.
+
+After positions at Harvard, the Sonderforschungsbereich Theoretische Mathematik in Bonn, and the Institut des Hautes Études Scientifiques, Wiles joined Princeton University in 1982, where he established himself as a leading figure in number theory.
+
+---
+
+## The Taniyama–Shimura–Weil Conjecture
+
+The breakthrough that made the proof of Fermat's Last Theorem conceivable came not from Wiles but from a chain of ideas developed by several other mathematicians.
+
+In the 1950s, Yutaka Taniyama and Goro Shimura conjectured a deep connection between two seemingly unrelated mathematical objects: **elliptic curves** and **modular forms**.
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0"
+}}>
+
+**The Modularity Conjecture (Taniyama–Shimura–Weil)**
+
+Every elliptic curve over $\mathbb{Q}$ is **modular** — that is, its $L$-function coincides with the $L$-function of a modular form of weight 2.
+
+More precisely, if $E$ is an elliptic curve over $\mathbb{Q}$ with conductor $N$, then there exists a newform $f \in S_2(\Gamma_0(N))$ such that
+
+$$a_p(E) = a_p(f) \quad \text{for all primes } p \nmid N$$
+
+where $a_p(E) = p + 1 - |E(\mathbb{F}_p)|$ counts points on $E$ modulo $p$.
+
+</div>
+
+The connection to Fermat's Last Theorem came through the work of Gerhard Frey, Jean-Pierre Serre, and Kenneth Ribet. In 1986, Ribet proved that if the modularity conjecture were true for **semistable** elliptic curves, then Fermat's Last Theorem would follow automatically.
+
+The key idea: if $a^p + b^p = c^p$ were a nontrivial solution to Fermat's equation, one could construct the **Frey curve**:
+
+$$E: \quad y^2 = x(x - a^p)(x + b^p)$$
+
+Ribet showed that this curve cannot be modular — it would correspond to a modular form of weight 2 and level 2, but no such form exists. Therefore, if all semistable elliptic curves are modular, the Frey curve cannot exist, and Fermat's Last Theorem holds.
+
+---
+
+## Seven Years of Secret Work
+
+When Wiles heard about Ribet's result in 1986, he made a momentous decision: he would prove the modularity conjecture for semistable elliptic curves. He would work in secret, telling almost no one — not even his closest colleagues.
+
+For seven years, from 1986 to 1993, Wiles worked in the attic study of his Princeton home, often for hours at a time. He published other papers during this period to avoid arousing suspicion, but his main focus was always the modularity conjecture.
+
+His strategy combined several powerful mathematical frameworks:
+
+- **Galois representations**: Wiles studied the $p$-adic Galois representation $\rho_{E,p}: \operatorname{Gal}(\overline{\mathbb{Q}}/\mathbb{Q}) \to \mathrm{GL}_2(\mathbb{Z}_p)$ associated to an elliptic curve $E$.
+- **Deformation theory**: Following ideas of Barry Mazur, he studied the space of all Galois representations that "deform" a given residual representation $\overline{\rho}$.
+- **Hecke algebras and $R = T$ theorems**: The heart of the proof involved showing that a certain deformation ring $R$ is isomorphic to a Hecke algebra $T$ — an instance of what are now called **modularity lifting theorems**.
+
+---
+
+## The Announcement: June 1993
+
+On 23 June 1993, Wiles delivered the third of a series of lectures at the Isaac Newton Institute in Cambridge. The title of the lecture series had been deliberately vague — "Modular Forms, Elliptic Curves, and Galois Representations" — but by the second lecture, rumors were spreading.
+
+At the end of the third lecture, Wiles wrote on the blackboard:
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Theorem.** Every semistable elliptic curve over $\mathbb{Q}$ is modular.
+
+**Corollary.** Fermat's Last Theorem is true.
+
+</div>
+
+The audience erupted in applause. The news was front-page headlines around the world.
+
+---
+
+## The Gap and the Fix
+
+During the peer review process in the fall of 1993, a serious gap was discovered in one step of the proof — specifically in the use of an Euler system argument to control the Selmer group. Wiles struggled for months to repair the gap, and by the end of 1993, many feared the proof might fail.
+
+In September 1994, just as Wiles was ready to give up, he had a flash of insight. He realized that the original Iwasawa-theoretic approach that he had abandoned years earlier, combined with the Hecke algebra approach, could fill the gap:
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> "I was sitting at my desk examining the Kolyvagin–Flach method. It wasn't working, it wasn't working, and I sat down one Monday morning in September. I was trying to see exactly why it didn't work, and suddenly — totally unexpectedly — I had this incredible revelation. It was the most important moment of my working life."
+> — Andrew Wiles
+
+</div>
+
+The corrected proof, written jointly with his former student Richard Taylor, was published in two papers in the *Annals of Mathematics* in May 1995.
+
+---
+
+## The Proof in Outline
+
+The proof proceeds in several stages:
+
+1. **Reduce** Fermat's Last Theorem to the modularity of semistable elliptic curves (via Frey, Serre, Ribet).
+2. **Reduce** modularity to showing that $R \cong T$, where $R$ is a universal deformation ring and $T$ is a Hecke algebra.
+3. **Prove** the $R = T$ theorem by establishing:
+   - A **modularity lifting theorem**: if a mod-$p$ Galois representation is modular, then so is any "nice" lift to characteristic zero.
+   - The **residual modularity** of the mod-3 or mod-5 representation (using the Langlands–Tunnell theorem for the mod-3 case).
+4. **Combine** these results to deduce modularity for all semistable elliptic curves.
+
+The proof uses deep results from algebraic number theory, algebraic geometry, commutative algebra, and the theory of automorphic forms. It runs to over 100 pages in the published version.
+
+---
+
+## Awards and Honors
+
+Wiles received extraordinary recognition for his achievement:
+
+- **Schock Prize** (1995)
+- **Royal Medal** (1996) — from the Royal Society
+- **Wolf Prize in Mathematics** (1996)
+- **Abel Prize** (2016) — "for his stunning proof of Fermat's Last Theorem by way of the modularity conjecture for semistable elliptic curves, opening a new era in number theory"
+- **Knighthood** (2000) — appointed Knight Commander of the Order of the British Empire
+
+The Fields Medal was not awarded to Wiles because he was over the age limit of 40 when the proof was completed. However, in 1998, the IMU awarded him a special silver plaque in recognition of his achievement — the only time such an award has been given.
+
+---
+
+## Legacy
+
+Wiles's proof of Fermat's Last Theorem was far more than the resolution of a famous problem. It established the **modularity lifting** paradigm, which became the central technique in the Langlands program for $\mathrm{GL}_2$. Building on Wiles's methods, Christophe Breuil, Brian Conrad, Fred Diamond, and Richard Taylor proved the full modularity theorem for all elliptic curves over $\mathbb{Q}$ in 2001.
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**"I had this very rare privilege of being able to pursue in my adult life what had been my childhood dream."**
+
+— Andrew Wiles
+
+</div>
+
+---
+
+## References
+
+- Wiles, A., "Modular elliptic curves and Fermat's Last Theorem," *Annals of Mathematics*, 141(3), 1995.
+- Taylor, R. and Wiles, A., "Ring-theoretic properties of certain Hecke algebras," *Annals of Mathematics*, 141(3), 1995.
+- Singh, S., *Fermat's Enigma: The Epic Quest to Solve the World's Greatest Mathematical Problem*, Walker, 1997.
+- Cornell, G., Silverman, J., and Stevens, G. (eds.), *Modular Forms and Fermat's Last Theorem*, Springer, 1997.
+- [Wikipedia — Andrew Wiles](https://en.wikipedia.org/wiki/Andrew_Wiles)
+- [Abel Prize 2016 — Citation](https://abelprize.no/abel-prize-laureates/2016)
+- [BBC Horizon — "Fermat's Last Theorem" (documentary)](https://www.bbc.co.uk/programmes/b0074rxx)

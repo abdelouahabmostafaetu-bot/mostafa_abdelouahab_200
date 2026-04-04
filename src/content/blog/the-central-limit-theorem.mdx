@@ -1,0 +1,240 @@
+---
+title: "The Central Limit Theorem: Why the Normal Distribution Is Everywhere"
+date: "2026-02-02"
+category: "Mathematics"
+excerpt: "We state and prove the Central Limit Theorem — the reason the bell curve appears throughout nature, science, and statistics — and explore its assumptions, generalizations, and applications."
+tags: ["Probability", "Statistics"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**The Central Limit Theorem (Lindeberg-Lévy)**
+
+Let $X_1, X_2, \ldots$ be independent and identically distributed random variables with mean $\mu$ and finite variance $\sigma^2 > 0$. Let $S_n = X_1 + \cdots + X_n$. Then:
+
+$$\frac{S_n - n\mu}{\sigma\sqrt{n}} \xrightarrow{d} N(0, 1) \quad \text{as } n \to \infty$$
+
+</div>
+
+In words: regardless of the distribution of the individual $X_i$, their normalized sum converges in distribution to a standard normal. This is why the bell curve appears everywhere — it is the universal attractor for sums of independent random variables.
+
+---
+
+## What Does "Convergence in Distribution" Mean?
+
+The notation $Z_n \xrightarrow{d} Z$ means that for every $a \in \mathbb{R}$ where the CDF of $Z$ is continuous:
+
+$$\lim_{n \to \infty} P(Z_n \leq a) = P(Z \leq a) = \Phi(a)$$
+
+where $\Phi(a) = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^a e^{-t^2/2}\,dt$ is the standard normal CDF.
+
+---
+
+## Intuition
+
+### Why Sums Become Normal
+
+Consider rolling a single die — the distribution is uniform on $\{1, 2, 3, 4, 5, 6\}$. Now roll $n$ dice and sum them:
+
+- $n = 1$: flat distribution (uniform)
+- $n = 2$: triangular distribution
+- $n = 5$: already visibly bell-shaped
+- $n = 30$: nearly indistinguishable from a Gaussian
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+The CLT explains this universality: the specific shape of the original distribution is "washed out" by summation. Only the mean and variance survive in the limit.
+
+</div>
+
+### A Precise Statement
+
+If $\bar{X}_n = S_n/n$ is the sample mean, the CLT equivalently says:
+
+$$\sqrt{n}\left(\bar{X}_n - \mu\right) \xrightarrow{d} N(0, \sigma^2)$$
+
+or in the approximate form used in practice:
+
+$$\bar{X}_n \;\dot\sim\; N\!\left(\mu, \frac{\sigma^2}{n}\right) \quad \text{for large } n$$
+
+---
+
+## Proof via Characteristic Functions
+
+The most elegant proof uses **characteristic functions** (Fourier transforms of probability distributions).
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+**Step 1 — Setup.** Without loss of generality, assume $\mu = 0$ and $\sigma = 1$ (replace $X_i$ by $(X_i - \mu)/\sigma$). We must show:
+
+$$Z_n = \frac{S_n}{\sqrt{n}} = \frac{X_1 + \cdots + X_n}{\sqrt{n}} \xrightarrow{d} N(0,1)$$
+
+**Step 2 — Characteristic function of $Z_n$.** The characteristic function of $X_i$ is $\varphi(t) = E[e^{itX_i}]$. By independence:
+
+$$\varphi_{Z_n}(t) = E\!\left[e^{itZ_n}\right] = \prod_{k=1}^n E\!\left[e^{it X_k / \sqrt{n}}\right] = \left[\varphi\!\left(\frac{t}{\sqrt{n}}\right)\right]^n$$
+
+**Step 3 — Taylor expansion.** Since $E[X_i] = 0$ and $E[X_i^2] = 1$:
+
+$$\varphi(s) = 1 + is \cdot E[X] - \frac{s^2}{2}E[X^2] + o(s^2) = 1 - \frac{s^2}{2} + o(s^2)$$
+
+Substituting $s = t/\sqrt{n}$:
+
+$$\varphi\!\left(\frac{t}{\sqrt{n}}\right) = 1 - \frac{t^2}{2n} + o(1/n)$$
+
+**Step 4 — Take the limit.**
+
+$$\varphi_{Z_n}(t) = \left[1 - \frac{t^2}{2n} + o(1/n)\right]^n \to e^{-t^2/2} \quad \text{as } n \to \infty$$
+
+The function $e^{-t^2/2}$ is the characteristic function of $N(0,1)$.
+
+**Step 5 — Apply Lévy's continuity theorem.** Since $\varphi_{Z_n}(t) \to e^{-t^2/2}$ pointwise and $e^{-t^2/2}$ is continuous at $0$, we conclude $Z_n \xrightarrow{d} N(0,1)$. $\square$
+
+</div>
+
+---
+
+## The Berry-Esseen Theorem
+
+The CLT says the distribution converges — but how fast?
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Berry-Esseen Theorem**
+
+If $E[|X_i|^3] = \rho < \infty$, then:
+
+$$\sup_x \left|P\!\left(\frac{S_n - n\mu}{\sigma\sqrt{n}} \leq x\right) - \Phi(x)\right| \leq \frac{C \rho}{\sigma^3 \sqrt{n}}$$
+
+where $C \leq 0.4748$ is a universal constant.
+
+</div>
+
+The error is $O(1/\sqrt{n})$ — so for practical purposes, $n \geq 30$ often gives a good normal approximation.
+
+---
+
+## Generalizations
+
+### Lindeberg CLT (Non-Identical Distributions)
+
+If $X_1, X_2, \ldots$ are independent (but not necessarily identically distributed) with $E[X_k] = 0$, $\operatorname{Var}(X_k) = \sigma_k^2$, $s_n^2 = \sum_{k=1}^n \sigma_k^2$, and the **Lindeberg condition** holds:
+
+$$\frac{1}{s_n^2} \sum_{k=1}^n E\!\left[X_k^2 \cdot \mathbf{1}_{|X_k| > \varepsilon s_n}\right] \to 0 \quad \text{for every } \varepsilon > 0$$
+
+then $S_n / s_n \xrightarrow{d} N(0,1)$.
+
+### Multivariate CLT
+
+If $\mathbf{X}_1, \mathbf{X}_2, \ldots \in \mathbb{R}^d$ are i.i.d. with mean $\boldsymbol{\mu}$ and covariance matrix $\Sigma$, then:
+
+$$\sqrt{n}(\bar{\mathbf{X}}_n - \boldsymbol{\mu}) \xrightarrow{d} N(\mathbf{0}, \Sigma)$$
+
+### CLT for Dependent Variables
+
+Under various mixing conditions, CLT-type results hold for weakly dependent sequences — essential in time series analysis and ergodic theory.
+
+---
+
+## When the CLT Fails
+
+<div style={{
+  borderLeft: "4px solid #e11d48",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+The CLT requires **finite variance**. If $\operatorname{Var}(X_i) = \infty$, the theorem fails. For example:
+
+- **Cauchy distribution**: $X_i \sim \text{Cauchy}$, then $\bar{X}_n$ is still Cauchy — no convergence to normal.
+- **Stable distributions**: For heavy-tailed distributions with infinite variance, normalized sums converge to non-Gaussian stable laws.
+
+The **generalized CLT** states that the only possible limits of normalized sums are the **$\alpha$-stable distributions** with $0 < \alpha \leq 2$ (the Gaussian corresponds to $\alpha = 2$).
+
+</div>
+
+---
+
+## Applications
+
+### Polling and Surveys
+
+If you survey $n$ people, the sample proportion $\hat{p}$ satisfies:
+
+$$\hat{p} \;\dot\sim\; N\!\left(p, \frac{p(1-p)}{n}\right)$$
+
+A $95\%$ confidence interval is $\hat{p} \pm 1.96\sqrt{\hat{p}(1-\hat{p})/n}$, a direct application of the CLT.
+
+### Hypothesis Testing
+
+Most standard statistical tests ($z$-test, $t$-test for large $n$) rely on the CLT to justify using normal critical values.
+
+### Finance
+
+The Black-Scholes model assumes log-returns are normally distributed — justified by viewing daily returns as sums of many small, roughly independent shocks. (When the independence or finite-variance assumptions fail, as in financial crises, the model breaks down.)
+
+### Physics
+
+The Maxwell-Boltzmann distribution of molecular velocities in a gas arises because each velocity component is a sum of many independent random impulses — the CLT in action.
+
+---
+
+## Historical Development
+
+- **De Moivre (1733)** proved the CLT for coin flips: the binomial distribution $B(n, 1/2)$ converges to a normal.
+- **Laplace (1812)** extended this to general $B(n, p)$ and recognized the broader principle.
+- **Chebyshev (1887)** and **Markov (1898)** gave proofs using the method of moments.
+- **Lyapunov (1901)** proved the CLT under his condition ($E[|X_i|^{2+\delta}] < \infty$) using characteristic functions.
+- **Lindeberg (1922)** gave the definitive condition for non-identical variables.
+- **Feller (1935)** proved the Lindeberg condition is also necessary (in a certain sense).
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&X_1, X_2, \ldots \text{ i.i.d., } E[X_i] = \mu, \; \operatorname{Var}(X_i) = \sigma^2 < \infty \\[8pt]
+&\frac{X_1 + \cdots + X_n - n\mu}{\sigma\sqrt{n}} \xrightarrow{d} N(0,1) \\[8pt]
+&\text{Rate: } O(1/\sqrt{n}) \text{ (Berry-Esseen)} \\[8pt]
+&\text{Failure: infinite variance} \implies \text{stable laws, not Gaussian}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Billingsley, P., *Probability and Measure*, 3rd edition, Wiley, 1995.
+- Feller, W., *An Introduction to Probability Theory and Its Applications*, Vol. 2, Wiley, 1971.
+- Durrett, R., *Probability: Theory and Examples*, 5th edition, Cambridge University Press, 2019. [Free PDF](https://services.math.duke.edu/~rtd/PTE/PTE5_011119.pdf)
+- [Wikipedia — Central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem)
+- [3Blue1Brown — "But what is the Central Limit Theorem?"](https://www.youtube.com/watch?v=zeJD6dqJ5lo)
+- [MIT OpenCourseWare — Probability and Statistics](https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/)
