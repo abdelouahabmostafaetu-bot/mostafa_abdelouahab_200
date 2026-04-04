@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getBlogPosts } from '@/lib/content';
 
 export default function RecentActivity() {
-  const posts = getBlogPosts().slice(0, 5);
+  const posts = getBlogPosts().slice(0, 2);
 
   return (
     <section className="py-16">
