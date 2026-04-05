@@ -675,6 +675,8 @@ export default function SudokuGame() {
         selectedCell,
         isWon,
         hintUsed,
+        mistakes,
+        isLost,
         elapsedSeconds: elapsedSecondsRef.current,
       });
     };
@@ -692,7 +694,7 @@ export default function SudokuGame() {
       window.removeEventListener('pagehide', persistCurrentState);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon]);
+  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon, hintUsed, mistakes, isLost]);
 
   useEffect(() => {
     const complete = board.every((row) => row.every((value) => value !== 0));
@@ -700,7 +702,7 @@ export default function SudokuGame() {
   }, [board, conflictCount]);
 
   useEffect(() => {
-    if (!isHydrated || isWon) return;
+    if (!isHydrated || isWon || isLost) return;
 
     const interval = window.setInterval(() => {
       elapsedSecondsRef.current += 1;
@@ -711,13 +713,13 @@ export default function SudokuGame() {
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [gameVersion, isHydrated, isWon]);
+  }, [gameVersion, isHydrated, isWon, isLost]);
 
   useEffect(() => {
-    if (isWon) {
+    if (isWon || isLost) {
       setElapsedSeconds(elapsedSecondsRef.current);
     }
-  }, [isWon]);
+  }, [isWon, isLost]);
 
   const handleHint = useCallback(() => {
     if (hintUsed || isWon) return;
@@ -847,8 +849,40 @@ export default function SudokuGame() {
 
   const handleCellClick = useCallback(
     (row: number, col: number) => {
+      if (isLost || isWon) return; // Prevent clicks when game over
       if (fastModeNumber !== null && !isNotesMode) {
         if (initialBoard[row]?.[col] === 0) {
+          // Check for mistakes
+          if (fastModeNumber !== 0 && board[row][col] !== fastModeNumber) {
+            let hasConflict = false;
+            for (let i = 0; i < activeConfig.size; i++) {
+              if (board[row][i] === fastModeNumber || board[i][col] === fastModeNumber) {
+                hasConflict = true;
+                break;
+              }
+            }
+            if (!hasConflict) {
+              const boxRow = Math.floor(row / activeConfig.subgrid) * activeConfig.subgrid;
+              const boxCol = Math.floor(col / activeConfig.subgrid) * activeConfig.subgrid;
+              for (let i = 0; i < activeConfig.subgrid; i++) {
+                for (let j = 0; j < activeConfig.subgrid; j++) {
+                  if (board[boxRow + i][boxCol + j] === fastModeNumber) {
+                    hasConflict = true;
+                    break;
+                  }
+                }
+              }
+            }
+            
+            if (hasConflict) {
+              const nextMistakes = mistakes + 1;
+              setMistakes(nextMistakes);
+              if (nextMistakes >= 2) {
+                setIsLost(true);
+              }
+            }
+          }
+
           setBoard((current) => {
             const next = current.map((nextRow) => [...nextRow]);
             next[row][col] = next[row][col] === fastModeNumber ? 0 : fastModeNumber;
@@ -928,6 +962,39 @@ export default function SudokuGame() {
           });
         }
       } else {
+        // Check for mistakes
+        if (num !== 0 && board[row][col] !== num) {
+          let hasConflict = false;
+          for (let i = 0; i < activeConfig.size; i++) {
+            if (board[row][i] === num || board[i][col] === num) {
+              hasConflict = true;
+              break;
+            }
+          }
+          if (!hasConflict) {
+            const boxRow = Math.floor(row / activeConfig.subgrid) * activeConfig.subgrid;
+            const boxCol = Math.floor(col / activeConfig.subgrid) * activeConfig.subgrid;
+            for (let i = 0; i < activeConfig.subgrid; i++) {
+              for (let j = 0; j < activeConfig.subgrid; j++) {
+                if (board[boxRow + i][boxCol + j] === num) {
+                  hasConflict = true;
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (hasConflict) {
+            const nextMistakes = mistakes + 1;
+            setMistakes(nextMistakes);
+            if (nextMistakes >= 2) {
+              setIsLost(true);
+            }
+            // Optional: return if we don't want to place conflicting numbers or let them be highlighted.
+            // Since it says "Increment mistakes. If mistakes + 1 >= 2, set isLost(true)", we might also let the user still see the conflict or we can do everything else normally. Let's just proceed to set it, the user will see it red because of `conflicts` logic.
+          }
+        }
+
         setBoard((current) => {
           const next = current.map((nextRow) => [...nextRow]);
           next[row][col] = next[row][col] === num ? 0 : num;
