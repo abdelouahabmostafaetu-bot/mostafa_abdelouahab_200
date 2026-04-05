@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, Eraser, Trophy } from 'lucide-react';
+import { ChevronDown, Eraser, Trophy, Pen, Wand2 } from 'lucide-react';
 
 type Mode = 'hard' | 'master';
 type CellPosition = [number, number];
@@ -11,6 +11,7 @@ type PersistedSudokuState = {
   mode: Mode;
   initialBoard: number[][];
   board: number[][];
+  notes?: number[][][];
   selectedCell: CellPosition | null;
   isWon: boolean;
   elapsedSeconds: number;
@@ -91,6 +92,15 @@ const isValidSelectedCell = (
   );
 };
 
+const isValidNotes = (value: unknown, size: number): value is number[][][] => {
+  if (!Array.isArray(value) || value.length !== size) return false;
+  return value.every(row => 
+    Array.isArray(row) && 
+    row.length === size && 
+    row.every(cell => Array.isArray(cell) && cell.every(n => typeof n === 'number'))
+  );
+};
+
 const parsePersistedState = (raw: string): PersistedSudokuState | null => {
   try {
     const parsed = JSON.parse(raw) as Partial<PersistedSudokuState>;
@@ -115,6 +125,7 @@ const parsePersistedState = (raw: string): PersistedSudokuState | null => {
       mode: parsed.mode,
       initialBoard: parsed.initialBoard,
       board: parsed.board,
+      notes: isValidNotes(parsed.notes, size) ? parsed.notes : undefined,
       selectedCell: parsed.selectedCell,
       isWon: parsed.isWon,
       elapsedSeconds: Math.floor(parsed.elapsedSeconds),
@@ -159,6 +170,9 @@ const sudokuStateStorage: SudokuStateStorage = new LocalStorageSudokuStateStorag
 
 const createEmptyBoard = (size: number) =>
   Array.from({ length: size }, () => Array(size).fill(0));
+
+const createEmptyNotes = (size: number) =>
+  Array.from({ length: size }, () => Array.from({ length: size }, () => [] as number[]));
 
 const shuffleArray = <T,>(items: T[]) => {
   const next = [...items];
@@ -286,6 +300,7 @@ const NUMBER_FONT_CLASS = 'font-mono font-semibold tabular-nums leading-none tra
 
 type SudokuBoardProps = {
   board: number[][];
+  notes: number[][][];
   config: ModeConfig;
   conflicts: boolean[][];
   initialBoard: number[][];
@@ -296,6 +311,7 @@ type SudokuBoardProps = {
 
 const SudokuBoard = memo(function SudokuBoard({
   board,
+  notes,
   config,
   conflicts,
   initialBoard,
@@ -365,6 +381,9 @@ const SudokuBoard = memo(function SudokuBoard({
 
               const ringClass = isSelected ? 'ring-2 ring-inset ring-amber-300/80 z-10' : '';
 
+              const cellNotes = notes[rowIndex]?.[colIndex] || [];
+              const showNotes = cell === 0 && cellNotes.length > 0;
+
               return (
                 <button
                   type="button"
@@ -373,7 +392,32 @@ const SudokuBoard = memo(function SudokuBoard({
                   className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} active:bg-amber-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
                   aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
                 >
-                  {toSymbol(cell, config.symbols)}
+                  {cell !== 0 ? (
+                    toSymbol(cell, config.symbols)
+                  ) : showNotes ? (
+                    <div
+                      className="grid w-full h-full p-[1px] md:p-0.5"
+                      style={{
+                        gridTemplateRows: `repeat(${config.subgrid}, minmax(0, 1fr))`,
+                        gridTemplateColumns: `repeat(${config.subgrid}, minmax(0, 1fr))`,
+                      }}
+                    >
+                      {Array.from({ length: config.size }).map((_, i) => {
+                        const num = i + 1;
+                        const hasNote = cellNotes.includes(num);
+                        return (
+                          <div
+                            key={num}
+                            className={`flex items-center justify-center font-medium leading-none text-slate-400 ${
+                              config.size === 16 ? 'text-[5px] sm:text-[6px] md:text-[8px]' : 'text-[8px] sm:text-[10px] md:text-xs'
+                            }`}
+                          >
+                            {hasNote ? toSymbol(num, config.symbols) : ''}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                 </button>
               );
             })
@@ -392,6 +436,9 @@ type SudokuKeypadProps = {
   selectedIsEditable: boolean;
   selectedValue: number;
   symbols: string[];
+  isNotesMode: boolean;
+  onToggleNotesMode: () => void;
+  onAutoPen: () => void;
 };
 
 const SudokuKeypad = memo(function SudokuKeypad({
@@ -402,41 +449,70 @@ const SudokuKeypad = memo(function SudokuKeypad({
   selectedIsEditable,
   selectedValue,
   symbols,
+  isNotesMode,
+  onToggleNotesMode,
+  onAutoPen,
 }: SudokuKeypadProps) {
   const canUseNumberPad = !hasSelection || selectedIsEditable;
 
   return (
-    <div className="w-full max-w-[450px] mt-6 pb-2 flex flex-wrap justify-center gap-2 sm:gap-3 px-1">
-      {numberPadValues.map((num) => {
-        const isActive = selectedValue === num && canUseNumberPad;
+    <div className="w-full max-w-[450px] mt-6 pb-2 flex flex-col items-center gap-3">
+      <div className="flex w-full justify-between px-4 sm:px-6">
+        <button
+          type="button"
+          onClick={onToggleNotesMode}
+          className={`touch-manipulation flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+            isNotesMode
+              ? 'bg-amber-400 text-amber-950 shadow-[0_0_15px_rgba(251,191,36,0.3)]'
+              : 'bg-white/10 text-slate-300 hover:bg-white/20 active:scale-95'
+          }`}
+        >
+          <Pen className="h-4 w-4" />
+          <span>Notes {isNotesMode ? 'On' : 'Off'}</span>
+        </button>
 
-        return (
-          <button
-            key={num}
-            type="button"
-            onPointerDown={() => onInput(num)}
-            disabled={!canUseNumberPad}
-            aria-pressed={isActive}
-            className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
-              isActive
-                ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
-                : 'border-white/10 bg-white/5 text-slate-200 active:bg-white/20'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {toSymbol(num, symbols)}
-          </button>
-        );
-      })}
+        <button
+          type="button"
+          onClick={onAutoPen}
+          className="touch-manipulation flex items-center justify-center gap-2 rounded-full bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-300 transition-all hover:bg-indigo-500/30 active:scale-95"
+        >
+          <Wand2 className="h-4 w-4" />
+          <span>Auto Pen</span>
+        </button>
+      </div>
 
-      <button
-        type="button"
-        onPointerDown={() => onInput(0)}
-        disabled={!canUseNumberPad}
-        className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 active:bg-rose-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-50 disabled:cursor-not-allowed`}
-        aria-label="Clear cell"
-      >
-        <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
-      </button>
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-1 w-full">
+        {numberPadValues.map((num) => {
+          const isActive = selectedValue === num && canUseNumberPad && !isNotesMode;
+
+          return (
+            <button
+              key={num}
+              type="button"
+              onPointerDown={() => onInput(num)}
+              disabled={!canUseNumberPad}
+              aria-pressed={isActive}
+              className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
+                isActive
+                  ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
+                  : 'border-white/10 bg-white/5 text-slate-200 active:bg-white/20'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {toSymbol(num, symbols)}
+            </button>
+          );
+        })}
+
+        <button
+          type="button"
+          onPointerDown={() => onInput(0)}
+          disabled={!canUseNumberPad}
+          className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 active:bg-rose-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-50 disabled:cursor-not-allowed`}
+          aria-label="Clear cell"
+        >
+          <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
+        </button>
+      </div>
     </div>
   );
 });
@@ -448,6 +524,8 @@ export default function SudokuGame() {
     createEmptyBoard(MODE_CONFIG.hard.size)
   );
   const [board, setBoard] = useState<number[][]>(() => createEmptyBoard(MODE_CONFIG.hard.size));
+  const [notes, setNotes] = useState<number[][][]>(() => createEmptyNotes(MODE_CONFIG.hard.size));
+  const [isNotesMode, setIsNotesMode] = useState(false);
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
   const [isWon, setIsWon] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -494,6 +572,8 @@ export default function SudokuGame() {
     setMode(nextMode);
     setInitialBoard(puzzle.map((row) => [...row]));
     setBoard(puzzle.map((row) => [...row]));
+    setNotes(createEmptyNotes(config.size));
+    setIsNotesMode(false);
     setIsWon(false);
     setSelectedCell(null);
     setFastModeNumber(null);
@@ -513,6 +593,11 @@ export default function SudokuGame() {
         setMode(saved.mode);
         setInitialBoard(saved.initialBoard.map((row) => [...row]));
         setBoard(saved.board.map((row) => [...row]));
+        if (saved.notes) {
+          setNotes(saved.notes);
+        } else {
+          setNotes(createEmptyNotes(MODE_CONFIG[saved.mode].size));
+        }
         setSelectedCell(
           saved.selectedCell ? [saved.selectedCell[0], saved.selectedCell[1]] : null
         );
@@ -541,11 +626,12 @@ export default function SudokuGame() {
       mode,
       initialBoard,
       board,
+      notes,
       selectedCell,
       isWon,
       elapsedSeconds: elapsedSecondsRef.current,
     });
-  }, [isHydrated, mode, initialBoard, board, selectedCell, isWon, elapsedSeconds]);
+  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon, elapsedSeconds]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -556,6 +642,7 @@ export default function SudokuGame() {
         mode,
         initialBoard,
         board,
+        notes,
         selectedCell,
         isWon,
         elapsedSeconds: elapsedSecondsRef.current,
@@ -575,7 +662,7 @@ export default function SudokuGame() {
       window.removeEventListener('pagehide', persistCurrentState);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isHydrated, mode, initialBoard, board, selectedCell, isWon]);
+  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon]);
 
   useEffect(() => {
     const complete = board.every((row) => row.every((value) => value !== 0));
@@ -602,15 +689,73 @@ export default function SudokuGame() {
     }
   }, [isWon]);
 
+  const handleAutoPen = useCallback(() => {
+    setNotes(currentNotes => {
+      const nextNotes = currentNotes.map(row => row.map(cell => [...cell]));
+      for (let r = 0; r < activeConfig.size; r++) {
+        for (let c = 0; c < activeConfig.size; c++) {
+          if (board[r][c] !== 0) {
+            nextNotes[r][c] = [];
+            continue;
+          }
+          
+          const validCandidates = [];
+          for (let num = 1; num <= activeConfig.size; num++) {
+            let isValid = true;
+            for (let i = 0; i < activeConfig.size; i++) {
+              if (board[r][i] === num || board[i][c] === num) {
+                isValid = false;
+                break;
+              }
+            }
+            if (isValid) {
+              const boxRow = Math.floor(r / activeConfig.subgrid) * activeConfig.subgrid;
+              const boxCol = Math.floor(c / activeConfig.subgrid) * activeConfig.subgrid;
+              for (let i = 0; i < activeConfig.subgrid; i++) {
+                for (let j = 0; j < activeConfig.subgrid; j++) {
+                  if (board[boxRow + i][boxCol + j] === num) isValid = false;
+                }
+              }
+            }
+            if (isValid) {
+              validCandidates.push(num);
+            }
+          }
+          nextNotes[r][c] = validCandidates;
+        }
+      }
+      return nextNotes;
+    });
+  }, [activeConfig, board]);
+
   const handleCellClick = useCallback(
     (row: number, col: number) => {
-      if (fastModeNumber !== null) {
+      if (fastModeNumber !== null && !isNotesMode) {
         if (initialBoard[row]?.[col] === 0) {
           setBoard((current) => {
             const next = current.map((nextRow) => [...nextRow]);
             next[row][col] = next[row][col] === fastModeNumber ? 0 : fastModeNumber;
             return next;
           });
+          
+          if (fastModeNumber !== 0) {
+             setNotes((current) => {
+               const next = current.map((r) => r.map((c) => [...c]));
+               next[row][col] = [];
+               for (let i = 0; i < activeConfig.size; i++) {
+                 next[row][i] = next[row][i].filter(n => n !== fastModeNumber);
+                 next[i][col] = next[i][col].filter(n => n !== fastModeNumber);
+               }
+               const boxRow = Math.floor(row / activeConfig.subgrid) * activeConfig.subgrid;
+               const boxCol = Math.floor(col / activeConfig.subgrid) * activeConfig.subgrid;
+               for (let i = 0; i < activeConfig.subgrid; i++) {
+                 for (let j = 0; j < activeConfig.subgrid; j++) {
+                   next[boxRow + i][boxCol + j] = next[boxRow + i][boxCol + j].filter(n => n !== fastModeNumber);
+                 }
+               }
+               return next;
+             });
+          }
         }
         return;
       }
@@ -623,7 +768,7 @@ export default function SudokuGame() {
         return [row, col];
       });
     },
-    [fastModeNumber, initialBoard]
+    [fastModeNumber, initialBoard, isNotesMode, activeConfig]
   );
 
   const handleNumberInput = useCallback(
@@ -631,27 +776,71 @@ export default function SudokuGame() {
       if (num < 0 || num > activeConfig.size) return;
 
       if (!selectedCell) {
-        setFastModeNumber((current) => (current === num ? null : num));
+        if (!isNotesMode) {
+          setFastModeNumber((current) => (current === num ? null : num));
+        }
         return;
       }
 
       const [row, col] = selectedCell;
       if (initialBoard[row]?.[col] !== 0) {
-        setFastModeNumber((current) => (current === num ? null : num));
-        setSelectedCell(null);
+        if (!isNotesMode) {
+          setFastModeNumber((current) => (current === num ? null : num));
+          setSelectedCell(null);
+        }
         return;
       }
 
-      setBoard((current) => {
-        const next = current.map((nextRow) => [...nextRow]);
-        next[row][col] = next[row][col] === num ? 0 : num;
-        return next;
-      });
+      if (isNotesMode) {
+        if (num === 0) {
+          setNotes((current) => {
+            const next = current.map((r) => r.map((c) => [...c]));
+            next[row][col] = [];
+            return next;
+          });
+        } else {
+          setNotes((current) => {
+            const next = current.map((r) => r.map((c) => [...c]));
+            const cellNotes = next[row][col];
+            if (cellNotes.includes(num)) {
+              next[row][col] = cellNotes.filter(n => n !== num);
+            } else {
+              next[row][col] = [...cellNotes, num].sort((a, b) => a - b);
+            }
+            return next;
+          });
+        }
+      } else {
+        setBoard((current) => {
+          const next = current.map((nextRow) => [...nextRow]);
+          next[row][col] = next[row][col] === num ? 0 : num;
+          return next;
+        });
+        
+        if (num !== 0) {
+           setNotes((current) => {
+             const next = current.map((r) => r.map((c) => [...c]));
+             next[row][col] = [];
+             for (let i = 0; i < activeConfig.size; i++) {
+               next[row][i] = next[row][i].filter(n => n !== num);
+               next[i][col] = next[i][col].filter(n => n !== num);
+             }
+             const boxRow = Math.floor(row / activeConfig.subgrid) * activeConfig.subgrid;
+             const boxCol = Math.floor(col / activeConfig.subgrid) * activeConfig.subgrid;
+             for (let i = 0; i < activeConfig.subgrid; i++) {
+               for (let j = 0; j < activeConfig.subgrid; j++) {
+                 next[boxRow + i][boxCol + j] = next[boxRow + i][boxCol + j].filter(n => n !== num);
+               }
+             }
+             return next;
+           });
+        }
 
-      setFastModeNumber(num);
-      setSelectedCell(null);
+        setFastModeNumber(num);
+        setSelectedCell(null);
+      }
     },
-    [activeConfig.size, initialBoard, selectedCell]
+    [activeConfig.size, initialBoard, selectedCell, isNotesMode, activeConfig.subgrid]
   );
 
   const moveSelection = useCallback(
@@ -769,6 +958,7 @@ export default function SudokuGame() {
 
       <SudokuBoard
         board={board}
+        notes={notes}
         config={activeConfig}
         conflicts={conflicts}
         initialBoard={initialBoard}
@@ -810,6 +1000,9 @@ export default function SudokuGame() {
         selectedIsEditable={selectedIsEditable}
         selectedValue={selectedValue}
         symbols={activeConfig.symbols}
+        isNotesMode={isNotesMode}
+        onToggleNotesMode={() => setIsNotesMode(m => !m)}
+        onAutoPen={handleAutoPen}
       />
 
     </div>
