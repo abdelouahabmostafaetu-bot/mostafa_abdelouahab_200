@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Eraser, Trophy, Pen, Wand2 } from 'lucide-react';
+import { Eraser, Trophy, Pen, Wand2, Lightbulb } from 'lucide-react';
 
 type Mode = 'hard';
 type CellPosition = [number, number];
@@ -438,6 +438,8 @@ type SudokuKeypadProps = {
   isNotesMode: boolean;
   onToggleNotesMode: () => void;
   onAutoPen: () => void;
+  onHint: () => void;
+  isHintUsed: boolean;
 };
 
 const SudokuKeypad = memo(function SudokuKeypad({
@@ -451,38 +453,44 @@ const SudokuKeypad = memo(function SudokuKeypad({
   isNotesMode,
   onToggleNotesMode,
   onAutoPen,
+  onHint,
+  isHintUsed,
 }: SudokuKeypadProps) {
   const canUseNumberPad = !hasSelection || selectedIsEditable;
 
   return (
     <div className="w-full max-w-[450px] mt-6 pb-2 flex flex-col items-center gap-3">
-      <div className="flex w-full justify-between px-4 sm:px-6">
+      <div className="flex w-full justify-center gap-2 px-2 sm:px-4">
         <button
           type="button"
           onClick={onToggleNotesMode}
-          className={`touch-manipulation flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+          className={`flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full py-2 text-xs sm:text-sm font-semibold transition-all ${
             isNotesMode
               ? 'bg-amber-400 text-amber-950 shadow-[0_0_15px_rgba(251,191,36,0.3)]'
               : 'bg-white/10 text-slate-300 hover:bg-white/20 active:scale-95'
           }`}
         >
-          <Pen className="h-4 w-4" />
+          <Pen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>Notes {isNotesMode ? 'On' : 'Off'}</span>
         </button>
 
         <button
           type="button"
           onClick={onAutoPen}
-          className="touch-manipulation flex items-center justify-center gap-2 rounded-full bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-300 transition-all hover:bg-indigo-500/30 active:scale-95"
+          className="flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-indigo-500/20 py-2 text-xs sm:text-sm font-semibold text-indigo-300 transition-all hover:bg-indigo-500/30 active:scale-95"
         >
-          <Wand2 className="h-4 w-4" />
+          <Wand2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>Auto Pen</span>
         </button>
-      </div>
 
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-1 w-full">
-        {numberPadValues.map((num) => {
-          const isActive = selectedValue === num && canUseNumberPad && !isNotesMode;
+        <button
+          type="button"
+          onClick={onHint}
+          disabled={isHintUsed}
+          className="flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-emerald-500/20 py-2 text-xs sm:text-sm font-semibold text-emerald-300 transition-all hover:bg-emerald-500/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Lightbulb className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span>Hint</span>
 
           return (
             <button
