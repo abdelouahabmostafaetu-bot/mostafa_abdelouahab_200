@@ -16,6 +16,8 @@ type PersistedSudokuState = {
   isWon: boolean;
   elapsedSeconds: number;
   hintUsed?: boolean;
+  mistakes?: number;
+  isLost?: boolean;
 };
 
 interface SudokuStateStorage {
@@ -122,6 +124,8 @@ const parsePersistedState = (raw: string): PersistedSudokuState | null => {
       isWon: parsed.isWon,
       elapsedSeconds: Math.floor(parsed.elapsedSeconds),
       hintUsed: typeof parsed.hintUsed === 'boolean' ? parsed.hintUsed : false,
+      mistakes: typeof parsed.mistakes === 'number' ? parsed.mistakes : undefined,
+      isLost: typeof parsed.isLost === 'boolean' ? parsed.isLost : undefined,
     };
   } catch {
     return null;
@@ -542,6 +546,8 @@ export default function SudokuGame() {
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
   const [isWon, setIsWon] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
+  const [mistakes, setMistakes] = useState(0);
+  const [isLost, setIsLost] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [gameVersion, setGameVersion] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -590,6 +596,8 @@ export default function SudokuGame() {
     setIsNotesMode(false);
     setIsWon(false);
     setHintUsed(false);
+    setMistakes(0);
+    setIsLost(false);
     setSelectedCell(null);
     setFastModeNumber(null);
     elapsedSecondsRef.current = 0;
@@ -618,6 +626,8 @@ export default function SudokuGame() {
         );
         setIsWon(saved.isWon);
         setHintUsed(saved.hintUsed ?? false);
+        setMistakes(saved.mistakes ?? 0);
+        setIsLost(saved.isLost ?? false);
         elapsedSecondsRef.current = saved.elapsedSeconds;
         setElapsedSeconds(saved.elapsedSeconds);
         setGameVersion((version) => version + 1);
@@ -646,9 +656,11 @@ export default function SudokuGame() {
       selectedCell,
       isWon,
       hintUsed,
+      mistakes,
+      isLost,
       elapsedSeconds: elapsedSecondsRef.current,
     });
-  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon, hintUsed, elapsedSeconds]);
+  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon, hintUsed, mistakes, isLost, elapsedSeconds]);
 
   useEffect(() => {
     if (!isHydrated) return;
