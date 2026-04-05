@@ -535,6 +535,7 @@ export default function SudokuGame() {
   const [isNotesMode, setIsNotesMode] = useState(false);
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
   const [isWon, setIsWon] = useState(false);
+  const [hintUsed, setHintUsed] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [gameVersion, setGameVersion] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -582,6 +583,7 @@ export default function SudokuGame() {
     setNotes(createEmptyNotes(config.size));
     setIsNotesMode(false);
     setIsWon(false);
+    setHintUsed(false);
     setSelectedCell(null);
     setFastModeNumber(null);
     elapsedSecondsRef.current = 0;
@@ -609,6 +611,7 @@ export default function SudokuGame() {
           saved.selectedCell ? [saved.selectedCell[0], saved.selectedCell[1]] : null
         );
         setIsWon(saved.isWon);
+        setHintUsed(saved.hintUsed ?? false);
         elapsedSecondsRef.current = saved.elapsedSeconds;
         setElapsedSeconds(saved.elapsedSeconds);
         setGameVersion((version) => version + 1);
@@ -636,9 +639,10 @@ export default function SudokuGame() {
       notes,
       selectedCell,
       isWon,
+      hintUsed,
       elapsedSeconds: elapsedSecondsRef.current,
     });
-  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon, elapsedSeconds]);
+  }, [isHydrated, mode, initialBoard, board, notes, selectedCell, isWon, hintUsed, elapsedSeconds]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -652,6 +656,7 @@ export default function SudokuGame() {
         notes,
         selectedCell,
         isWon,
+        hintUsed,
         elapsedSeconds: elapsedSecondsRef.current,
       });
     };
