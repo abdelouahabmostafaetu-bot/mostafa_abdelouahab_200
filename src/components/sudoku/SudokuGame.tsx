@@ -466,8 +466,8 @@ const SudokuKeypad = memo(function SudokuKeypad({
           onClick={onToggleNotesMode}
           className={`flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full py-2 text-xs sm:text-sm font-semibold transition-all ${
             isNotesMode
-              ? 'bg-amber-400 text-amber-950 shadow-[0_0_15px_rgba(251,191,36,0.3)]'
-              : 'bg-white/10 text-slate-300 hover:bg-white/20 active:scale-95'
+              ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+              : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700 active:scale-95'
           }`}
         >
           <Pen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -477,7 +477,7 @@ const SudokuKeypad = memo(function SudokuKeypad({
         <button
           type="button"
           onClick={onAutoPen}
-          className="flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-indigo-500/20 py-2 text-xs sm:text-sm font-semibold text-indigo-300 transition-all hover:bg-indigo-500/30 active:scale-95"
+          className="flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-slate-800/50 py-2 text-xs sm:text-sm font-semibold text-slate-300 transition-all hover:bg-slate-700 active:scale-95"
         >
           <Wand2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>Auto Pen</span>
@@ -487,10 +487,16 @@ const SudokuKeypad = memo(function SudokuKeypad({
           type="button"
           onClick={onHint}
           disabled={isHintUsed}
-          className="flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-emerald-500/20 py-2 text-xs sm:text-sm font-semibold text-emerald-300 transition-all hover:bg-emerald-500/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 touch-manipulation flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-slate-800/50 py-2 text-xs sm:text-sm font-semibold text-slate-300 transition-all hover:bg-slate-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Lightbulb className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span>Hint</span>
+        </button>
+      </div>
+
+      <div className="flex w-full max-w-[320px] sm:max-w-none flex-wrap justify-center gap-1.5 sm:gap-2 lg:gap-3">
+        {numberPadValues.map((num) => {
+          const isActive = selectedValue === num;
 
           return (
             <button
@@ -499,10 +505,10 @@ const SudokuKeypad = memo(function SudokuKeypad({
               onPointerDown={() => onInput(num)}
               disabled={!canUseNumberPad}
               aria-pressed={isActive}
-              className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ${NUMBER_FONT_CLASS} ${
+              className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${NUMBER_FONT_CLASS} ${
                 isActive
-                  ? 'border-amber-400/60 bg-amber-400/20 text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-400/30 ring-inset'
-                  : 'border-white/10 bg-white/5 text-slate-200 active:bg-white/20'
+                  ? 'border-blue-400/60 bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.15)] ring-1 ring-blue-400/30 ring-inset'
+                  : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 active:bg-slate-600'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {toSymbol(num, symbols)}
@@ -514,7 +520,7 @@ const SudokuKeypad = memo(function SudokuKeypad({
           type="button"
           onPointerDown={() => onInput(0)}
           disabled={!canUseNumberPad}
-          className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 active:bg-rose-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`touch-manipulation flex items-center justify-center ${keypadButtonSizeClass} rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-200 active:bg-rose-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed`}
           aria-label="Clear cell"
         >
           <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -1036,7 +1042,7 @@ export default function SudokuGame() {
         {/* Status Error Label entirely absolutely centered underneath the button bar if there's space, or we can just keep it exactly where it was before but slightly shifted. */}
         <div className="flex flex-col w-full text-center items-center pointer-events-none absolute bottom-0 left-0 right-0 top-0 justify-center">
           {statusLabel && (
-            <span className="text-xs font-medium text-amber-300/90">{statusLabel}</span>
+            <span className="text-xs font-medium text-sky-400">{statusLabel}</span>
           )}
         </div>
       </div>
@@ -1053,16 +1059,16 @@ export default function SudokuGame() {
       />
 
       {isWon && (
-        <div className="mt-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-5 text-sm font-medium text-amber-200">
+        <div className="mt-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-3 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-5 text-sm font-medium text-blue-200">
           <div className="flex items-center gap-2 text-base pb-1">
-            <Trophy className="h-5 w-5 text-amber-300" />
+            <Trophy className="h-5 w-5 text-blue-400" />
             Puzzle solved! What would you like to play next?
           </div>
           <div className="flex flex-wrap gap-3 justify-center items-center w-full">
             <button
               type="button"
               onClick={() => startNewGame('hard')}
-              className="flex-1 min-w-[140px] rounded-full border border-amber-400/60 bg-amber-400/20 px-5 py-2.5 text-sm font-semibold text-amber-100 active:bg-amber-400/30 text-center"
+              className="flex-1 min-w-[140px] rounded-full border border-blue-400/60 bg-blue-500/20 px-5 py-2.5 text-sm font-semibold text-blue-100 active:bg-blue-500/30 text-center"
             >
               Play Very Hard 9x9
             </button>
