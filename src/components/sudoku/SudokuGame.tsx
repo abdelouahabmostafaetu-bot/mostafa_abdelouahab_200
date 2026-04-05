@@ -348,9 +348,9 @@ const SudokuBoard = memo(function SudokuBoard({
                   Math.floor(selectedRow / config.subgrid) &&
                 Math.floor(colIndex / config.subgrid) ===
                   Math.floor(selectedCol / config.subgrid);
-              const isRelated =
+              const isRelatedRowCol =
                 hasSelectedCell &&
-                (rowIndex === selectedRow || colIndex === selectedCol || inSameBox);
+                (rowIndex === selectedRow || colIndex === selectedCol);
               const isSameValue = selectedValue !== 0 && cell === selectedValue;
               const isConflict = conflicts[rowIndex][colIndex];
 
@@ -368,9 +368,10 @@ const SudokuBoard = memo(function SudokuBoard({
                     : 'border-b-[1px] border-b-slate-700/80';
 
               let bgClass = 'bg-transparent';
-              if (isRelated) bgClass = 'bg-white/[0.04]';
+              if (inSameBox) bgClass = 'bg-white/[0.04]';
+              if (isRelatedRowCol) bgClass = 'bg-sky-500/20'; // Distinct, clear color for row and col
               if (isSameValue) bgClass = 'bg-amber-300/15';
-              if (isSelected) bgClass = 'bg-amber-300/25';
+              if (isSelected) bgClass = 'bg-amber-400/30'; // Slightly more pronounced selected cell
 
               let textClass = isFixed
                 ? 'font-semibold text-slate-100'
