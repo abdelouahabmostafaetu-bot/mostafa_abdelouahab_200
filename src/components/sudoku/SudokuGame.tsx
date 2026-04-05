@@ -918,32 +918,14 @@ export default function SudokuGame() {
       <div className="mb-4 flex w-full max-w-[500px] flex-col items-center justify-center px-2 min-h-[40px] gap-2 relative">
         <div className="flex w-full justify-end">
           <div className="group relative flex flex-col items-end">
-            {/* New Game Dropdown Trigger */}
+            {/* New Game Button */}
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 py-1.5 pl-3 pr-2 text-xs font-semibold text-slate-300 transition-all hover:bg-white/10 active:scale-95"
+              onClick={() => startNewGame('hard')}
+              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 py-1.5 px-3 text-xs font-semibold text-slate-300 transition-all hover:bg-white/10 active:scale-95"
             >
               New Game
-              <ChevronDown className="h-3.5 w-3.5 text-amber-400" />
             </button>
-            {/* Dropdown Menu */}
-            <div className="absolute top-full right-0 mt-2 flex hidden min-w-[140px] flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0A1220] shadow-xl group-hover:flex z-50">
-              <button
-                type="button"
-                onClick={() => startNewGame('hard')}
-                className="px-4 py-2.5 text-left text-sm font-medium text-slate-200 hover:bg-white/5 active:bg-white/10"
-              >
-                Hard 9x9
-              </button>
-              <div className="h-px w-full bg-white/5" />
-              <button
-                type="button"
-                onClick={() => startNewGame('master')}
-                className="px-4 py-2.5 text-left text-sm font-medium text-amber-200 hover:bg-white/5 active:bg-white/10"
-              >
-                Master 16x16
-              </button>
-            </div>
           </div>
         </div>
 
@@ -976,16 +958,9 @@ export default function SudokuGame() {
             <button
               type="button"
               onClick={() => startNewGame('hard')}
-              className="flex-1 min-w-[140px] rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white active:bg-white/20 text-center"
-            >
-              Play Hard 9x9
-            </button>
-            <button
-              type="button"
-              onClick={() => startNewGame('master')}
               className="flex-1 min-w-[140px] rounded-full border border-amber-400/60 bg-amber-400/20 px-5 py-2.5 text-sm font-semibold text-amber-100 active:bg-amber-400/30 text-center"
             >
-              Play Master 16x16
+              Play Hard 9x9
             </button>
           </div>
         </div>
