@@ -320,7 +320,7 @@ const SudokuBoard = memo(function SudokuBoard({
     <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
       <div className="w-full max-w-[500px] relative rounded-[12px] sm:rounded-[20px] overflow-hidden p-1 sm:p-2">
         <div
-          className="w-full mx-auto border-[2px] border-amber-400/80 bg-[#0A1220] aspect-square"
+          className="w-full mx-auto border-[2px] border-slate-500 bg-slate-900 aspect-square"
           style={{
             display: 'grid',
             gridTemplateRows: `repeat(${config.size}, minmax(0, 1fr))`,
