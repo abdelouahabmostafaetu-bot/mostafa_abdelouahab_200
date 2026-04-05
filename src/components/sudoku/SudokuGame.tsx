@@ -916,7 +916,11 @@ export default function SudokuGame() {
   return (
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl flex flex-col items-center">
       <div className="mb-4 flex w-full max-w-[500px] flex-col items-center justify-center px-2 min-h-[40px] gap-2 relative">
-        <div className="flex w-full justify-end">
+        <div className="flex w-full justify-between items-center">
+          <div className="text-sm font-medium text-slate-300 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 flex items-center tabular-nums">
+            {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:
+            {(elapsedSeconds % 60).toString().padStart(2, '0')}
+          </div>
           <div className="group relative flex flex-col items-end">
             {/* New Game Button */}
             <button
