@@ -701,6 +701,93 @@ export default function SudokuGame() {
     }
   }, [isWon]);
 
+  const handleHint = useCallback(() => {
+    if (hintUsed || isWon) return;
+
+    let targetRow = -1;
+    let targetCol = -1;
+
+    if (selectedCell && board[selectedCell[0]][selectedCell[1]] === 0) {
+      targetRow = selectedCell[0];
+      targetCol = selectedCell[1];
+    } else {
+      for (let r = 0; r < activeConfig.size && targetRow === -1; r++) {
+        for (let c = 0; c < activeConfig.size; c++) {
+          if (board[r][c] === 0) {
+            targetRow = r;
+            targetCol = c;
+            break;
+          }
+        }
+      }
+    }
+
+    if (targetRow === -1) return;
+
+    const copy = initialBoard.map(row => [...row]);
+    const size = activeConfig.size;
+    const subgrid = activeConfig.subgrid;
+
+    const solve = (r: number, c: number): boolean => {
+      if (r === size) return true;
+      if (c === size) return solve(r + 1, 0);
+      if (copy[r][c] !== 0) return solve(r, c + 1);
+
+      for (let num = 1; num <= size; num++) {
+        let valid = true;
+        for (let i = 0; i < size; i++) {
+          if (copy[r][i] === num || copy[i][c] === num) { valid = false; break; }
+        }
+        if (!valid) continue;
+
+        const boxR = Math.floor(r / subgrid) * subgrid;
+        const boxC = Math.floor(c / subgrid) * subgrid;
+        for (let i = 0; i < subgrid; i++) {
+          for (let j = 0; j < subgrid; j++) {
+            if (copy[boxR + i][boxC + j] === num) valid = false;
+          }
+        }
+
+        if (valid) {
+          copy[r][c] = num;
+          if (solve(r, c + 1)) return true;
+          copy[r][c] = 0;
+        }
+      }
+      return false;
+    };
+
+    if (!solve(0, 0)) return;
+
+    const correctValue = copy[targetRow][targetCol];
+
+    setBoard(current => {
+      const next = current.map(row => [...row]);
+      next[targetRow][targetCol] = correctValue;
+      return next;
+    });
+
+    setNotes(current => {
+      const next = current.map(r => r.map(c => [...c]));
+      next[targetRow][targetCol] = [];
+      for (let i = 0; i < size; i++) {
+        next[targetRow][i] = next[targetRow][i].filter(n => n !== correctValue);
+        next[i][targetCol] = next[i][targetCol].filter(n => n !== correctValue);
+      }
+      const boxRow = Math.floor(targetRow / subgrid) * subgrid;
+      const boxCol = Math.floor(targetCol / subgrid) * subgrid;
+      for (let i = 0; i < subgrid; i++) {
+        for (let j = 0; j < subgrid; j++) {
+          next[boxRow + i][boxCol + j] = next[boxRow + i][boxCol + j].filter(n => n !== correctValue);
+        }
+      }
+      return next;
+    });
+
+    setHintUsed(true);
+    setSelectedCell(null);
+  }, [activeConfig.size, activeConfig.subgrid, board, hintUsed, initialBoard, isWon, selectedCell]);
+
   const handleAutoPen = useCallback(() => {
     setNotes(currentNotes => {
       const nextNotes = currentNotes.map(row => row.map(cell => [...cell]));
@@ -994,6 +1081,8 @@ export default function SudokuGame() {
         isNotesMode={isNotesMode}
         onToggleNotesMode={() => setIsNotesMode(m => !m)}
         onAutoPen={handleAutoPen}
+        onHint={handleHint}
+        isHintUsed={hintUsed}
       />
 
     </div>
