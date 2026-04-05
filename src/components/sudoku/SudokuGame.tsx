@@ -396,28 +396,34 @@ const SudokuBoard = memo(function SudokuBoard({
                   {cell !== 0 ? (
                     toSymbol(cell, config.symbols)
                   ) : showNotes ? (
-                    <div
-                      className="grid w-full h-full p-[1px] md:p-0.5"
-                      style={{
-                        gridTemplateRows: `repeat(${config.subgrid}, minmax(0, 1fr))`,
-                        gridTemplateColumns: `repeat(${config.subgrid}, minmax(0, 1fr))`,
-                      }}
-                    >
-                      {Array.from({ length: config.size }).map((_, i) => {
-                        const num = i + 1;
-                        const hasNote = cellNotes.includes(num);
-                        return (
-                          <div
-                            key={num}
-                            className={`flex items-center justify-center font-medium leading-none text-slate-400 ${
-                              config.size === 16 ? 'text-[5px] sm:text-[6px] md:text-[8px]' : 'text-[8px] sm:text-[10px] md:text-xs'
-                            }`}
-                          >
-                            {hasNote ? toSymbol(num, config.symbols) : ''}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    config.size === 16 ? (
+                      <div className="flex w-full h-full flex-wrap content-center justify-center p-[1px] gap-[1px] sm:gap-[2px] overflow-hidden text-slate-400/90 text-[6px] sm:text-[7px] md:text-[9px] font-medium leading-none tracking-tighter break-all text-center">
+                        {cellNotes.map((num) => (
+                          <span key={num}>{toSymbol(num, config.symbols)}</span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        className="grid w-full h-full p-[1px] md:p-0.5"
+                        style={{
+                          gridTemplateRows: `repeat(${config.subgrid}, minmax(0, 1fr))`,
+                          gridTemplateColumns: `repeat(${config.subgrid}, minmax(0, 1fr))`,
+                        }}
+                      >
+                        {Array.from({ length: config.size }).map((_, i) => {
+                          const num = i + 1;
+                          const hasNote = cellNotes.includes(num);
+                          return (
+                            <div
+                              key={num}
+                              className="flex items-center justify-center font-medium leading-none text-slate-400 text-[8px] sm:text-[10px] md:text-xs"
+                            >
+                              {hasNote ? toSymbol(num, config.symbols) : ''}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )
                   ) : null}
                 </button>
               );
