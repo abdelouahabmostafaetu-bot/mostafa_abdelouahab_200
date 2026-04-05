@@ -1,9 +1,9 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, Eraser, Trophy, Pen, Wand2 } from 'lucide-react';
+import { Eraser, Trophy, Pen, Wand2 } from 'lucide-react';
 
-type Mode = 'hard' | 'master';
+type Mode = 'hard';
 type CellPosition = [number, number];
 
 type PersistedSudokuState = {
@@ -42,20 +42,12 @@ const MODE_CONFIG: Record<Mode, ModeConfig> = {
     description: 'Standard 9x9 hard board.',
     symbols: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
   },
-  master: {
-    label: 'Master 16x16',
-    size: 16,
-    subgrid: 4,
-    empties: 190,
-    description: 'Extended 16x16 master board.',
-    symbols: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G'],
-  },
 };
 
 const STORAGE_KEY = 'sudoku-state-v1';
 
 const isMode = (value: unknown): value is Mode =>
-  value === 'hard' || value === 'master';
+  value === 'hard';
 
 const isValidBoard = (value: unknown, size: number): value is number[][] => {
   if (!Array.isArray(value) || value.length !== size) return false;
