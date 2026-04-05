@@ -35,11 +35,11 @@ type ModeConfig = {
 
 const MODE_CONFIG: Record<Mode, ModeConfig> = {
   hard: {
-    label: 'Hard 9x9',
+    label: 'Very Hard 9x9',
     size: 9,
     subgrid: 3,
-    empties: 58,
-    description: 'Standard 9x9 hard board.',
+    empties: 63,
+    description: 'Very hard 9x9 board with minimal clues.',
     symbols: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
   },
 };
@@ -964,7 +964,7 @@ export default function SudokuGame() {
               onClick={() => startNewGame('hard')}
               className="flex-1 min-w-[140px] rounded-full border border-amber-400/60 bg-amber-400/20 px-5 py-2.5 text-sm font-semibold text-amber-100 active:bg-amber-400/30 text-center"
             >
-              Play Hard 9x9
+              Play Very Hard 9x9
             </button>
           </div>
         </div>
