@@ -350,29 +350,29 @@ const SudokuBoard = memo(function SudokuBoard({
                 colIndex === config.size - 1
                   ? ''
                   : (colIndex + 1) % config.subgrid === 0
-                    ? 'border-r-[2px] border-r-amber-400/80'
-                    : 'border-r-[1px] border-r-slate-700/80';
+                    ? 'border-r-[2px] border-r-slate-500'
+                    : 'border-r-[1px] border-r-slate-700/50';
               const borderBottom =
                 rowIndex === config.size - 1
                   ? ''
                   : (rowIndex + 1) % config.subgrid === 0
-                    ? 'border-b-[2px] border-b-amber-400/80'
-                    : 'border-b-[1px] border-b-slate-700/80';
+                    ? 'border-b-[2px] border-b-slate-500'
+                    : 'border-b-[1px] border-b-slate-700/50';
 
               let bgClass = 'bg-transparent';
-              if (inSameBox) bgClass = 'bg-white/[0.04]';
-              if (isRelatedRowCol) bgClass = 'bg-sky-500/20'; // Distinct, clear color for row and col
-              if (isSameValue) bgClass = 'bg-amber-300/15';
-              if (isSelected) bgClass = 'bg-amber-400/30'; // Slightly more pronounced selected cell
+              if (inSameBox) bgClass = 'bg-slate-800';
+              if (isRelatedRowCol) bgClass = 'bg-slate-800';
+              if (isSameValue) bgClass = 'bg-blue-500/15';
+              if (isSelected) bgClass = 'bg-blue-500/30';
 
               let textClass = isFixed
                 ? 'font-semibold text-slate-100'
-                : 'font-semibold text-amber-200';
+                : 'font-medium text-sky-400';
               if (isConflict && !isFixed) {
                 textClass = 'font-semibold text-rose-500';
               }
 
-              const ringClass = isSelected ? 'ring-2 ring-inset ring-amber-300/80 z-10' : '';
+              const ringClass = isSelected ? 'ring-2 ring-inset ring-blue-400 z-10' : '';
 
               const cellNotes = notes[rowIndex]?.[colIndex] || [];
               const showNotes = cell === 0 && cellNotes.length > 0;
@@ -382,7 +382,7 @@ const SudokuBoard = memo(function SudokuBoard({
                   type="button"
                   key={`${rowIndex}-${colIndex}`}
                   onPointerDown={() => onCellPress(rowIndex, colIndex)}
-                  className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} active:bg-amber-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300`}
+                  className={`touch-manipulation flex w-full h-full ${cellSizeClass} ${NUMBER_FONT_CLASS} select-none items-center justify-center ${bgClass} ${textClass} ${ringClass} ${borderRight} ${borderBottom} active:bg-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400`}
                   aria-label={`Row ${rowIndex + 1}, Column ${colIndex + 1}`}
                 >
                   {cell !== 0 ? (
