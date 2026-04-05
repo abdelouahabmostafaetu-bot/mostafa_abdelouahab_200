@@ -919,12 +919,13 @@ export default function SudokuGame() {
         return [row, col];
       });
     },
-    [fastModeNumber, initialBoard, isNotesMode, activeConfig]
+    [fastModeNumber, initialBoard, isNotesMode, activeConfig, isLost, isWon, board, mistakes]
   );
 
   const handleNumberInput = useCallback(
     (num: number) => {
       if (num < 0 || num > activeConfig.size) return;
+      if (isLost || isWon) return;
 
       if (!selectedCell) {
         if (!isNotesMode) {
@@ -1024,7 +1025,7 @@ export default function SudokuGame() {
         setSelectedCell(null);
       }
     },
-    [activeConfig.size, initialBoard, selectedCell, isNotesMode, activeConfig.subgrid]
+    [activeConfig.size, activeConfig.subgrid, initialBoard, selectedCell, isNotesMode, board, mistakes, isLost, isWon]
   );
 
   const moveSelection = useCallback(
@@ -1102,9 +1103,14 @@ export default function SudokuGame() {
     <div className="mx-auto w-full max-w-lg lg:max-w-4xl xl:max-w-5xl flex flex-col items-center">
       <div className="mb-4 flex w-full max-w-[500px] flex-col items-center justify-center px-2 min-h-[40px] gap-2 relative">
         <div className="flex w-full justify-between items-center">
-          <div className="text-sm font-medium text-slate-300 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 flex items-center tabular-nums">
-            {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:
-            {(elapsedSeconds % 60).toString().padStart(2, '0')}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="text-sm font-medium text-slate-300 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 flex items-center tabular-nums">
+              {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:
+              {(elapsedSeconds % 60).toString().padStart(2, '0')}
+            </div>
+            <div className="text-sm font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-full px-3 py-1.5 flex items-center">
+              Mistakes: {mistakes}/2
+            </div>
           </div>
           <div className="group relative flex flex-col items-end">
             {/* New Game Button */}
@@ -1150,6 +1156,23 @@ export default function SudokuGame() {
               className="flex-1 min-w-[140px] rounded-full border border-blue-400/60 bg-blue-500/20 px-5 py-2.5 text-sm font-semibold text-blue-100 active:bg-blue-500/30 text-center"
             >
               Play Very Hard 9x9
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isLost && (
+        <div className="mt-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-sm font-medium text-rose-200">
+          <div className="flex items-center gap-2 text-base pb-1 font-bold">
+            Game Over! You made 2 mistakes.
+          </div>
+          <div className="flex flex-wrap gap-3 justify-center items-center w-full">
+            <button
+              type="button"
+              onClick={() => startNewGame('hard')}
+              className="flex-1 min-w-[140px] rounded-full border border-rose-500/60 bg-rose-500/20 px-5 py-2.5 text-sm font-semibold text-rose-100 active:bg-rose-500/30 text-center"
+            >
+              New Game
             </button>
           </div>
         </div>
