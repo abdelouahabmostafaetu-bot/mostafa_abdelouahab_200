@@ -45,9 +45,6 @@ let _lastSearchStats = null;
 
 function initLatexSearch() {
   DOM.latexSearchBtn.addEventListener('click', () => { State.currentPage = 1; searchLatex(); });
-  DOM.latexKeywords.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { State.currentPage = 1; searchLatex(); }
-  });
   DOM.latexInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.ctrlKey) { State.currentPage = 1; searchLatex(); }
   });
@@ -1431,7 +1428,7 @@ function normalizeBareFrags(tex) {
 
 async function searchLatex(forceOriginal) {
   let rawTex   = DOM.latexInput.value.trim();
-  let keywords = DOM.latexKeywords.value.trim();
+  let keywords = "";
 
   // ── Normalize LaTeX spacing so "\int_0^1 ln(sin(x)) dx" === "\int_0^1ln(sin(x))dx"
   if (rawTex && typeof LaTeXCanon !== 'undefined') {
@@ -1476,7 +1473,6 @@ async function searchLatex(forceOriginal) {
       const origStr = originalRawTex + (originalKeywords ? ' ' + originalKeywords : '');
       acBanner = SearchAutocorrect.createSuggestionBanner(origStr, allCorrections, (orig) => {
         DOM.latexInput.value = originalRawTex;
-        DOM.latexKeywords.value = originalKeywords;
         State.currentPage = 1;
         searchLatex(true);
       });
@@ -1494,6 +1490,7 @@ async function searchLatex(forceOriginal) {
   showLoader();
   const thisId = ++_latexSearchId;
   const startTime = performance.now();
+  const pageSize = String(Config.RESULTS_PER_PAGE || 10);
 
   // Show "Did you mean?" banner
   if (acBanner) {
@@ -1601,7 +1598,7 @@ async function searchLatex(forceOriginal) {
     if (entry.type === 'tagged') {
       const params = new URLSearchParams({
         order: 'desc', sort: 'relevance', site: Config.SITE,
-        page: entry.sePage || State.currentPage, pagesize: '15',
+        page: entry.sePage || State.currentPage, pagesize: pageSize,
         filter: Config.SE_FILTER, q: entry.q,
       });
       // Merge user-selected tags with auto-detected tags
@@ -1611,7 +1608,7 @@ async function searchLatex(forceOriginal) {
     } else if (entry.type === 'intitle') {
       const params = new URLSearchParams({
         order: 'desc', sort: 'relevance', site: Config.SITE,
-        page: entry.sePage || State.currentPage, pagesize: '15',
+        page: entry.sePage || State.currentPage, pagesize: pageSize,
         filter: Config.SE_FILTER, q: entry.q,
       });
       const autoTags = extractTags(tex);
@@ -1623,14 +1620,14 @@ async function searchLatex(forceOriginal) {
       if (userTags) {
         const params = new URLSearchParams({
           order: 'desc', sort: 'relevance', site: Config.SITE,
-          page: entry.sePage || State.currentPage, pagesize: '15',
+          page: entry.sePage || State.currentPage, pagesize: pageSize,
           filter: Config.SE_FILTER, q: entry.q, tagged: userTags,
         });
         url = `${Config.SE_API}/search/advanced?${params}`;
       } else {
         const params = new URLSearchParams({
           order: 'desc', sort: 'relevance', site: Config.SITE,
-          page: entry.sePage || State.currentPage, pagesize: '15', q: entry.q,
+          page: entry.sePage || State.currentPage, pagesize: pageSize, q: entry.q,
         });
         url = `${Config.SE_API}/search/excerpts?${params}`;
       }
@@ -1707,7 +1704,19 @@ async function searchLatex(forceOriginal) {
     stats.seQueryCount = Math.min(sortedPlan.length + variantQueries.length, 30);
     _lastSearchStats = stats;
 
-    renderLatexResults(allItems, quota);
+    syncSearchUrl({
+      mode: 'latex',
+      tex: rawTex,
+      mseQuery: latexToNatural(rawTex) || latexToReadable(rawTex) || rawTex,
+      page: State.currentPage,
+      deep: document.getElementById('deepDuration')?.value || '180',
+      tags: typeof TagSelector !== 'undefined' ? TagSelector.getSelectedArray('latex') : [],
+    });
+
+    renderLatexResults(allItems.slice(0, Config.RESULTS_PER_PAGE || 10), quota, stats, {
+      rawTex,
+      searchState: State.lastSearch,
+    });
     renderSearchAnalytics(stats);
     refreshHistoryUI();
     lazyTypeset();
@@ -2640,6 +2649,169 @@ function renderLatexResults(items, quota) {
 /* ================================================================
    SEARCH ANALYTICS PANEL
    ================================================================ */
+
+function buildLatexInsightChips(item, idx) {
+  const chips = [];
+  const similarity = item._similarity || 0;
+
+  if (idx === 0) chips.push('Top structural match');
+  if (similarity >= 0.8) chips.push('Very close formula structure');
+  else if (similarity >= 0.55) chips.push('Strong formula similarity');
+  if (item._bodyLatexBoost >= 0.2) chips.push('Exact formula found in body');
+  if (item.accepted_answer_id) chips.push('Accepted answer');
+  if ((item.answers || []).length >= 3) chips.push('Many solution paths');
+  if (item._azScore) chips.push('Approach Zero confirmed');
+
+  return chips.slice(0, 4)
+    .map(label => `<span class="insight-chip">${escapeHtml(label)}</span>`)
+    .join('');
+}
+
+function renderLatexResults(items, quota, stats, context) {
+  if (!items.length) {
+    const queryTex = DOM.latexInput.value.trim();
+    let msg = 'No results found. Try different LaTeX or keywords.';
+    if (queryTex) {
+      const googleQ = encodeURIComponent('site:math.stackexchange.com ' + queryTex);
+      msg += ` <a class="google-inline-link" href="https://www.google.com/search?q=${googleQ}" target="_blank" rel="noopener noreferrer">Search on Google</a>`;
+    }
+    showStatusHtml(msg);
+    return;
+  }
+
+  const totalCount = Math.max(stats?.totalResults || 0, items.length);
+  const quotaStr = quota != null ? ` (API quota: ${quota})` : '';
+  showStatus(`Page ${State.currentPage} - showing ${items.length} of ${totalCount} structural matches${quotaStr}`);
+
+  const rankOffset = ((State.currentPage || 1) - 1) * (Config.RESULTS_PER_PAGE || 10);
+  const frag = document.createDocumentFragment();
+
+  items.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = `az-result-card ${idx === 0 ? 'is-top-match' : ''}`;
+
+    const date = item.creation_date
+      ? new Date(item.creation_date * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      : '';
+    const tags = (item.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+
+    let sourceBadge = '';
+    if (item._source === 'approach-zero') {
+      sourceBadge = '<span class="source-badge source-az" title="Found by Approach Zero structural search">AZ</span>';
+    } else if (item._source === 'google') {
+      sourceBadge = '<span class="source-badge source-google" title="Found via Google site-search">G</span>';
+    } else if (item._source === 'web-math') {
+      sourceBadge = '<span class="source-badge source-web" title="Found on external math sites">WEB</span>';
+    } else if (item._source === 'mathoverflow') {
+      sourceBadge = '<span class="source-badge source-mathoverflow" title="Found on MathOverflow">MO</span>';
+    } else if (item.item_type === 'answer') {
+      sourceBadge = '<span class="source-badge source-answer" title="Found in an answer">ANS</span>';
+    }
+
+    const sim = item._similarity || 0;
+    const pct = Math.max(Math.round(sim * 100), 1);
+    const cls = pct >= 70 ? 'sim-high' : pct >= 40 ? 'sim-med' : 'sim-low';
+    const simBadge = `<span class="sim-badge ${cls}" title="Match confidence: ${pct}%">${pct}%</span>`;
+
+    let bodyHtml = '';
+    if (item.body) {
+      const isLong = item.body.length > 420;
+      bodyHtml = `
+        <div class="qa-body question-body">
+          <div class="qa-body-label">Question</div>
+          <div class="qa-body-content ${isLong ? 'collapsed' : ''}">${item.body}</div>
+          ${isLong ? '<button class="qa-toggle" onclick="toggleQABody(this)" data-state="collapsed">Show full question</button>' : ''}
+        </div>`;
+    } else if (item.excerpt) {
+      bodyHtml = `<div class="result-snippet">${item.excerpt}</div>`;
+    }
+
+    let answersHtml = '';
+    if (item.answers && item.answers.length > 0) {
+      const ansCards = item.answers.map((ans) => {
+        const ansAccepted = ans.is_accepted ? '<span class="accepted-answer-badge">Accepted answer</span>' : '';
+        const ansDate = ans.creation_date
+          ? new Date(ans.creation_date * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '';
+        const ansIsLong = (ans.body || '').length > 420;
+
+        return `
+          <div class="answer-card ${ans.is_accepted ? 'answer-accepted' : ''}">
+            <div class="answer-header">
+              ${ansAccepted}
+              <span class="answer-score">▲ ${formatCompactNumber(ans.score)}</span>
+              ${ans.owner?.display_name ? `<span class="answer-author">by ${escapeHtml(ans.owner.display_name)}</span>` : ''}
+              ${ansDate ? `<span class="answer-date">${ansDate}</span>` : ''}
+            </div>
+            <div class="qa-body-content ${ansIsLong ? 'collapsed' : ''}">${ans.body || ''}</div>
+            ${ansIsLong ? '<button class="qa-toggle" onclick="toggleQABody(this)" data-state="collapsed">Show full answer</button>' : ''}
+          </div>`;
+      }).join('');
+
+      const countLabel = item.answers.length === 1 ? '1 answer' : `${item.answers.length} answers`;
+      answersHtml = `
+        <div class="answers-section">
+          <div class="answers-header" onclick="toggleAnswers(this)">
+            <span>${countLabel}</span>
+            <span class="answers-toggle-icon">▾</span>
+          </div>
+          <div class="answers-list collapsed">${ansCards}</div>
+        </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="result-card-head">
+        <div class="result-heading">
+          <div class="result-kicker">
+            <span class="result-rank">#${rankOffset + idx + 1}</span>
+            ${simBadge}
+            ${sourceBadge}
+          </div>
+          <h3><a href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3>
+          <div class="result-insights">${buildLatexInsightChips(item, idx)}</div>
+        </div>
+        <div class="result-actions">
+          <a class="result-action" href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">Open</a>
+          <button class="result-action" type="button" data-copy-result-link="${escapeAttr(item.link)}">Copy link</button>
+        </div>
+      </div>
+      ${bodyHtml}
+      ${answersHtml}
+      <div class="meta">
+        <span>▲ ${formatCompactNumber(item.score)}</span>
+        <span>💬 ${formatCompactNumber(item.answer_count ?? 0)} answers</span>
+        ${item.view_count ? `<span>👁 ${formatCompactNumber(item.view_count)} views</span>` : ''}
+        ${date ? `<span>📅 ${date}</span>` : ''}
+        ${item.owner?.display_name ? `<span>by ${escapeHtml(item.owner.display_name)}</span>` : ''}
+      </div>
+      ${tags ? `<div class="tags">${tags}</div>` : ''}`;
+
+    frag.appendChild(card);
+  });
+
+  DOM.results.innerHTML = '';
+  DOM.results.appendChild(frag);
+  optimizeRenderedContent(DOM.results);
+  if (typeof wireResultActionButtons === 'function') wireResultActionButtons(DOM.results);
+
+  const queryTex = DOM.latexInput.value.trim();
+  if (queryTex) {
+    const googleQ = encodeURIComponent('site:math.stackexchange.com ' + queryTex);
+    const fallback = document.createElement('div');
+    fallback.className = 'google-fallback';
+    fallback.innerHTML = `
+      <span>Need a wider web sweep?</span>
+      <a href="https://www.google.com/search?q=${googleQ}" target="_blank" rel="noopener noreferrer">Try Google site-search</a>`;
+    DOM.results.appendChild(fallback);
+  }
+
+  renderPagination(searchLatex);
+  renderSearchActionBar({
+    searchState: context?.searchState || State.lastSearch,
+    summary: `Showing <strong>${items.length}</strong> of <strong>${totalCount}</strong> formula matches`,
+    clusters: typeof SearchIntelligence !== 'undefined' ? SearchIntelligence.clusterResults(items) : [],
+  });
+}
 
 function renderSearchAnalytics(stats) {
   const old = document.getElementById('searchAnalytics');
