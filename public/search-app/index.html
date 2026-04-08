@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Q&A Search — StackExchange Mathematics + LaTeX</title>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- MathJax 3 config (must come before the library) -->
+  <script>
+  window.MathJax = {
+    tex: {
+      inlineMath:  [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\\[','\\]']],
+      processEscapes: true
+    },
+    options: {
+      skipHtmlTags: ['script','noscript','style','textarea','pre','code'],
+      processHtmlClass: 'tex2jax_process',
+      ignoreHtmlClass:  'tex2jax_ignore'
+    },
+    startup: { typeset: false }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+  <!-- ==================== MODE TOGGLE ==================== -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modeText" onclick="setMode('text')">&#128269; Text Search</button>
+    <button class="mode-btn" id="modeLatex" onclick="setMode('latex')">&#8721; LaTeX Search</button>
+  </div>
+
+  <!-- ==================== TEXT SEARCH ==================== -->
+  <div class="search-container" id="textSearchPanel">
+    <div class="search-box">
+      <input id="query" type="text" placeholder="e.g.  eigenvalue of symmetric matrix" autofocus>
+      <button id="searchBtn">Search</button>
+    </div>
+    <!-- Tag autocomplete -->
+    <div class="tag-autocomplete" id="textTagAuto">
+      <div class="tag-selected-chips" id="textTagChips"></div>
+      <div class="tag-input-wrap">
+        <input class="tag-auto-input" id="textTagInput" type="text" placeholder="Start typing a tag (e.g. algebra, limits)" autocomplete="off">
+        <div class="tag-dropdown" id="textTagDropdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LATEX SEARCH PANEL ==================== -->
+  <div class="latex-panel" id="latexSearchPanel">
+    <div class="latex-card">
+
+      <!-- Textarea -->
+      <div class="latex-input-area">
+        <textarea id="latexInput" placeholder="Type LaTeX here, e.g.  \int_0^1 x^2 dx" spellcheck="false"></textarea>
+      </div>
+
+      <!-- Live preview -->
+      <div class="latex-preview-bar">LIVE PREVIEW</div>
+      <div class="latex-preview" id="latexPreview">
+        <span class="placeholder-text">Your formula will appear here…</span>
+      </div>
+
+      <!-- Keywords + search -->
+      <div class="latex-search-row">
+        <input id="latexKeywords" type="text" placeholder="Optional keywords (e.g. convergence, eigenvalue)…">
+        <button id="latexSearchBtn">Search</button>
+      </div>
+
+      <!-- Deep search duration -->
+      <div class="deep-duration-row">
+        <label for="deepDuration">&#9200; Deep search duration:</label>
+        <select id="deepDuration">
+          <option value="180" selected>3 min</option>
+          <option value="300">5 min</option>
+        </select>
+      </div>
+    </div>
+    <!-- Tag autocomplete -->
+    <div class="tag-autocomplete" id="latexTagAuto">
+      <div class="tag-selected-chips" id="latexTagChips"></div>
+      <div class="tag-input-wrap">
+        <input class="tag-auto-input" id="latexTagInput" type="text" placeholder="Start typing a tag (e.g. calculus, series)" autocomplete="off">
+        <div class="tag-dropdown" id="latexTagDropdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FILTERS (text mode) ==================== -->
+  <div class="filters" id="textFilters">
+    <label for="sort">Sort by:</label>
+    <select id="sort">
+      <option value="relevance">Relevance</option>
+      <option value="votes">Votes</option>
+      <option value="creation">Newest</option>
+      <option value="activity">Activity</option>
+    </select>
+
+    <label for="answered">Status:</label>
+    <select id="answered">
+      <option value="">All</option>
+      <option value="true">Answered</option>
+      <option value="false">Unanswered</option>
+    </select>
+
+    <label for="pageSize">Show:</label>
+    <select id="pageSize">
+      <option value="10">10</option>
+      <option value="20" selected>20</option>
+      <option value="30">30</option>
+    </select>
+  </div>
+
+  <!-- ==================== SEARCH HISTORY ==================== -->
+  <div class="history-bar" id="historyBar">
+    <div class="history-header">
+      <span>&#128337; Recent Searches</span>
+      <button class="history-clear" id="historyClear" title="Clear history">&times;</button>
+    </div>
+    <div class="history-chips" id="historyChips"></div>
+  </div>
+
+  <!-- ==================== RESULTS AREA ==================== -->
+  <div id="status" class="status"></div>
+  <div id="results" class="results"></div>
+  <div id="pagination" class="pagination"></div>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer>
+    Powered by the <a href="https://api.stackexchange.com/" target="_blank">StackExchange API</a> &mdash; Data from
+    <a href="https://math.stackexchange.com" target="_blank">Mathematics Stack Exchange</a>
+  </footer>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/search-cache.js"></script>
+  <script src="js/search-autocorrect.js"></script>
+  <script src="js/search-enhance.js"></script>
+  <script src="js/search-intelligence.js"></script>
+  <script src="js/tag-selector-live.js"></script>
+  <script src="js/latex-editor.js"></script>
+  <script src="js/search-text.js"></script>
+  <script src="js/latex-canonicalize.js"></script>
+  <script src="js/math-similarity.js"></script>
+  <script src="js/formula-tokenizer.js"></script>
+  <script src="js/search-latex.js"></script>
+  <script>
+    /* Bootstrap — runs once after all modules are loaded */
+    document.addEventListener('DOMContentLoaded', () => {
+      cacheDom();
+      initLatexPreview();
+      initTextSearch();
+      initLatexSearch();
+      initSearchHistory();
+      initTagSelectors();
+
+      /* Search tips toggle */
+      const tipsPanel = document.getElementById('searchTips');
+      const tipsToggle = document.getElementById('tipsToggle');
+      if (tipsToggle && tipsPanel) {
+        tipsToggle.addEventListener('click', () => {
+          tipsPanel.classList.toggle('expanded');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
