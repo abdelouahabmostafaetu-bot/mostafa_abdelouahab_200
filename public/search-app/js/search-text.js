@@ -35,6 +35,22 @@ function initTextSearch() {
   DOM.query.addEventListener('keydown', e => {
     if (e.key === 'Enter') { State.currentPage = 1; searchText(); }
   });
+  if (DOM.sort) {
+    DOM.sort.addEventListener('change', () => {
+      if (DOM.query.value.trim()) {
+        State.currentPage = 1;
+        searchText();
+      }
+    });
+  }
+  if (DOM.answered) {
+    DOM.answered.addEventListener('change', () => {
+      if (DOM.query.value.trim()) {
+        State.currentPage = 1;
+        searchText();
+      }
+    });
+  }
 }
 
 async function searchText(forceOriginal) {
@@ -85,12 +101,15 @@ async function searchText(forceOriginal) {
 
   SearchCache.addHistory('text', q);
 
+  const selectedSort = DOM.sort ? DOM.sort.value : 'best';
+  const pageSize = String(Config.RESULTS_PER_PAGE || 10);
+
   const baseParams = {
     order    : 'desc',
-    sort     : DOM.sort.value,
+    sort     : 'relevance',
     site     : Config.SITE,
     page     : State.currentPage,
-    pagesize : DOM.pageSize.value,
+    pagesize : pageSize,
     filter   : Config.SE_FILTER,
   };
   if (DOM.answered.value) baseParams.accepted = DOM.answered.value;
@@ -534,7 +553,7 @@ async function searchText(forceOriginal) {
           try {
             const fbParams = new URLSearchParams({
               order: 'desc', sort: 'relevance', site: Config.SITE,
-              page: '1', pagesize: '8', q: fb.q, filter: Config.SE_FILTER,
+              page: '1', pagesize: pageSize, q: fb.q, filter: Config.SE_FILTER,
             });
             const fbResp = await SearchCache.cachedFetch(
               `${Config.SE_API}/search/advanced?${fbParams}`, Config.SEARCH_TIMEOUT_MS
@@ -565,10 +584,26 @@ async function searchText(forceOriginal) {
       }
     }
 
+    if (typeof SearchEnhance !== 'undefined' && SearchEnhance.applyDisplaySort) {
+      allItems = SearchEnhance.applyDisplaySort(allItems, selectedSort);
+    }
+
     stats.timing.total = Math.round(performance.now() - startTime);
     stats.tagWikis = tagWikis;
+    syncSearchUrl({
+      mode: 'text',
+      q,
+      sort: selectedSort,
+      answered: DOM.answered ? DOM.answered.value : '',
+      page: State.currentPage,
+      tags: typeof TagSelector !== 'undefined' ? TagSelector.getSelectedArray('text') : [],
+    });
 
-    renderTextResults(allItems, quota, stats);
+    renderTextResults(allItems.slice(0, Config.RESULTS_PER_PAGE || 10), quota, stats, {
+      query: q,
+      sort: selectedSort,
+      searchState: State.lastSearch,
+    });
     refreshHistoryUI();
     typesetResults();
   } catch (err) {
@@ -877,6 +912,257 @@ function toggleQABody(btn) {
     }, 50);
   }
 
+
+function buildTextInsightChips(item, inferredTags, idx) {
+  const chips = [];
+  const signals = item._searchSignals || {};
+
+  if (idx === 0) chips.push('Top match');
+  if (signals.exactTitle) chips.push('Strong title match');
+  else if (signals.totalQueryWords && signals.titleWordMatches >= Math.max(2, Math.ceil(signals.totalQueryWords * 0.6))) {
+    chips.push('Most query terms in title');
+  }
+  if (item.accepted_answer_id) chips.push('Accepted answer');
+  if (signals.hasAnswerMatch) chips.push('Answer mentions your query');
+  if ((item._sourceCount || 1) > 1) chips.push(`${item._sourceCount} search methods agree`);
+  if (signals.tagMatches > 0 && inferredTags && inferredTags.length) chips.push('Topic tags align');
+  if (item._formulaSimilarity > 0.2) chips.push('Formula match');
+  if (item._duplicateGroup > 1) chips.push(`${item._duplicateGroup} related threads`);
+
+  return chips.slice(0, 4)
+    .map(label => `<span class="insight-chip">${escapeHtml(label)}</span>`)
+    .join('');
+}
+
+function wireResultActionButtons(root) {
+  if (!root) return;
+  root.querySelectorAll('[data-copy-result-link]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const ok = await copyTextToClipboard(button.getAttribute('data-copy-result-link'));
+      const original = button.textContent;
+      button.textContent = ok ? 'Copied' : 'Copy failed';
+      window.setTimeout(() => {
+        button.textContent = original;
+      }, 1400);
+    });
+  });
+}
+
+function renderTextResults(items, quota, stats, context) {
+  if (!items.length) {
+    showStatus('No results found. Try a different query.');
+    return;
+  }
+
+  const totalCount = Math.max(stats?.totalResults || 0, items.length);
+  const quotaStr = quota != null ? ` (API quota: ${quota})` : '';
+  showStatus(`Page ${State.currentPage} - showing ${items.length} of ${totalCount} ranked matches${quotaStr}`);
+
+  const inferredTags = (stats && stats.inferredTags) || [];
+  const rankOffset = ((State.currentPage || 1) - 1) * (Config.RESULTS_PER_PAGE || 10);
+  const frag = document.createDocumentFragment();
+
+  items.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = `result-card ${idx === 0 ? 'is-top-match' : ''}`;
+
+    const date = item.creation_date
+      ? new Date(item.creation_date * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      : '';
+    const tags = (item.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+
+    let srcBadge = '';
+    if (item._sources && item._sources.length > 1) {
+      srcBadge = `<span class="source-badge source-multi" title="Found by ${escapeAttr(item._sources.join(', '))}">${item._sources.length} sources</span>`;
+    } else if (item._source === 'related') {
+      srcBadge = '<span class="source-badge source-related" title="Related question">REL</span>';
+    } else if (item._source === 'linked') {
+      srcBadge = '<span class="source-badge source-linked" title="Linked question">LNK</span>';
+    } else if (item._source === 'synonym') {
+      srcBadge = '<span class="source-badge source-synonym" title="Found via synonym expansion">SYN</span>';
+    } else if (item._source === 'tagged') {
+      srcBadge = '<span class="source-badge source-tagged" title="Found by tag search">TAG</span>';
+    } else if (item._source === 'decompose') {
+      srcBadge = '<span class="source-badge source-decompose" title="Found by sub-query">SUB</span>';
+    } else if (item._source === 'phrase') {
+      srcBadge = '<span class="source-badge source-phrase" title="Exact phrase match">PHR</span>';
+    } else if (item._source === 'ans-body' || (item._source === 'excerpts' && item.item_type === 'answer')) {
+      srcBadge = '<span class="source-badge source-answer" title="Found in answer content">ANS</span>';
+    } else if (item._source === 'mathoverflow') {
+      srcBadge = '<span class="source-badge source-mathoverflow" title="From MathOverflow">MO</span>';
+    } else if (item._source === 'hot') {
+      srcBadge = '<span class="source-badge source-hot" title="Trending question">HOT</span>';
+    } else if (item._source === 'google') {
+      srcBadge = '<span class="source-badge source-google" title="Found via Google">G</span>';
+    } else if (item._source === 'rewrite') {
+      srcBadge = '<span class="source-badge source-rewrite" title="Found by semantic rewrite">RW</span>';
+    } else if (item._source === 'intent') {
+      srcBadge = '<span class="source-badge source-intent" title="Found by intent detection">INT</span>';
+    } else if (item._source === 'bridge') {
+      srcBadge = '<span class="source-badge source-bridge" title="Cross-concept bridge">BRG</span>';
+    } else if (item._source === 'web-math') {
+      srcBadge = '<span class="source-badge source-web" title="Found on external math sites">WEB</span>';
+    } else if ((item._source || '').startsWith('fallback-')) {
+      srcBadge = '<span class="source-badge source-fallback" title="Adaptive recall fallback">FB</span>';
+    }
+
+    let dupBadge = '';
+    if (item._duplicateGroup && item._duplicateGroup > 1) {
+      dupBadge = `<span class="source-badge source-dup" title="${item._duplicateGroup} similar questions found">x${item._duplicateGroup}</span>`;
+    }
+
+    let relevanceBadge = '';
+    if (item._relevanceScore != null) {
+      const pct = Math.min(Math.round(item._relevanceScore), 200);
+      const cls = pct >= 100 ? 'high' : pct >= 50 ? 'mid' : 'low';
+      relevanceBadge = `<span class="relevance-badge relevance-${cls}" title="Rank score: ${item._relevanceScore}">${pct}%</span>`;
+    }
+
+    const snippetHtml = item._smartSnippet
+      ? `<div class="smart-snippet"><span class="snippet-label">Best passage</span>${escapeHtml(item._smartSnippet)}</div>`
+      : '';
+
+    let bodyHtml = '';
+    if (item.body) {
+      const isLong = item.body.length > 420;
+      bodyHtml = `
+        <div class="qa-body question-body" id="qbody-${idx}">
+          <div class="qa-body-label">Question</div>
+          <div class="qa-body-content ${isLong ? 'collapsed' : ''}">${item.body}</div>
+          ${isLong ? '<button class="qa-toggle" onclick="toggleQABody(this)" data-state="collapsed">Show full question</button>' : ''}
+        </div>`;
+    } else if (item.excerpt) {
+      bodyHtml = `<div class="result-snippet">${item.excerpt}</div>`;
+    }
+
+    let answersHtml = '';
+    if (item.answers && item.answers.length > 0) {
+      const ansCards = item.answers.map((ans) => {
+        const ansAccepted = ans.is_accepted ? '<span class="accepted-answer-badge">Accepted answer</span>' : '';
+        const ansDate = ans.creation_date
+          ? new Date(ans.creation_date * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '';
+        const ansIsLong = (ans.body || '').length > 420;
+        const qualityBadge = ans._qualityScore != null
+          ? `<span class="quality-badge quality-${ans._qualityScore >= 60 ? 'high' : ans._qualityScore >= 30 ? 'mid' : 'low'}" title="Answer quality: ${ans._qualityScore}/100">Q ${ans._qualityScore}</span>`
+          : '';
+
+        return `
+          <div class="answer-card ${ans.is_accepted ? 'answer-accepted' : ''}">
+            <div class="answer-header">
+              ${ansAccepted}
+              ${qualityBadge}
+              <span class="answer-score">▲ ${formatCompactNumber(ans.score)}</span>
+              ${ans.owner?.display_name ? `<span class="answer-author">by ${escapeHtml(ans.owner.display_name)}</span>` : ''}
+              ${ansDate ? `<span class="answer-date">${ansDate}</span>` : ''}
+            </div>
+            <div class="qa-body-content ${ansIsLong ? 'collapsed' : ''}">${ans.body || ''}</div>
+            ${ansIsLong ? '<button class="qa-toggle" onclick="toggleQABody(this)" data-state="collapsed">Show full answer</button>' : ''}
+          </div>`;
+      }).join('');
+
+      const countLabel = item.answers.length === 1 ? '1 answer' : `${item.answers.length} answers`;
+      answersHtml = `
+        <div class="answers-section">
+          <div class="answers-header" onclick="toggleAnswers(this)">
+            <span>${countLabel}</span>
+            <span class="answers-toggle-icon">▾</span>
+          </div>
+          <div class="answers-list collapsed">${ansCards}</div>
+        </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="result-card-head">
+        <div class="result-heading">
+          <div class="result-kicker">
+            <span class="result-rank">#${rankOffset + idx + 1}</span>
+            ${relevanceBadge}
+            ${srcBadge}
+            ${dupBadge}
+          </div>
+          <h3><a href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3>
+          <div class="result-insights">${buildTextInsightChips(item, inferredTags, idx)}</div>
+        </div>
+        <div class="result-actions">
+          <a class="result-action" href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">Open</a>
+          <button class="result-action" type="button" data-copy-result-link="${escapeAttr(item.link)}">Copy link</button>
+        </div>
+      </div>
+      ${snippetHtml}
+      ${bodyHtml}
+      ${answersHtml}
+      <div class="meta">
+        <span>▲ ${formatCompactNumber(item.score)}</span>
+        <span>💬 ${formatCompactNumber(item.answer_count ?? 0)} answers</span>
+        ${item.view_count ? `<span>👁 ${formatCompactNumber(item.view_count)} views</span>` : ''}
+        ${date ? `<span>📅 ${date}</span>` : ''}
+        ${item.owner?.display_name ? `<span>by ${escapeHtml(item.owner.display_name)}</span>` : ''}
+      </div>
+      ${tags ? `<div class="tags">${tags}</div>` : ''}`;
+
+    frag.appendChild(card);
+  });
+
+  DOM.results.innerHTML = '';
+  DOM.results.appendChild(frag);
+  optimizeRenderedContent(DOM.results);
+  wireResultActionButtons(DOM.results);
+
+  renderPagination(searchText);
+  if (stats) renderTextAnalytics(stats);
+  renderSearchActionBar({
+    searchState: context?.searchState || State.lastSearch,
+    summary: `Showing <strong>${items.length}</strong> of <strong>${totalCount}</strong> matches ranked by <span class="search-summary-accent">${escapeHtml((context?.sort || 'best').replace(/^\w/, c => c.toUpperCase()))}</span>`,
+    clusters: stats?.clusters || [],
+  });
+
+  requestAnimationFrame(() => {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([DOM.results]).catch(() => {});
+    }
+  });
+}
+
+function toggleQABody(btn) {
+  const content = btn.previousElementSibling;
+  if (!content) return;
+
+  const isCollapsed = btn.dataset.state === 'collapsed';
+  content.classList.toggle('collapsed', !isCollapsed);
+  btn.dataset.state = isCollapsed ? 'expanded' : 'collapsed';
+
+  if (btn.textContent.toLowerCase().includes('answer')) {
+    btn.textContent = isCollapsed ? 'Show less answer' : 'Show full answer';
+  } else {
+    btn.textContent = isCollapsed ? 'Show less question' : 'Show full question';
+  }
+
+  if (isCollapsed && window.MathJax && MathJax.typesetPromise) {
+    window.setTimeout(() => {
+      MathJax.typesetPromise([content]).catch(() => {});
+    }, 50);
+  }
+}
+
+function toggleAnswers(header) {
+  const section = header.closest('.answers-section');
+  if (!section) return;
+
+  const list = section.querySelector('.answers-list');
+  const icon = header.querySelector('.answers-toggle-icon');
+  if (!list) return;
+
+  const isCollapsed = list.classList.contains('collapsed');
+  list.classList.toggle('collapsed', !isCollapsed);
+  if (icon) icon.textContent = isCollapsed ? '▴' : '▾';
+
+  if (isCollapsed && window.MathJax && MathJax.typesetPromise) {
+    window.setTimeout(() => {
+      MathJax.typesetPromise([list]).catch(() => {});
+    }, 50);
+  }
+}
 
 function renderTextAnalytics(stats) {
   const old = document.getElementById('searchAnalytics');

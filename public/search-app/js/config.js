@@ -11,6 +11,7 @@ const Config = Object.freeze({
   DEBOUNCE_MS  : 250,                    // preview debounce
   TAG_SUGGEST_DEBOUNCE_MS : 180,         // tag autocomplete debounce
   TAG_SUGGEST_LIMIT : 12,                // tag suggestions shown at once
+  RESULTS_PER_PAGE : 10,                 // fixed fast mobile-friendly page size
   SEARCH_TIMEOUT_MS : 10000,             // abort slow requests
 
   /* ── SE API key (register free at https://stackapps.com/) ──
@@ -37,4 +38,5 @@ const State = {
   currentPage : 1,
   hasMore     : false,
   searchMode  : 'text',                  // 'text' | 'latex'
+  lastSearch  : null,
 };

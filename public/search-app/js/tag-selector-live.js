@@ -462,6 +462,21 @@ const TagSelector = (function () {
     closeDropdown(mode);
   }
 
+  function setSelected(mode, tags) {
+    const safeMode = mode || 'text';
+    const values = Array.isArray(tags)
+      ? tags
+      : String(tags || '')
+        .split(/[;,]/)
+        .map(tag => tag.trim())
+        .filter(Boolean);
+
+    _selected[safeMode].clear();
+    values.forEach(tag => _selected[safeMode].add(tag));
+    renderChips(safeMode);
+    closeDropdown(safeMode);
+  }
+
   function init() {
     wireMode('text');
     wireMode('latex');
@@ -471,6 +486,7 @@ const TagSelector = (function () {
     init,
     getSelected,
     getSelectedArray,
+    setSelected,
     clearSelection,
     TAG_GROUPS,
     ALL_TAGS: FALLBACK_TAGS,

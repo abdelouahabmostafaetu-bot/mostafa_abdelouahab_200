@@ -540,13 +540,30 @@ const SearchEnhance = (() => {
     const body = (item.body || '').toLowerCase();
     const excerpt = (item.excerpt || '').toLowerCase();
     const searchText = title + ' ' + body + ' ' + excerpt;
+    const signals = {
+      exactTitle: false,
+      exactBody: false,
+      titleWordMatches: 0,
+      bodyWordMatches: 0,
+      totalQueryWords: qWords.length,
+      tagMatches: 0,
+      sourceCount: item._sourceCount || 1,
+      accepted: !!item.accepted_answer_id,
+      answerCount: item.answer_count || 0,
+      topAnswerScore: 0,
+      hasAnswerMatch: false,
+    };
 
     // ── Title signals (most important) ──
     // Exact full-query match in title
-    if (title.includes(q)) score += 55;
+    if (title.includes(q)) {
+      score += 55;
+      signals.exactTitle = true;
+    }
     // Word overlap in title (BM25-like)
     if (qWords.length > 0) {
       const titleWordMatches = qWords.filter(w => title.includes(w)).length;
+      signals.titleWordMatches = titleWordMatches;
       score += (titleWordMatches / qWords.length) * 35;
       // Bonus for consecutive word matches in title
       for (let i = 0; i < qWords.length - 1; i++) {
@@ -555,9 +572,13 @@ const SearchEnhance = (() => {
     }
 
     // ── Body / excerpt signals ──
-    if (body.includes(q) || excerpt.includes(q)) score += 20;
+    if (body.includes(q) || excerpt.includes(q)) {
+      score += 20;
+      signals.exactBody = true;
+    }
     if (qWords.length > 0) {
       const bodyWordMatches = qWords.filter(w => searchText.includes(w)).length;
+      signals.bodyWordMatches = bodyWordMatches;
       score += (bodyWordMatches / qWords.length) * 15;
     }
 
@@ -587,6 +608,7 @@ const SearchEnhance = (() => {
     if (inferredTags && inferredTags.length > 0 && item.tags) {
       const itemTags = new Set((item.tags || []).map(t => t.toLowerCase()));
       const tagMatches = inferredTags.filter(t => itemTags.has(t.toLowerCase())).length;
+      signals.tagMatches = tagMatches;
       score += tagMatches * 8;
     }
 
@@ -611,6 +633,7 @@ const SearchEnhance = (() => {
     // ── Multiple source bonus ──
     if (item._sourceCount && item._sourceCount > 1) {
       score += item._sourceCount * 6;
+      signals.sourceCount = item._sourceCount;
     }
 
     // ── Freshness bonus (slight) ──
@@ -623,6 +646,7 @@ const SearchEnhance = (() => {
     // ── Answer quality signals ──
     if (item.answers && item.answers.length > 0) {
       const topScore = Math.max(...item.answers.map(a => a.score || 0));
+      signals.topAnswerScore = topScore;
       score += Math.min(Math.log1p(topScore) * 3, 10);
       const hasAccepted = item.answers.some(a => a.is_accepted);
       if (hasAccepted) score += 5;
@@ -633,9 +657,11 @@ const SearchEnhance = (() => {
           const ansMatches = qWords.filter(w => ansBody.includes(w)).length;
           if (ansMatches >= qWords.length * 0.7) {
             score += 8; // Strong answer content match
+            signals.hasAnswerMatch = true;
             break;
           } else if (ansMatches >= qWords.length * 0.4) {
             score += 4; // Partial answer content match
+            signals.hasAnswerMatch = true;
             break;
           }
         }
@@ -647,7 +673,61 @@ const SearchEnhance = (() => {
       score += item._formulaSimilarity * 30;
     }
 
+    item._searchSignals = signals;
     return Math.round(score * 100) / 100;
+  }
+
+  function compareByBestQuality(left, right) {
+    const scoreDiff = (right._relevanceScore || 0) - (left._relevanceScore || 0);
+    if (Math.abs(scoreDiff) > 0.01) return scoreDiff;
+
+    const sourceDiff = (right._sourceCount || 1) - (left._sourceCount || 1);
+    if (sourceDiff !== 0) return sourceDiff;
+
+    const answerDiff = (right.answer_count || 0) - (left.answer_count || 0);
+    if (answerDiff !== 0) return answerDiff;
+
+    const voteDiff = (right.score || 0) - (left.score || 0);
+    if (voteDiff !== 0) return voteDiff;
+
+    return (right.view_count || 0) - (left.view_count || 0);
+  }
+
+  function applyDisplaySort(items, sortMode) {
+    const sorted = [...(items || [])];
+    const mode = sortMode || 'best';
+
+    if (mode === 'votes') {
+      sorted.sort((left, right) => {
+        const voteDiff = (right.score || 0) - (left.score || 0);
+        if (voteDiff !== 0) return voteDiff;
+        return compareByBestQuality(left, right);
+      });
+      return sorted;
+    }
+
+    if (mode === 'creation') {
+      sorted.sort((left, right) => {
+        const timeDiff = (right.creation_date || 0) - (left.creation_date || 0);
+        if (timeDiff !== 0) return timeDiff;
+        return compareByBestQuality(left, right);
+      });
+      return sorted;
+    }
+
+    if (mode === 'activity') {
+      sorted.sort((left, right) => {
+        const leftActivity = left.last_activity_date || left.last_edit_date || left.creation_date || 0;
+        const rightActivity = right.last_activity_date || right.last_edit_date || right.creation_date || 0;
+        const timeDiff = rightActivity - leftActivity;
+        if (timeDiff !== 0) return timeDiff;
+        return compareByBestQuality(left, right);
+      });
+      return sorted;
+    }
+
+    sorted.sort(compareByBestQuality);
+    return sorted;
   }
 
   /* ──────────────────────────────────────────────────────────────
@@ -1089,6 +1169,7 @@ const SearchEnhance = (() => {
     fetchLinked,
     scoreResult,
     rankResults,
+    applyDisplaySort,
     buildEnhancedQueries,
     // New methods
     extractPhrases,
