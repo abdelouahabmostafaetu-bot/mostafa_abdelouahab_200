@@ -1021,7 +1021,6 @@ export default function SudokuGame() {
            });
         }
 
-        setFastModeNumber(num);
         setSelectedCell(null);
       }
     },
