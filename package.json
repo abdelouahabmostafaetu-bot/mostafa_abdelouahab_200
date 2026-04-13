@@ -1,11 +1,11 @@
 {
-  "name": "my-academic-site",
+  "name": "abdelouahab-mostafa-site",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/dev-with-search.mjs",
+    "dev": "node scripts/dev/start-local-stack.mjs",
     "dev:site": "next dev",
-    "dev:search": "python -u public/search-app/server.py",
+    "dev:search": "python -u public/tools/math-search/server.py",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

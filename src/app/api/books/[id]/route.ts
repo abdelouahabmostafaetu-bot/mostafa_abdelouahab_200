@@ -1,8 +1,8 @@
 import { del } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdminPasswordValid } from '@/lib/library-admin';
-import { connectToDatabase } from '@/lib/mongodb';
-import BookModel from '@/lib/models/book';
+import { isAdminPasswordValid } from '@/features/library/lib/library-auth';
+import { connectToDatabase } from '@/features/library/lib/mongodb';
+import BookModel from '@/features/library/models/book';
 
 type RouteContext = {
   params: {

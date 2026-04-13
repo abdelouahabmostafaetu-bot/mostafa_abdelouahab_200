@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import '@/styles/globals.css';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import SiteFooter from '@/features/layout/components/SiteFooter';
+import SiteHeader from '@/features/layout/components/SiteHeader';
+import '@/styles/globals.css';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Abdelouahab Mostafa — Mathematics Researcher',
+    default: 'Abdelouahab Mostafa - Mathematics Researcher',
     template: '%s | Abdelouahab Mostafa',
   },
   description:
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Abdelouahab Mostafa' }],
   openGraph: {
-    title: 'Abdelouahab Mostafa — Mathematics Researcher',
+    title: 'Abdelouahab Mostafa - Mathematics Researcher',
     description:
       "Personal academic website of Abdelouahab Mostafa, Master student in Fundamental Mathematics.",
     url: 'https://your-site.vercel.app',
@@ -61,7 +61,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* Favicon */}
         <link
           rel="icon"
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23194a50'/><text x='50' y='68' font-family='Georgia,serif' font-size='50' font-weight='bold' fill='%234f98a3' text-anchor='middle'>AM</text></svg>"
@@ -69,9 +68,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Navbar />
+        <SiteHeader />
         <main className="flex-grow">{children}</main>
-        <Footer />
+        <SiteFooter />
         <SpeedInsights />
       </body>
     </html>

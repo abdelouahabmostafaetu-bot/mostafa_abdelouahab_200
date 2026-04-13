@@ -36,9 +36,6 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "my-library-heroku",
-    "my-library-mongodb",
-    "my-library (1)"
+    "node_modules"
   ]
 }

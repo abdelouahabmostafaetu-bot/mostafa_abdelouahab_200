@@ -1,9 +1,9 @@
 import { put } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdminPasswordValid } from '@/lib/library-admin';
-import { normalizeCategory } from '@/lib/library-categories';
-import { connectToDatabase } from '@/lib/mongodb';
-import BookModel from '@/lib/models/book';
+import { isAdminPasswordValid } from '@/features/library/lib/library-auth';
+import { normalizeCategory } from '@/features/library/lib/library-categories';
+import { connectToDatabase } from '@/features/library/lib/mongodb';
+import BookModel from '@/features/library/models/book';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import LibraryPageClient from '@/components/library/LibraryPageClient';
+import LibraryCatalogClient from '@/features/library/components/LibraryCatalogClient';
 
 export const metadata: Metadata = {
   title: 'My Library | Abdelouahab Mostafa',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LibraryPage() {
-  return <LibraryPageClient />;
+  return <LibraryCatalogClient />;
 }

@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Clock } from 'lucide-react';
-import { getBlogPost, getBlogPosts } from '@/lib/content';
-import { renderMDX, extractHeadings } from '@/lib/mdx';
-import { formatDate } from '@/lib/utils';
-import TableOfContents from '@/components/blog/TableOfContents';
-import { TagList } from '@/components/blog/Tag';
-import MathCopyButton from '@/components/blog/MathCopyButton';
-import PdfDownloadButton from '@/components/blog/PdfDownloadButton';
+import { ArrowLeft } from 'lucide-react';
+import MathCopyButton from '@/features/blog/components/MathCopyButton';
+import PdfDownloadButton from '@/features/blog/components/PdfDownloadButton';
+import TableOfContents from '@/features/blog/components/TableOfContents';
+import { TagList } from '@/features/blog/components/Tag';
+import { getBlogPost, getBlogPosts } from '@/features/blog/lib/blog-content';
+import { renderMDX, extractHeadings } from '@/features/blog/lib/blog-mdx';
 
 export async function generateStaticParams() {
   const posts = getBlogPosts();

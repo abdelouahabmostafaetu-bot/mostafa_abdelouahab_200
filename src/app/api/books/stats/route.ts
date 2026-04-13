@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import BookModel from '@/lib/models/book';
+import { connectToDatabase } from '@/features/library/lib/mongodb';
+import BookModel from '@/features/library/models/book';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

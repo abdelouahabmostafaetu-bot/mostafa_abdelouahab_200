@@ -1,11 +1,11 @@
-import ProfileSection from '@/components/home/ProfileSection';
-import RecentActivity from '@/components/home/RecentActivity';
+import HomeHero from '@/features/home/components/HomeHero';
+import RecentPostsSection from '@/features/home/components/RecentPostsSection';
 
 export default function HomePage() {
   return (
     <>
-      <ProfileSection />
-      <RecentActivity />
+      <HomeHero />
+      <RecentPostsSection />
     </>
   );
 }

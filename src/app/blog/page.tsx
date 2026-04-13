@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import PostCard from '@/components/blog/PostCard';
-import { getBlogPosts } from '@/lib/content';
-import Pagination from '@/components/blog/Pagination';
+import Pagination from '@/features/blog/components/Pagination';
+import PostCard from '@/features/blog/components/PostCard';
+import { getBlogPosts } from '@/features/blog/lib/blog-content';
 
 const POSTS_PER_PAGE = 15;
 

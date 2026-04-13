@@ -2,7 +2,7 @@ import React from 'react';
 
 export const metadata = {
   title: 'Math Q&A Search | Abdelouahab Mostafa',
-  description: 'Search Mathematics Stack Exchange and LaTeX results without any AI backend.',
+  description: 'Search Mathematics Stack Exchange and LaTeX results with the embedded math search tool.',
 };
 
 type SearchPageProps = {
@@ -23,8 +23,8 @@ export default function SearchPage({ searchParams = {} }: SearchPageProps) {
   });
 
   const iframeSrc = params.toString()
-    ? `/search-app/index.html?${params.toString()}`
-    : '/search-app/index.html';
+    ? `/tools/math-search/index.html?${params.toString()}`
+    : '/tools/math-search/index.html';
 
   return (
     <div className="w-full h-screen pt-16 flex flex-col">

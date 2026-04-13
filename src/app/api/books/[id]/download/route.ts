@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import BookModel from '@/lib/models/book';
+import { connectToDatabase } from '@/features/library/lib/mongodb';
+import BookModel from '@/features/library/models/book';
 
 type RouteContext = {
   params: {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { PRESET_CATEGORIES } from '@/lib/library-categories';
-import { connectToDatabase } from '@/lib/mongodb';
-import BookModel from '@/lib/models/book';
+import { PRESET_CATEGORIES } from '@/features/library/lib/library-categories';
+import { connectToDatabase } from '@/features/library/lib/mongodb';
+import BookModel from '@/features/library/models/book';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

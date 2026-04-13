@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import LibraryAdminClient from '@/components/library/LibraryAdminClient';
+import LibraryAdminDashboard from '@/features/library/components/LibraryAdminDashboard';
 
 export const metadata: Metadata = {
   title: 'Library Admin | Abdelouahab Mostafa',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LibraryAdminPage() {
-  return <LibraryAdminClient />;
+  return <LibraryAdminDashboard />;
 }
