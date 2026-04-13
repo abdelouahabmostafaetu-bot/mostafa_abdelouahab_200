@@ -875,11 +875,6 @@ export default function SudokuGame() {
             }
             
             if (hasConflict) {
-              const nextMistakes = mistakes + 1;
-              setMistakes(nextMistakes);
-              if (nextMistakes >= 2) {
-                setIsLost(true);
-              }
               return; // Prevents placing the conflicting number and its red highlight
             }
           }
@@ -920,7 +915,7 @@ export default function SudokuGame() {
         return [row, col];
       });
     },
-    [fastModeNumber, initialBoard, isNotesMode, activeConfig, isLost, isWon, board, mistakes]
+    [fastModeNumber, initialBoard, isNotesMode, activeConfig, isLost, isWon, board]
   );
 
   const handleNumberInput = useCallback(
@@ -987,11 +982,6 @@ export default function SudokuGame() {
           }
           
           if (hasConflict) {
-            const nextMistakes = mistakes + 1;
-            setMistakes(nextMistakes);
-            if (nextMistakes >= 2) {
-              setIsLost(true);
-            }
             return; // Prevents placing the conflicting number and its red highlight
           }
         }
@@ -1024,7 +1014,7 @@ export default function SudokuGame() {
         setSelectedCell(null);
       }
     },
-    [activeConfig.size, activeConfig.subgrid, initialBoard, selectedCell, isNotesMode, board, mistakes, isLost, isWon]
+    [activeConfig.size, activeConfig.subgrid, initialBoard, selectedCell, isNotesMode, board, isLost, isWon]
   );
 
   const moveSelection = useCallback(
@@ -1106,9 +1096,6 @@ export default function SudokuGame() {
             <div className="text-sm font-medium text-slate-300 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 flex items-center tabular-nums">
               {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:
               {(elapsedSeconds % 60).toString().padStart(2, '0')}
-            </div>
-            <div className="text-sm font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-full px-3 py-1.5 flex items-center">
-              Mistakes: {mistakes}/2
             </div>
           </div>
           <div className="group relative flex flex-col items-end">
