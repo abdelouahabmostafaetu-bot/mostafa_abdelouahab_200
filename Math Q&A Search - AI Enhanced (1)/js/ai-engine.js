@@ -7,7 +7,12 @@
 const AIEngine = (function () {
   'use strict';
 
-  const API = 'port/8000'.startsWith('__') ? 'http://localhost:8000' : 'port/8000';
+  const isEmbeddedInNextSite =
+    window.location.pathname === '/search-app' ||
+    window.location.pathname === '/search-app/' ||
+    window.location.pathname.startsWith('/search-app/');
+
+  const API = isEmbeddedInNextSite ? '/port/8000' : 'http://localhost:8000';
 
   let _enabled = true;  // User can toggle AI features
   let _busy = false;
