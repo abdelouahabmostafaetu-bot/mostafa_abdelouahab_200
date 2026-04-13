@@ -784,7 +784,7 @@ function renderTextResults(items, quota, stats) {
       relevanceBadge = `<span class="relevance-badge relevance-${cls}" title="Relevance score: ${item._relevanceScore}">${pct}%</span> `;
     }
 
-    // Smart snippet (AI-extracted best passage)
+    // Smart snippet extracted from the most relevant passage
     let snippetHtml = '';
     if (item._smartSnippet) {
       snippetHtml = `<div class="smart-snippet"><span class="snippet-label">&#10024; Best match:</span> ${item._smartSnippet}</div>`;
@@ -1203,7 +1203,7 @@ function renderTextAnalytics(stats) {
       ${tagsStr}
       ${bridgeStr}
       <div class="analytics-row">
-        <strong>Timing:</strong> fetch ${stats.timing.fetch}ms, enrich ${stats.timing.enrich || 0}ms${stats.timing.related ? `, related ${stats.timing.related}ms` : ''}${stats.timing.google ? `, google ${stats.timing.google}ms` : ''}${stats.timing.web ? `, web ${stats.timing.web}ms` : ''}${stats.timing.latexScan ? `, formula-scan ${stats.timing.latexScan}ms` : ''}${stats.timing.rank ? `, rank ${stats.timing.rank}ms` : ''}${stats.timing.intelligence ? `, intelligence ${stats.timing.intelligence}ms` : ''}${stats.timing.fallback ? `, fallback ${stats.timing.fallback}ms` : ''}, total ${stats.timing.total}ms
+        <strong>Timing:</strong> fetch ${stats.timing.fetch}ms, enrich ${stats.timing.enrich || 0}ms${stats.timing.related ? `, related ${stats.timing.related}ms` : ''}${stats.timing.google ? `, google ${stats.timing.google}ms` : ''}${stats.timing.web ? `, web ${stats.timing.web}ms` : ''}${stats.timing.latexScan ? `, formula-scan ${stats.timing.latexScan}ms` : ''}${stats.timing.rank ? `, rank ${stats.timing.rank}ms` : ''}${stats.timing.intelligence ? `, analysis ${stats.timing.intelligence}ms` : ''}${stats.timing.fallback ? `, fallback ${stats.timing.fallback}ms` : ''}, total ${stats.timing.total}ms
         &middot; <strong>Cache hits:</strong> ${stats.cached || 0}
       </div>
     </div>`;

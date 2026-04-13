@@ -1,7 +1,7 @@
 /* ================================================================
    search-intelligence.js — Intelligent Search Techniques
    ================================================================
-   Advanced AI-inspired search strategies:
+   Advanced heuristic search strategies:
 
    1.  Intent Detection        — classify query as proof/compute/define/example/solve
    2.  Semantic Query Rewriting — rewrite query using detected intent

@@ -14,10 +14,9 @@ const Config = Object.freeze({
   RESULTS_PER_PAGE : 10,                 // fixed fast mobile-friendly page size
   SEARCH_TIMEOUT_MS : 10000,             // abort slow requests
 
-  /* ── SE API key (register free at https://stackapps.com/) ──
-     An API key raises your limit from 300 to 10,000 requests/day.
-     Set to '' or null to use unauthenticated access. */
-  SE_API_KEY : 'rl_P6eGCwgfTcm4zDJBK685m4Wir',
+  /* Optional StackExchange API key.
+     Leave empty to use the public unauthenticated API. */
+  SE_API_KEY : '',
 
   /* ── CORS proxy fallback ──
      When the direct SE API returns 429 (rate-limited), requests

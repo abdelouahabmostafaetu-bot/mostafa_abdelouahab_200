@@ -2322,7 +2322,7 @@ async function searchLatex(forceOriginal) {
     }
 
     if (!allItems.length && rateLimited) {
-      throw new Error('API rate limit reached. Please wait or add an SE API key in config.js.');
+      throw new Error('StackExchange rate limit reached. Please wait and try again later.');
     }
     if (!allItems.length) {
       throw new Error(`No results found after exhaustive ${TOTAL_WAVES}-wave search. Try different LaTeX or keywords.`);

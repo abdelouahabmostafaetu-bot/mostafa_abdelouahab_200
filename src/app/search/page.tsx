@@ -1,8 +1,8 @@
 import React from 'react';
 
 export const metadata = {
-  title: 'Search | Abdelouahab Mostafa',
-  description: 'Search across StackExchange Mathematics',
+  title: 'Math Q&A Search | Abdelouahab Mostafa',
+  description: 'Search Mathematics Stack Exchange and LaTeX results without any AI backend.',
 };
 
 type SearchPageProps = {

@@ -5,7 +5,7 @@
    - localStorage cache survives reloads & rate-limit bans (24 h TTL)
    - CORS proxy fallback: when SE API returns 429, auto-retry
      through Config.CORS_PROXIES in order
-   - SE API key support: appends &key= to SE requests when set
+   - Optional SE API key support: appends &key= to SE requests when set
    - Search history with timestamps (persisted in sessionStorage)
    - Shared across both text and LaTeX search modes
    ================================================================ */
@@ -101,7 +101,7 @@ const SearchCache = (() => {
   }
 
   /* ────────────────────────────────────────────
-     SE API KEY — appends key= to SE API URLs
+     OPTIONAL SE API KEY — appends key= to SE API URLs
      ──────────────────────────────────────────── */
   function _appendKey(url) {
     if (!Config.SE_API_KEY) return url;
