@@ -4,6 +4,7 @@ import matter from 'gray-matter';
 import { calculateReadingTime } from './utils';
 
 const BLOG_DIR = path.join(process.cwd(), 'src', 'content', 'blog');
+const MAX_PUBLISHED_POSTS = 1;
 
 export interface BlogPost {
   slug: string;
@@ -16,7 +17,7 @@ export interface BlogPost {
   content: string;
 }
 
-export function getBlogPosts(): BlogPost[] {
+function readAllBlogPosts(): BlogPost[] {
   if (!fs.existsSync(BLOG_DIR)) {
     return [];
   }
@@ -46,26 +47,12 @@ export function getBlogPosts(): BlogPost[] {
   return posts;
 }
 
+export function getBlogPosts(): BlogPost[] {
+  return readAllBlogPosts().slice(0, MAX_PUBLISHED_POSTS);
+}
+
 export function getBlogPost(slug: string): BlogPost | null {
-  const filePath = path.join(BLOG_DIR, `${slug}.mdx`);
-
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-
-  const fileContent = fs.readFileSync(filePath, 'utf-8');
-  const { data, content } = matter(fileContent);
-
-  return {
-    slug,
-    title: data.title || 'Untitled',
-    date: data.date || '',
-    category: data.category || 'Uncategorized',
-    excerpt: data.excerpt || '',
-    readingTime: calculateReadingTime(content),
-    tags: data.tags || [],
-    content,
-  };
+  return getBlogPosts().find((post) => post.slug === slug) || null;
 }
 
 export function getBlogCategories(): string[] {
