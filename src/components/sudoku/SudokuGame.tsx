@@ -324,7 +324,7 @@ const SudokuBoard = memo(function SudokuBoard({
     <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
       <div className="w-full max-w-[500px] relative rounded-[12px] sm:rounded-[20px] overflow-hidden p-1 sm:p-2">
         <div
-          className="w-full mx-auto border-[2px] border-slate-500 bg-slate-900 aspect-square"
+          className="w-full mx-auto border-[2px] border-slate-600 bg-slate-900/80 aspect-square"
           style={{
             display: 'grid',
             gridTemplateRows: `repeat(${config.size}, minmax(0, 1fr))`,
@@ -354,20 +354,20 @@ const SudokuBoard = memo(function SudokuBoard({
                 colIndex === config.size - 1
                   ? ''
                   : (colIndex + 1) % config.subgrid === 0
-                    ? 'border-r-[2px] border-r-slate-500'
+                    ? 'border-r-[2px] border-r-slate-600'
                     : 'border-r-[1px] border-r-slate-700/50';
               const borderBottom =
                 rowIndex === config.size - 1
                   ? ''
                   : (rowIndex + 1) % config.subgrid === 0
-                    ? 'border-b-[2px] border-b-slate-500'
+                    ? 'border-b-[2px] border-b-slate-600'
                     : 'border-b-[1px] border-b-slate-700/50';
 
               let bgClass = 'bg-transparent';
-              if (inSameBox) bgClass = 'bg-slate-800';
-              if (isRelatedRowCol) bgClass = 'bg-slate-800';
-              if (isSameValue) bgClass = 'bg-blue-500/15';
-              if (isSelected) bgClass = 'bg-blue-500/30';
+              if (inSameBox) bgClass = 'bg-sky-900/40';
+              if (isRelatedRowCol) bgClass = 'bg-sky-900/40';
+              if (isSameValue) bgClass = 'bg-blue-500/20';
+              if (isSelected) bgClass = 'bg-blue-500/40';
 
               let textClass = isFixed
                 ? 'font-semibold text-slate-100'
