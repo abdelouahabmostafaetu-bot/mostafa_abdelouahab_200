@@ -880,6 +880,7 @@ export default function SudokuGame() {
               if (nextMistakes >= 2) {
                 setIsLost(true);
               }
+              return; // Prevents placing the conflicting number and its red highlight
             }
           }
 
@@ -991,8 +992,7 @@ export default function SudokuGame() {
             if (nextMistakes >= 2) {
               setIsLost(true);
             }
-            // Optional: return if we don't want to place conflicting numbers or let them be highlighted.
-            // Since it says "Increment mistakes. If mistakes + 1 >= 2, set isLost(true)", we might also let the user still see the conflict or we can do everything else normally. Let's just proceed to set it, the user will see it red because of `conflicts` logic.
+            return; // Prevents placing the conflicting number and its red highlight
           }
         }
 
