@@ -324,7 +324,7 @@ const SudokuBoard = memo(function SudokuBoard({
     <div className="w-full flex-col flex items-center max-w-[100vw] select-none touch-manipulation">
       <div className="w-full max-w-[500px] relative rounded-[12px] sm:rounded-[20px] overflow-hidden p-1 sm:p-2">
         <div
-          className="w-full mx-auto border-[2px] border-slate-600 bg-slate-900/80 aspect-square"
+          className="w-full mx-auto border-[2px] border-slate-500 bg-slate-900 aspect-square"
           style={{
             display: 'grid',
             gridTemplateRows: `repeat(${config.size}, minmax(0, 1fr))`,
@@ -354,20 +354,20 @@ const SudokuBoard = memo(function SudokuBoard({
                 colIndex === config.size - 1
                   ? ''
                   : (colIndex + 1) % config.subgrid === 0
-                    ? 'border-r-[2px] border-r-slate-600'
+                    ? 'border-r-[2px] border-r-slate-500'
                     : 'border-r-[1px] border-r-slate-700/50';
               const borderBottom =
                 rowIndex === config.size - 1
                   ? ''
                   : (rowIndex + 1) % config.subgrid === 0
-                    ? 'border-b-[2px] border-b-slate-600'
+                    ? 'border-b-[2px] border-b-slate-500'
                     : 'border-b-[1px] border-b-slate-700/50';
 
               let bgClass = 'bg-transparent';
-              if (inSameBox) bgClass = 'bg-sky-900/40';
-              if (isRelatedRowCol) bgClass = 'bg-sky-900/40';
-              if (isSameValue) bgClass = 'bg-blue-500/20';
-              if (isSelected) bgClass = 'bg-blue-500/40';
+              if (inSameBox) bgClass = 'bg-slate-800';
+              if (isRelatedRowCol) bgClass = 'bg-slate-800';
+              if (isSameValue) bgClass = 'bg-blue-500/15';
+              if (isSelected) bgClass = 'bg-blue-500/30';
 
               let textClass = isFixed
                 ? 'font-semibold text-slate-100'
@@ -875,7 +875,11 @@ export default function SudokuGame() {
             }
             
             if (hasConflict) {
-              return; // Prevents placing the conflicting number and its red highlight
+              const nextMistakes = mistakes + 1;
+              setMistakes(nextMistakes);
+              if (nextMistakes >= 2) {
+                setIsLost(true);
+              }
             }
           }
 
@@ -915,7 +919,7 @@ export default function SudokuGame() {
         return [row, col];
       });
     },
-    [fastModeNumber, initialBoard, isNotesMode, activeConfig, isLost, isWon, board]
+    [fastModeNumber, initialBoard, isNotesMode, activeConfig, isLost, isWon, board, mistakes]
   );
 
   const handleNumberInput = useCallback(
@@ -982,7 +986,13 @@ export default function SudokuGame() {
           }
           
           if (hasConflict) {
-            return; // Prevents placing the conflicting number and its red highlight
+            const nextMistakes = mistakes + 1;
+            setMistakes(nextMistakes);
+            if (nextMistakes >= 2) {
+              setIsLost(true);
+            }
+            // Optional: return if we don't want to place conflicting numbers or let them be highlighted.
+            // Since it says "Increment mistakes. If mistakes + 1 >= 2, set isLost(true)", we might also let the user still see the conflict or we can do everything else normally. Let's just proceed to set it, the user will see it red because of `conflicts` logic.
           }
         }
 
@@ -1014,7 +1024,7 @@ export default function SudokuGame() {
         setSelectedCell(null);
       }
     },
-    [activeConfig.size, activeConfig.subgrid, initialBoard, selectedCell, isNotesMode, board, isLost, isWon]
+    [activeConfig.size, activeConfig.subgrid, initialBoard, selectedCell, isNotesMode, board, mistakes, isLost, isWon]
   );
 
   const moveSelection = useCallback(
@@ -1096,6 +1106,9 @@ export default function SudokuGame() {
             <div className="text-sm font-medium text-slate-300 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 flex items-center tabular-nums">
               {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:
               {(elapsedSeconds % 60).toString().padStart(2, '0')}
+            </div>
+            <div className="text-sm font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-full px-3 py-1.5 flex items-center">
+              Mistakes: {mistakes}/2
             </div>
           </div>
           <div className="group relative flex flex-col items-end">
