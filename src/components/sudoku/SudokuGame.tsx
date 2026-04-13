@@ -1109,9 +1109,11 @@ export default function SudokuGame() {
               {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:
               {(elapsedSeconds % 60).toString().padStart(2, '0')}
             </div>
-            <div className="text-sm font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-full px-3 py-1.5 flex items-center">
-              Mistakes: {mistakes}/2
-            </div>
+            {mistakes > 0 && (
+              <div className="text-sm font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-full px-3 py-1.5 flex items-center">
+                {mistakes}/2
+              </div>
+            )}
           </div>
           <div className="group relative flex flex-col items-end">
             {/* New Game Button */}
