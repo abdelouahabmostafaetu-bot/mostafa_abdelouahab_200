@@ -225,11 +225,6 @@ export default function LibraryPage() {
                 >
                   My Library
                 </h1>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-none">
-                  {stats
-                    ? `${stats.totalBooks} books · ${stats.totalCategories} categories`
-                    : "Loading…"}
-                </p>
               </div>
             </div>
 
@@ -245,103 +240,13 @@ export default function LibraryPage() {
                   Add Book
                 </Button>
               </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-lg"
-                onClick={toggleTheme}
-                data-testid="button-theme"
-              >
-                {isDark ? (
-                  <Sun className="h-4 w-4 text-amber-400" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-              </Button>
             </div>
           </div>
         </div>
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-        {/* ── Search Section ──────────────────────────────────── */}
-        <div className="py-8 sm:py-10">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1">
-              Find Your Next Read
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Search across titles, authors and categories
-            </p>
-          </div>
-          <div className="relative max-w-lg mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="search"
-              placeholder="Search books…"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setSelectedCategory("");
-              }}
-              className="pl-11 pr-10 h-12 rounded-xl text-sm border-border/60 shadow-sm focus-visible:ring-primary/40 bg-card"
-              data-testid="input-search"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
 
-        {/* ── Category Filter ──────────────────────────────────── */}
-        {categories.length > 0 && (
-          <div
-            className="mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none"
-            data-testid="filter-categories"
-            style={{ scrollbarWidth: "none" }}
-          >
-            <div className="flex gap-2 w-max">
-              {/* All button */}
-              <button
-                onClick={clearSearch}
-                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium border transition-all duration-150 whitespace-nowrap select-none ${
-                  selectedCategory === "" && !search
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                }`}
-              >
-                All
-                {stats && (
-                  <span className="opacity-60 text-[10px]">
-                    {stats.totalBooks}
-                  </span>
-                )}
-              </button>
-
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setSelectedCategory(cat);
-                    setSearch("");
-                  }}
-                  className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium border transition-all duration-150 whitespace-nowrap select-none ${
-                    selectedCategory === cat
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                      : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* ── Results Count ────────────────────────────────────── */}
         {!isLoading && books.length > 0 && (
