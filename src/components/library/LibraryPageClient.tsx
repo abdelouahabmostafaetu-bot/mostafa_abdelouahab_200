@@ -144,11 +144,25 @@ export default function LibraryPageClient() {
           signal: controller.signal,
         });
 
+        const payload = (await response
+          .json()
+          .catch(() => null)) as
+          | { error?: string }
+          | LibraryBook[]
+          | null;
+
         if (!response.ok) {
-          throw new Error('Failed to load books.');
+          const message =
+            payload &&
+            typeof payload === 'object' &&
+            !Array.isArray(payload) &&
+            typeof payload.error === 'string'
+              ? payload.error
+              : 'Failed to load books.';
+
+          throw new Error(message);
         }
 
-        const payload = (await response.json()) as unknown;
         setBooks(parseBooks(payload));
       } catch (error) {
         if ((error as Error).name === 'AbortError') {
@@ -156,7 +170,11 @@ export default function LibraryPageClient() {
         }
 
         console.error(error);
-        setErrorMessage('Unable to load books right now. Please try again.');
+        const message =
+          error instanceof Error && error.message
+            ? error.message
+            : 'Unable to load books right now. Please try again.';
+        setErrorMessage(message);
       } finally {
         setIsLoadingBooks(false);
       }

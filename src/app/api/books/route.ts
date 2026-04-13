@@ -16,6 +16,36 @@ function sanitizeFileName(value: string): string {
   return value.replace(/[^a-zA-Z0-9._-]/g, '_');
 }
 
+function getPublicErrorDetails(error: unknown, fallbackMessage: string): {
+  status: number;
+  message: string;
+} {
+  const rawMessage = error instanceof Error ? error.message : '';
+  const isMissingMongoUri = rawMessage.includes('MONGODB_URI is not configured');
+  const isDatabaseConnectionIssue = /ENOTFOUND|ECONNREFUSED|MongoServerSelectionError|buffering timed out/i.test(
+    rawMessage,
+  );
+
+  if (isMissingMongoUri) {
+    return {
+      status: 503,
+      message: 'Server configuration is incomplete. MONGODB_URI is missing.',
+    };
+  }
+
+  if (isDatabaseConnectionIssue) {
+    return {
+      status: 503,
+      message: 'Database connection failed. Check MongoDB URI and Atlas network access.',
+    };
+  }
+
+  return {
+    status: 500,
+    message: fallbackMessage,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     await connectToDatabase();
@@ -40,7 +70,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(books, { status: 200 });
   } catch (error) {
     console.error('GET /api/books failed:', error);
-    return NextResponse.json({ error: 'Failed to load books.' }, { status: 500 });
+    const { message, status } = getPublicErrorDetails(error, 'Failed to load books.');
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -124,6 +155,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(book.toJSON(), { status: 201 });
   } catch (error) {
     console.error('POST /api/books failed:', error);
-    return NextResponse.json({ error: 'Failed to add book.' }, { status: 500 });
+    const { message, status } = getPublicErrorDetails(error, 'Failed to add book.');
+    return NextResponse.json({ error: message }, { status });
   }
 }
