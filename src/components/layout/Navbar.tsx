@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/blog', label: 'Blog' },
   { href: '/sudoku', label: 'Sudoku' },
   { href: '/search', label: 'Search' },
+  { href: '/library', label: 'My Library' },
 ];
 
 export default function Navbar() {
