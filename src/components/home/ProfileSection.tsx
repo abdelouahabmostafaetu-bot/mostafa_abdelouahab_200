@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function ProfileSection() {
   return (
-    <section className="py-12 md:py-16 border-b border-[var(--color-border)]">
+    <section className="py-16 md:py-20 border-b border-[var(--color-border)]">
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center md:text-left">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[var(--color-text-tertiary)] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)] mb-3">
             Curriculum Vitae
           </p>
           <h1
@@ -18,18 +18,18 @@ export default function ProfileSection() {
             Master student in fundamental mathematics at the University of Mila. My research and studies primarily focus on analysis, topology, and their interconnections.
           </p>
 
-          <div className="mt-8 pt-8 border-t border-[var(--color-border)]">
-            <div className="grid gap-6 sm:grid-cols-3 text-left">
+          <div className="mt-10 pt-8 border-t border-[var(--color-border)]">
+            <div className="grid gap-8 sm:grid-cols-3 text-left">
               {[
                 { label: 'Institution', value: 'University of Mila' },
                 { label: 'Department', value: 'Fundamental Mathematics' },
                 { label: 'Location', value: 'Mila, Algeria' },
               ].map((item) => (
                 <div key={item.label}>
-                  <p className="text-xs uppercase tracking-widest text-[var(--color-text-tertiary)] bg-transparent">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-tertiary)] font-medium">
                     {item.label}
                   </p>
-                  <p className="mt-1 text-base text-[var(--color-text)] font-medium bg-transparent">
+                  <p className="mt-1.5 text-base text-[var(--color-text)] font-medium">
                     {item.value}
                   </p>
                 </div>

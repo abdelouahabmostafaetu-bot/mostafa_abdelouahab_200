@@ -9,7 +9,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#0a1220',
+  themeColor: '#0f0e0d',
 };
 
 export const metadata: Metadata = {
@@ -46,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -64,7 +64,7 @@ export default function RootLayout({
         {/* Favicon */}
         <link
           rel="icon"
-          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231d5a4e'/><text x='50' y='68' font-family='Georgia,serif' font-size='50' font-weight='bold' fill='%23f8efe0' text-anchor='middle'>AM</text></svg>"
+          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23194a50'/><text x='50' y='68' font-family='Georgia,serif' font-size='50' font-weight='bold' fill='%234f98a3' text-anchor='middle'>AM</text></svg>"
           type="image/svg+xml"
         />
       </head>
