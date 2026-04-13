@@ -876,11 +876,10 @@ export default function SudokuGame() {
             
             if (hasConflict) {
               const nextMistakes = mistakes + 1;
+              setMistakes(nextMistakes);
               if (nextMistakes >= 2) {
-                startNewGame('hard');
+                setIsLost(true);
                 return;
-              } else {
-                setMistakes(nextMistakes);
               }
             }
           }
@@ -921,7 +920,7 @@ export default function SudokuGame() {
         return [row, col];
       });
     },
-    [fastModeNumber, initialBoard, isNotesMode, activeConfig, isLost, isWon, board, mistakes, startNewGame]
+    [fastModeNumber, initialBoard, isNotesMode, activeConfig, isLost, isWon, board, mistakes]
   );
 
   const handleNumberInput = useCallback(
@@ -989,11 +988,10 @@ export default function SudokuGame() {
           
           if (hasConflict) {
             const nextMistakes = mistakes + 1;
+            setMistakes(nextMistakes);
             if (nextMistakes >= 2) {
-              startNewGame('hard');
+              setIsLost(true);
               return;
-            } else {
-              setMistakes(nextMistakes);
             }
           }
         }
@@ -1026,7 +1024,7 @@ export default function SudokuGame() {
         setSelectedCell(null);
       }
     },
-    [activeConfig.size, activeConfig.subgrid, initialBoard, selectedCell, isNotesMode, board, mistakes, isLost, isWon, startNewGame]
+    [activeConfig.size, activeConfig.subgrid, initialBoard, selectedCell, isNotesMode, board, mistakes, isLost, isWon]
   );
 
   const moveSelection = useCallback(
@@ -1159,6 +1157,23 @@ export default function SudokuGame() {
               className="flex-1 min-w-[140px] rounded-full border border-slate-400/60 bg-slate-500/20 px-5 py-2.5 text-sm font-semibold text-slate-100 active:bg-slate-500/30 text-center"
             >
               Play Very Hard 9x9
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isLost && (
+        <div className="mt-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-sm font-medium text-rose-200">
+          <div className="flex items-center gap-2 text-base pb-1 font-bold">
+            Game Over! You made 2 mistakes.
+          </div>
+          <div className="flex flex-wrap gap-3 justify-center items-center w-full">
+            <button
+              type="button"
+              onClick={() => startNewGame('hard')}
+              className="flex-1 min-w-[140px] rounded-full border border-rose-500/60 bg-rose-500/20 px-5 py-2.5 text-sm font-semibold text-rose-100 active:bg-rose-500/30 text-center"
+            >
+              New Game
             </button>
           </div>
         </div>
