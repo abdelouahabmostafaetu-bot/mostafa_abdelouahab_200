@@ -19,6 +19,53 @@
   let seconds = 0;
   let notesMode = false;
   let gameActive = false;
+  let hintsUsed = 0;
+
+  // ========================================
+  // SAVE / LOAD
+  // ========================================
+  function saveGame() {
+    const gameState = {
+      board, solution, given,
+      notes: notes.map(row => row.map(s => Array.from(s))),
+      history: history.map(h => ({ ...h, prevNotes: Array.from(h.prevNotes) })),
+      difficulty, errors, seconds, notesMode, gameActive, hintsUsed
+    };
+    localStorage.setItem('sudokuSave', JSON.stringify(gameState));
+  }
+
+  function loadGame() {
+    const saved = localStorage.getItem('sudokuSave');
+    if (!saved) return false;
+    try {
+      const g = JSON.parse(saved);
+      board = g.board;
+      solution = g.solution;
+      given = g.given;
+      notes = g.notes.map(r => r.map(n => new Set(n)));
+      history = g.history.map(h => ({ ...h, prevNotes: new Set(h.prevNotes) }));
+      difficulty = g.difficulty || 'easy';
+      errors = g.errors || 0;
+      seconds = g.seconds || 0;
+      notesMode = g.notesMode || false;
+      gameActive = g.gameActive !== undefined ? g.gameActive : false;
+      hintsUsed = g.hintsUsed || 0;
+
+      diffBtns.forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(diffBtns).find(b => b.dataset.diff === difficulty);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      return true;
+    } catch (e) {
+      console.error('Failed to load state', e);
+      return false;
+    }
+  }
+
+  function updateHintButton() {
+    if (hintsUsed >= 1) hintBtn.classList.add('disabled');
+    else hintBtn.classList.remove('disabled');
+  }
 
   // ========================================
   // DOM REFS
@@ -82,11 +129,11 @@
   // ========================================
   function startTimer() {
     stopTimer();
-    seconds = 0;
     updateTimerDisplay();
     timerInterval = setInterval(() => {
       seconds++;
       updateTimerDisplay();
+      if (seconds % 5 === 0) saveGame();
     }, 1000);
   }
 
@@ -272,6 +319,7 @@
 
         // Check win
         if (checkWin()) {
+          saveGame();
           handleWin();
           return;
         }
@@ -292,12 +340,14 @@
         }
 
         if (errors >= maxErrors) {
+          saveGame();
           handleGameOver();
           return;
         }
       }
     }
 
+    saveGame();
     renderBoard();
   }
 
@@ -338,6 +388,7 @@
     board[row][col] = 0;
     notes[row][col] = new Set();
 
+    saveGame();
     playPlace();
     renderBoard();
   }
@@ -359,6 +410,7 @@
       // We need to check if the value we're removing was wrong
     }
 
+    saveGame();
     playPlace();
     renderBoard();
   }
@@ -368,6 +420,10 @@
   // ========================================
   function giveHint() {
     if (!gameActive) return;
+    if (hintsUsed >= 1) {
+      playError();
+      return; 
+    }
 
     // Find empty cell (prefer selected, then random)
     let row, col;
@@ -397,6 +453,11 @@
     notes[row][col] = new Set();
     given[row][col] = true; // Mark as given so it can't be edited
     removeNoteFromPeers(row, col, solution[row][col]);
+
+    hintsUsed++;
+    saveGame();
+
+    if (hintsUsed >= 1) hintBtn.classList.add('disabled');
 
     selectedCell = { row, col };
     playPlace();
@@ -472,8 +533,13 @@
     history = [];
     selectedCell = null;
     errors = 0;
+    seconds = 0;
     notesMode = false;
     gameActive = true;
+    hintsUsed = 0;
+    updateHintButton();
+
+    localStorage.removeItem('sudokuSave');
 
     createBoard();
     renderBoard();
@@ -605,6 +671,18 @@
   // ========================================
   // INIT
   // ========================================
-  newGame();
+  if (!loadGame()) {
+    newGame();
+  } else {
+    createBoard();
+    renderBoard();
+    updateHintButton();
+    if (gameActive) startTimer();
+    else {
+      updateTimerDisplay();
+      if (checkWin()) winModal.classList.add('visible');
+      else if (errors >= maxErrors) gameOverModal.classList.add('visible');
+    }
+  }
 
 })();
