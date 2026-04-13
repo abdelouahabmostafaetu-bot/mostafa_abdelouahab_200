@@ -247,36 +247,6 @@ export default function LibraryPage() {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
 
-
-        {/* ── Results Count ────────────────────────────────────── */}
-        {!isLoading && books.length > 0 && (
-          <p className="text-[11px] text-muted-foreground mb-5">
-            Showing{" "}
-            <span className="font-semibold text-foreground">
-              {books.length}
-            </span>{" "}
-            {books.length === 1 ? "book" : "books"}
-            {selectedCategory && (
-              <>
-                {" "}
-                in{" "}
-                <span className="font-semibold text-foreground">
-                  "{selectedCategory}"
-                </span>
-              </>
-            )}
-            {search && (
-              <>
-                {" "}
-                for{" "}
-                <span className="font-semibold text-foreground">
-                  "{search}"
-                </span>
-              </>
-            )}
-          </p>
-        )}
-
         {/* ── Books Grid ───────────────────────────────────────── */}
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8 pb-16">
@@ -291,33 +261,17 @@ export default function LibraryPage() {
               <BookOpen className="h-9 w-9 text-muted-foreground/40" />
             </div>
             <h3 className="text-lg font-semibold mb-1 text-foreground">
-              {search || selectedCategory
-                ? "No results found"
-                : "Library is empty"}
+              Library is empty
             </h3>
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">
-              {search || selectedCategory
-                ? "Try a different search term or browse all categories."
-                : "Add your first book to start building your personal library."}
+              Add your first book to start building your personal library.
             </p>
-            {search || selectedCategory ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearSearch}
-                className="gap-1.5"
-              >
-                <X className="h-3.5 w-3.5" />
-                Clear filter
+            <Link href="/admin">
+              <Button size="sm" className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" />
+                Add Your First Book
               </Button>
-            ) : (
-              <Link href="/admin">
-                <Button size="sm" className="gap-1.5">
-                  <Plus className="h-3.5 w-3.5" />
-                  Add Your First Book
-                </Button>
-              </Link>
-            )}
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8 pb-16">
