@@ -95,109 +95,6 @@ const LaTeXCanon = (() => {
     return tex;
   }
 
-  function normalizeBoundVariables(tex) {
-    return tex
-      .replace(/\\(sum|prod)\s*_(\{?)\s*([a-zA-Z])\s*=/g, (_, op, brace) => `\\${op}_${brace}n=`)
-      .replace(/\\lim\s*_(\{?)\s*([a-zA-Z])\s*\\to/g, (_, brace) => `\\lim_${brace}x \\to`);
-  }
-
-  function collectStandaloneVariables(tex) {
-    const vars = new Set();
-    const ignored = new Set();
-    const ignorePatterns = [
-      /\\(?:sum|prod)\s*_\{?\s*([a-zA-Z])\s*=/g,
-      /\\lim\s*_\{?\s*([a-zA-Z])\s*\\to/g,
-    ];
-
-    for (const pattern of ignorePatterns) {
-      let match;
-      while ((match = pattern.exec(tex)) !== null) {
-        ignored.add(match[1]);
-      }
-    }
-
-    for (let i = 0; i < tex.length;) {
-      if (tex[i] === '\\') {
-        i++;
-        while (i < tex.length && /[a-zA-Z]/.test(tex[i])) i++;
-        if (i < tex.length && tex[i] && !/[a-zA-Z]/.test(tex[i])) i++;
-        continue;
-      }
-
-      if (/[a-zA-Z]/.test(tex[i])) {
-        let j = i;
-        while (j < tex.length && /[a-zA-Z]/.test(tex[j])) j++;
-        const word = tex.slice(i, j);
-        const prev = i > 0 ? tex[i - 1] : ' ';
-
-        if (word.length === 1 && !ignored.has(word)) {
-          vars.add(word);
-        } else if (
-          word.length === 2 &&
-          word[0] === 'd' &&
-          !ignored.has(word[1]) &&
-          /[\s{}_^()+\-*/=,]/.test(prev)
-        ) {
-          vars.add(word[1]);
-        }
-
-        i = j;
-        continue;
-      }
-
-      i++;
-    }
-
-    return [...vars].filter(v => /^[a-z]$/.test(v));
-  }
-
-  function replaceStandaloneVariable(tex, fromVar, toVar) {
-    let out = '';
-
-    for (let i = 0; i < tex.length;) {
-      if (tex[i] === '\\') {
-        let j = i + 1;
-        if (j < tex.length && /[a-zA-Z]/.test(tex[j])) {
-          while (j < tex.length && /[a-zA-Z]/.test(tex[j])) j++;
-        } else if (j < tex.length) {
-          j++;
-        }
-        out += tex.slice(i, j);
-        i = j;
-        continue;
-      }
-
-      if (/[a-zA-Z]/.test(tex[i])) {
-        let j = i;
-        while (j < tex.length && /[a-zA-Z]/.test(tex[j])) j++;
-        const word = tex.slice(i, j);
-        const prev = i > 0 ? tex[i - 1] : ' ';
-
-        if (word === fromVar) {
-          out += toVar;
-        } else if (word === 'd' + fromVar && /[\s{}_^()+\-*/=,]/.test(prev)) {
-          out += 'd' + toVar;
-        } else {
-          out += word;
-        }
-
-        i = j;
-        continue;
-      }
-
-      out += tex[i];
-      i++;
-    }
-
-    return out;
-  }
-
-  function normalizeSingleVariable(tex) {
-    const vars = collectStandaloneVariables(tex);
-    if (vars.length !== 1 || vars[0] === 'x') return tex;
-    return replaceStandaloneVariable(tex, vars[0], 'x');
-  }
-
   /* ── Step 4: Differential normalization ── */
   function normalizeDifferential(tex) {
     // Normalize all differential forms to plain 'dx'
@@ -261,8 +158,6 @@ const LaTeXCanon = (() => {
     t = normalizeSpacing(t);              // semantic space normalization
     t = normalizeDelimiters(t);
     t = normalizeAliases(t);
-    t = normalizeBoundVariables(t);
-    t = normalizeSingleVariable(t);
     t = normalizeDifferential(t);
     t = normalizeFunctions(t);
     t = removeDecorations(t);
@@ -284,9 +179,6 @@ const LaTeXCanon = (() => {
     t = normalizeSpacing(t);              // semantic space normalization
     t = normalizeDelimiters(t);
     t = normalizeAliases(t);
-    t = normalizeBoundVariables(t);
-    t = normalizeSingleVariable(t);
-    t = normalizeDifferential(t);
     t = removeDecorations(t);
     t = normalizeWhitespace(t);
     return t;
@@ -302,12 +194,5 @@ const LaTeXCanon = (() => {
     return c.replace(/\s+/g, '').toLowerCase();
   }
 
-  return {
-    canonicalize,
-    normalizeForSearch,
-    normalizeSpacing,
-    normalizeBoundVariables,
-    normalizeSingleVariable,
-    fingerprint
-  };
+  return { canonicalize, normalizeForSearch, normalizeSpacing, fingerprint };
 })();

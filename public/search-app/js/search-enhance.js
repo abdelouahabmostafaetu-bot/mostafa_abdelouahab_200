@@ -540,30 +540,13 @@ const SearchEnhance = (() => {
     const body = (item.body || '').toLowerCase();
     const excerpt = (item.excerpt || '').toLowerCase();
     const searchText = title + ' ' + body + ' ' + excerpt;
-    const signals = {
-      exactTitle: false,
-      exactBody: false,
-      titleWordMatches: 0,
-      bodyWordMatches: 0,
-      totalQueryWords: qWords.length,
-      tagMatches: 0,
-      sourceCount: item._sourceCount || 1,
-      accepted: !!item.accepted_answer_id,
-      answerCount: item.answer_count || 0,
-      topAnswerScore: 0,
-      hasAnswerMatch: false,
-    };
 
     // ── Title signals (most important) ──
     // Exact full-query match in title
-    if (title.includes(q)) {
-      score += 55;
-      signals.exactTitle = true;
-    }
+    if (title.includes(q)) score += 55;
     // Word overlap in title (BM25-like)
     if (qWords.length > 0) {
       const titleWordMatches = qWords.filter(w => title.includes(w)).length;
-      signals.titleWordMatches = titleWordMatches;
       score += (titleWordMatches / qWords.length) * 35;
       // Bonus for consecutive word matches in title
       for (let i = 0; i < qWords.length - 1; i++) {
@@ -572,13 +555,9 @@ const SearchEnhance = (() => {
     }
 
     // ── Body / excerpt signals ──
-    if (body.includes(q) || excerpt.includes(q)) {
-      score += 20;
-      signals.exactBody = true;
-    }
+    if (body.includes(q) || excerpt.includes(q)) score += 20;
     if (qWords.length > 0) {
       const bodyWordMatches = qWords.filter(w => searchText.includes(w)).length;
-      signals.bodyWordMatches = bodyWordMatches;
       score += (bodyWordMatches / qWords.length) * 15;
     }
 
@@ -608,7 +587,6 @@ const SearchEnhance = (() => {
     if (inferredTags && inferredTags.length > 0 && item.tags) {
       const itemTags = new Set((item.tags || []).map(t => t.toLowerCase()));
       const tagMatches = inferredTags.filter(t => itemTags.has(t.toLowerCase())).length;
-      signals.tagMatches = tagMatches;
       score += tagMatches * 8;
     }
 
@@ -633,7 +611,6 @@ const SearchEnhance = (() => {
     // ── Multiple source bonus ──
     if (item._sourceCount && item._sourceCount > 1) {
       score += item._sourceCount * 6;
-      signals.sourceCount = item._sourceCount;
     }
 
     // ── Freshness bonus (slight) ──
@@ -646,7 +623,6 @@ const SearchEnhance = (() => {
     // ── Answer quality signals ──
     if (item.answers && item.answers.length > 0) {
       const topScore = Math.max(...item.answers.map(a => a.score || 0));
-      signals.topAnswerScore = topScore;
       score += Math.min(Math.log1p(topScore) * 3, 10);
       const hasAccepted = item.answers.some(a => a.is_accepted);
       if (hasAccepted) score += 5;
@@ -657,11 +633,9 @@ const SearchEnhance = (() => {
           const ansMatches = qWords.filter(w => ansBody.includes(w)).length;
           if (ansMatches >= qWords.length * 0.7) {
             score += 8; // Strong answer content match
-            signals.hasAnswerMatch = true;
             break;
           } else if (ansMatches >= qWords.length * 0.4) {
             score += 4; // Partial answer content match
-            signals.hasAnswerMatch = true;
             break;
           }
         }
@@ -673,83 +647,21 @@ const SearchEnhance = (() => {
       score += item._formulaSimilarity * 30;
     }
 
-    item._searchSignals = signals;
     return Math.round(score * 100) / 100;
-  }
-
-  function compareByBestQuality(left, right) {
-    const scoreDiff = (right._relevanceScore || 0) - (left._relevanceScore || 0);
-    if (Math.abs(scoreDiff) > 0.01) return scoreDiff;
-
-    const sourceDiff = (right._sourceCount || 1) - (left._sourceCount || 1);
-    if (sourceDiff !== 0) return sourceDiff;
-
-    const answerDiff = (right.answer_count || 0) - (left.answer_count || 0);
-    if (answerDiff !== 0) return answerDiff;
-
-    const voteDiff = (right.score || 0) - (left.score || 0);
-    if (voteDiff !== 0) return voteDiff;
-
-    return (right.view_count || 0) - (left.view_count || 0);
-  }
-
-  function applyDisplaySort(items, sortMode) {
-    const sorted = [...(items || [])];
-    const mode = sortMode || 'best';
-
-    if (mode === 'votes') {
-      sorted.sort((left, right) => {
-        const voteDiff = (right.score || 0) - (left.score || 0);
-        if (voteDiff !== 0) return voteDiff;
-        return compareByBestQuality(left, right);
-      });
-      return sorted;
-    }
-
-    if (mode === 'creation') {
-      sorted.sort((left, right) => {
-        const timeDiff = (right.creation_date || 0) - (left.creation_date || 0);
-        if (timeDiff !== 0) return timeDiff;
-        return compareByBestQuality(left, right);
-      });
-      return sorted;
-    }
-
-    if (mode === 'activity') {
-      sorted.sort((left, right) => {
-        const leftActivity = left.last_activity_date || left.last_edit_date || left.creation_date || 0;
-        const rightActivity = right.last_activity_date || right.last_edit_date || right.creation_date || 0;
-        const timeDiff = rightActivity - leftActivity;
-        if (timeDiff !== 0) return timeDiff;
-        return compareByBestQuality(left, right);
-      });
-      return sorted;
-    }
-
-    sorted.sort(compareByBestQuality);
-    return sorted;
   }
 
   /* ──────────────────────────────────────────────────────────────
      9. RANK RESULTS — Sort by relevance score
      Also handles deduplication with source-count tracking.
      ────────────────────────────────────────────────────────────── */
-  function getResultKey(item) {
-    if (!item) return '';
-    if (item.question_id != null && item.question_id !== '') return `qid:${item.question_id}`;
-    if (item.link) return `url:${item.link}`;
-    if (item.title) return `title:${item.title}`;
-    return '';
-  }
-
   function rankResults(items, query, inferredTags) {
     // Deduplicate, tracking how many sources found each question
     const byId = new Map();
     for (const item of items) {
-      const key = getResultKey(item);
-      if (!key) continue;
-      if (byId.has(key)) {
-        const existing = byId.get(key);
+      const qid = item.question_id;
+      if (!qid) continue;
+      if (byId.has(qid)) {
+        const existing = byId.get(qid);
         existing._sourceCount = (existing._sourceCount || 1) + 1;
         existing._sources = existing._sources || [existing._source];
         if (!existing._sources.includes(item._source)) {
@@ -763,7 +675,7 @@ const SearchEnhance = (() => {
           existing.answers = item.answers;
         }
       } else {
-        byId.set(key, { ...item, _sourceCount: 1, _sources: [item._source] });
+        byId.set(qid, { ...item, _sourceCount: 1, _sources: [item._source] });
       }
     }
 
@@ -965,108 +877,6 @@ const SearchEnhance = (() => {
     return [];
   }
 
-  const WEB_MATH_DOMAINS = [
-    { host: 'mathoverflow.net', label: 'MathOverflow' },
-    { host: 'artofproblemsolving.com', label: 'Art of Problem Solving' },
-    { host: 'proofwiki.org', label: 'ProofWiki' },
-    { host: 'planetmath.org', label: 'PlanetMath' },
-    { host: 'mathworld.wolfram.com', label: 'MathWorld' },
-    { host: 'encyclopediaofmath.org', label: 'Encyclopedia of Mathematics' },
-  ];
-
-  async function fetchHtmlWithProxyFallback(url, timeoutMs) {
-    try {
-      const resp = await fetchWithTimeout(url, timeoutMs);
-      if (resp.ok) return await resp.text();
-    } catch (_) {}
-
-    const proxies = (Config && Config.CORS_PROXIES) || [];
-    for (const proxy of proxies) {
-      try {
-        const resp = await fetchWithTimeout(proxy + encodeURIComponent(url), timeoutMs);
-        if (resp.ok) return await resp.text();
-      } catch (_) {}
-    }
-
-    return '';
-  }
-
-  function decodeDuckDuckGoLink(href) {
-    if (!href) return '';
-    try {
-      const parsed = new URL(href, 'https://duckduckgo.com');
-      const redirected = parsed.searchParams.get('uddg');
-      return redirected ? decodeURIComponent(redirected) : parsed.toString();
-    } catch (_) {
-      return href;
-    }
-  }
-
-  function getDomainLabel(url) {
-    try {
-      const host = new URL(url).hostname.replace(/^www\./, '');
-      const match = WEB_MATH_DOMAINS.find(domain => host === domain.host || host.endsWith('.' + domain.host));
-      return match ? match.label : host;
-    } catch (_) {
-      return 'Math Web';
-    }
-  }
-
-  function isAllowedMathDomain(url) {
-    try {
-      const host = new URL(url).hostname.replace(/^www\./, '');
-      return WEB_MATH_DOMAINS.some(domain => host === domain.host || host.endsWith('.' + domain.host));
-    } catch (_) {
-      return false;
-    }
-  }
-
-  async function fetchExternalMathResults(query, maxResults = 8) {
-    const scope = WEB_MATH_DOMAINS.map(domain => `site:${domain.host}`).join(' OR ');
-    const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(`${scope} ${query}`)}`;
-    const html = await fetchHtmlWithProxyFallback(searchUrl, 9000);
-    if (!html) return [];
-
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const anchors = doc.querySelectorAll('a.result__a');
-    const results = [];
-    const seen = new Set();
-
-    for (const anchor of anchors) {
-      const link = decodeDuckDuckGoLink(anchor.getAttribute('href') || '');
-      const title = (anchor.textContent || '').trim();
-      if (!title || !link || !isAllowedMathDomain(link)) continue;
-      if (seen.has(link)) continue;
-      seen.add(link);
-
-      const container = anchor.closest('.result');
-      const snippet = container && container.querySelector('.result__snippet')
-        ? container.querySelector('.result__snippet').textContent.trim()
-        : '';
-      const label = getDomainLabel(link);
-
-      results.push({
-        title,
-        link,
-        score: 0,
-        answer_count: 0,
-        view_count: 0,
-        creation_date: null,
-        accepted_answer_id: null,
-        tags: [],
-        owner: { display_name: label },
-        excerpt: snippet,
-        item_type: 'external',
-        _source: 'web-math',
-        _externalSource: label,
-      });
-
-      if (results.length >= maxResults) break;
-    }
-
-    return results;
-  }
-
   /* ──────────────────────────────────────────────────────────────
      BUILD ENHANCED QUERIES — Main orchestrator (updated)
      Takes the original query and returns all the additional
@@ -1169,7 +979,6 @@ const SearchEnhance = (() => {
     fetchLinked,
     scoreResult,
     rankResults,
-    applyDisplaySort,
     buildEnhancedQueries,
     // New methods
     extractPhrases,
@@ -1178,7 +987,6 @@ const SearchEnhance = (() => {
     fetchHotByTag,
     fetchTagWikis,
     fetchGoogleResults,
-    fetchExternalMathResults,
     buildGoogleFallbackUrl,
     shouldCrossSearch,
     // Expose dictionaries for debugging
