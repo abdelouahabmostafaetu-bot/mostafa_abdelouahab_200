@@ -6,7 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Download, BookOpen, Library, Moon, Sun, Plus, Filter } from "lucide-react";
+import {
+  Search,
+  Download,
+  BookOpen,
+  Moon,
+  Sun,
+  Plus,
+  X,
+  BookMarked,
+} from "lucide-react";
 import type { Book } from "@shared/schema";
 import { Link } from "wouter";
 
@@ -17,18 +26,147 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
+const COVER_GRADIENTS = [
+  "from-blue-500 via-blue-600 to-blue-800",
+  "from-emerald-500 via-emerald-600 to-emerald-800",
+  "from-violet-500 via-violet-600 to-violet-800",
+  "from-amber-500 via-amber-600 to-amber-800",
+  "from-rose-500 via-rose-600 to-rose-800",
+  "from-cyan-500 via-cyan-600 to-cyan-800",
+  "from-orange-500 via-orange-600 to-orange-800",
+  "from-indigo-500 via-indigo-600 to-indigo-800",
+  "from-teal-500 via-teal-600 to-teal-800",
+  "from-pink-500 via-pink-600 to-pink-800",
+];
+
+function getCoverGradient(title: string): string {
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) {
+    hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return COVER_GRADIENTS[Math.abs(hash) % COVER_GRADIENTS.length];
+}
+
+function BookCard({
+  book,
+  onDownload,
+}: {
+  book: Book;
+  onDownload: (b: Book) => void;
+}) {
+  return (
+    <div className="group flex flex-col" data-testid={`card-book-${book.id}`}>
+      {/* Cover */}
+      <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 mb-3 border border-border/40">
+        {book.coverUrl ? (
+          <img
+            src={book.coverUrl}
+            alt={book.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            crossOrigin="anonymous"
+          />
+        ) : (
+          <div
+            className={`w-full h-full bg-gradient-to-b ${getCoverGradient(book.title)} flex flex-col items-end justify-between p-3`}
+          >
+            {/* Decorative spine lines */}
+            <div className="flex flex-col gap-1 w-full mt-6">
+              <div className="h-0.5 bg-white/20 rounded-full w-full" />
+              <div className="h-0.5 bg-white/20 rounded-full w-3/4" />
+            </div>
+            <div className="w-full">
+              <p className="text-white/95 text-[11px] font-bold leading-tight line-clamp-4 text-left mb-3">
+                {book.title}
+              </p>
+              <p className="text-white/60 text-[9px] uppercase tracking-widest text-left">
+                {book.author}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Hover overlay with download */}
+        {book.filePath && (
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-2xl">
+            <button
+              onClick={() => onDownload(book)}
+              className="bg-white text-gray-900 text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-2 shadow-xl hover:bg-gray-50 active:scale-95 transition-all"
+              data-testid={`button-download-${book.id}`}
+            >
+              <Download className="h-3.5 w-3.5" />
+              Download
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="space-y-1 px-0.5">
+        <Badge
+          variant="secondary"
+          className="text-[9px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md"
+        >
+          {book.category}
+        </Badge>
+        <h3
+          className="font-semibold text-xs leading-snug line-clamp-2 text-foreground"
+          data-testid={`text-title-${book.id}`}
+        >
+          {book.title}
+        </h3>
+        <p className="text-[11px] text-muted-foreground truncate">
+          {book.author}
+        </p>
+        <div className="flex items-center justify-between pt-0.5">
+          {book.fileSize ? (
+            <span className="text-[10px] text-muted-foreground/60">
+              {formatFileSize(book.fileSize)}
+            </span>
+          ) : !book.filePath ? (
+            <span className="text-[10px] text-muted-foreground/40 italic">
+              No file
+            </span>
+          ) : (
+            <span className="text-[10px] text-emerald-500/80 font-medium">
+              Available
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BookCardSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      <Skeleton className="aspect-[2/3] rounded-2xl w-full" />
+      <Skeleton className="h-3 w-1/3 rounded-full" />
+      <Skeleton className="h-3 w-4/5" />
+      <Skeleton className="h-2.5 w-1/2" />
+    </div>
+  );
+}
+
 export default function LibraryPage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isDark, setIsDark] = useState(() => {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (prefersDark) document.documentElement.classList.add("dark");
-    return prefersDark;
+    if (typeof window !== "undefined") {
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      if (prefersDark) document.documentElement.classList.add("dark");
+      return prefersDark;
+    }
+    return false;
   });
 
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
+    setIsDark((prev) => {
+      document.documentElement.classList.toggle("dark");
+      return !prev;
+    });
   };
 
   const { data: books = [], isLoading } = useQuery<Book[]>({
@@ -37,7 +175,7 @@ export default function LibraryPage() {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
       if (selectedCategory) params.set("category", selectedCategory);
-      const url = `/api/books${params.toString() ? "?" + params : ""}`;
+      const url = `/api/books${params.toString() ? "?" + params.toString() : ""}`;
       const res = await apiRequest("GET", url);
       return res.json();
     },
@@ -47,7 +185,10 @@ export default function LibraryPage() {
     queryKey: ["/api/categories"],
   });
 
-  const { data: stats } = useQuery<{ totalBooks: number; totalCategories: number }>({
+  const { data: stats } = useQuery<{
+    totalBooks: number;
+    totalCategories: number;
+  }>({
     queryKey: ["/api/stats"],
   });
 
@@ -58,167 +199,244 @@ export default function LibraryPage() {
     link.click();
   };
 
+  const clearSearch = () => {
+    setSearch("");
+    setSelectedCategory("");
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* ── Sticky Header ───────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-lg shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-15 py-3">
+            {/* Brand */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Library className="h-5 w-5 text-primary" />
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                <BookMarked
+                  className="h-4.5 w-4.5 text-primary-foreground"
+                  strokeWidth={2.5}
+                />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tight" data-testid="text-site-title">My Library</h1>
-                <p className="text-xs text-muted-foreground">
-                  {stats ? `${stats.totalBooks} books · ${stats.totalCategories} categories` : "Loading..."}
+                <h1
+                  className="text-[15px] font-bold leading-none tracking-tight text-foreground"
+                  data-testid="text-site-title"
+                >
+                  My Library
+                </h1>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-none">
+                  {stats
+                    ? `${stats.totalBooks} books · ${stats.totalCategories} categories`
+                    : "Loading…"}
                 </p>
               </div>
             </div>
+
+            {/* Actions */}
             <div className="flex items-center gap-2">
               <Link href="/admin">
-                <Button variant="ghost" size="sm" data-testid="link-admin">
-                  <Plus className="h-4 w-4 mr-1" /> Add Book
+                <Button
+                  size="sm"
+                  className="h-8 px-3 text-xs gap-1.5 rounded-lg"
+                  data-testid="link-admin"
+                >
+                  <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  Add Book
                 </Button>
               </Link>
-              <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-theme">
-                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg"
+                onClick={toggleTheme}
+                data-testid="button-theme"
+              >
+                {isDark ? (
+                  <Sun className="h-4 w-4 text-amber-400" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search & Filter */}
-        <div className="mb-8 space-y-4">
-          <div className="relative max-w-xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+        {/* ── Search Section ──────────────────────────────────── */}
+        <div className="py-8 sm:py-10">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1">
+              Find Your Next Read
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Search across titles, authors and categories
+            </p>
+          </div>
+          <div className="relative max-w-lg mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               type="search"
-              placeholder="Search by title, author, or category..."
+              placeholder="Search books…"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setSelectedCategory(""); }}
-              className="pl-10 h-11"
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setSelectedCategory("");
+              }}
+              className="pl-11 pr-10 h-12 rounded-xl text-sm border-border/60 shadow-sm focus-visible:ring-primary/40 bg-card"
               data-testid="input-search"
             />
-          </div>
-
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-2" data-testid="filter-categories">
-              <Button
-                variant={selectedCategory === "" ? "default" : "outline"}
-                size="sm"
-                onClick={() => { setSelectedCategory(""); setSearch(""); }}
-                className="text-xs"
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                All
-              </Button>
-              {categories.map((cat) => (
-                <Button
-                  key={cat}
-                  variant={selectedCategory === cat ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => { setSelectedCategory(cat); setSearch(""); }}
-                  className="text-xs"
-                >
-                  {cat}
-                </Button>
-              ))}
-            </div>
-          )}
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Books Grid */}
+        {/* ── Category Filter ──────────────────────────────────── */}
+        {categories.length > 0 && (
+          <div
+            className="mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none"
+            data-testid="filter-categories"
+            style={{ scrollbarWidth: "none" }}
+          >
+            <div className="flex gap-2 w-max">
+              {/* All button */}
+              <button
+                onClick={clearSearch}
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium border transition-all duration-150 whitespace-nowrap select-none ${
+                  selectedCategory === "" && !search
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                }`}
+              >
+                All
+                {stats && (
+                  <span className="opacity-60 text-[10px]">
+                    {stats.totalBooks}
+                  </span>
+                )}
+              </button>
+
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setSelectedCategory(cat);
+                    setSearch("");
+                  }}
+                  className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-medium border transition-all duration-150 whitespace-nowrap select-none ${
+                    selectedCategory === cat
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Results Count ────────────────────────────────────── */}
+        {!isLoading && books.length > 0 && (
+          <p className="text-[11px] text-muted-foreground mb-5">
+            Showing{" "}
+            <span className="font-semibold text-foreground">
+              {books.length}
+            </span>{" "}
+            {books.length === 1 ? "book" : "books"}
+            {selectedCategory && (
+              <>
+                {" "}
+                in{" "}
+                <span className="font-semibold text-foreground">
+                  "{selectedCategory}"
+                </span>
+              </>
+            )}
+            {search && (
+              <>
+                {" "}
+                for{" "}
+                <span className="font-semibold text-foreground">
+                  "{search}"
+                </span>
+              </>
+            )}
+          </p>
+        )}
+
+        {/* ── Books Grid ───────────────────────────────────────── */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-8 w-24" />
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8 pb-16">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <BookCardSkeleton key={i} />
             ))}
           </div>
         ) : books.length === 0 ? (
-          <div className="text-center py-20">
-            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-            <h3 className="text-lg font-medium text-muted-foreground">No books found</h3>
-            <p className="text-sm text-muted-foreground/60 mt-1">
-              {search || selectedCategory ? "Try a different search or category" : "Add your first book from the admin panel"}
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-20 h-20 rounded-3xl bg-muted flex items-center justify-center mb-5 shadow-inner">
+              <BookOpen className="h-9 w-9 text-muted-foreground/40" />
+            </div>
+            <h3 className="text-lg font-semibold mb-1 text-foreground">
+              {search || selectedCategory
+                ? "No results found"
+                : "Library is empty"}
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">
+              {search || selectedCategory
+                ? "Try a different search term or browse all categories."
+                : "Add your first book to start building your personal library."}
             </p>
-            {!search && !selectedCategory && (
+            {search || selectedCategory ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearSearch}
+                className="gap-1.5"
+              >
+                <X className="h-3.5 w-3.5" />
+                Clear filter
+              </Button>
+            ) : (
               <Link href="/admin">
-                <Button className="mt-4" size="sm">
-                  <Plus className="h-4 w-4 mr-1" /> Add Your First Book
+                <Button size="sm" className="gap-1.5">
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Your First Book
                 </Button>
               </Link>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8 pb-16">
             {books.map((book) => (
-              <div
-                key={book.id}
-                className="group rounded-xl border border-border bg-card hover:border-primary/30 transition-colors duration-200 overflow-hidden"
-                data-testid={`card-book-${book.id}`}
-              >
-                {/* Cover */}
-                {book.coverUrl ? (
-                  <div className="aspect-[3/2] bg-muted overflow-hidden">
-                    <img
-                      src={book.coverUrl}
-                      alt={book.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      crossOrigin="anonymous"
-                    />
-                  </div>
-                ) : (
-                  <div className="aspect-[3/2] bg-gradient-to-br from-primary/15 via-muted to-muted/50 flex items-center justify-center">
-                    <BookOpen className="h-10 w-10 text-primary/30" />
-                  </div>
-                )}
-
-                <div className="p-4 space-y-2">
-                  <Badge variant="secondary" className="text-[10px] font-medium">
-                    {book.category}
-                  </Badge>
-                  <h3 className="font-semibold text-sm leading-tight line-clamp-2" data-testid={`text-title-${book.id}`}>
-                    {book.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">{book.author}</p>
-
-                  {book.description && (
-                    <p className="text-xs text-muted-foreground/70 line-clamp-2">{book.description}</p>
-                  )}
-
-                  <div className="flex items-center justify-between pt-2">
-                    {book.filePath ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleDownload(book)}
-                        className="text-xs h-8"
-                        data-testid={`button-download-${book.id}`}
-                      >
-                        <Download className="h-3.5 w-3.5 mr-1" />
-                        Download
-                      </Button>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground">No file</span>
-                    )}
-                    {book.fileSize ? (
-                      <span className="text-[10px] text-muted-foreground">
-                        {formatFileSize(book.fileSize)}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
+              <BookCard key={book.id} book={book} onDownload={handleDownload} />
             ))}
           </div>
         )}
       </main>
+
+      {/* ── Footer ──────────────────────────────────────────── */}
+      <footer className="border-t border-border/60 py-5 mt-auto bg-card/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <BookMarked className="h-3.5 w-3.5 text-primary/70" />
+            <span className="font-medium text-foreground/70">My Library</span>
+          </div>
+          <span>
+            {stats
+              ? `${stats.totalBooks} books across ${stats.totalCategories} categories`
+              : ""}
+          </span>
+        </div>
+      </footer>
     </div>
   );
 }
