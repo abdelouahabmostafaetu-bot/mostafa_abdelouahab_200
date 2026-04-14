@@ -1,20 +1,8 @@
-'use client';
-
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Mail, Github } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const pathname = usePathname();
-
-  if (pathname === '/sudoku') {
-    return (
-      <div className="w-full py-4 text-center bg-transparent mt-auto relative z-10">
-        <p className="text-sm font-medium text-[var(--color-text-tertiary)]">&copy; {currentYear} Abdelouahab Mostafa</p>
-      </div>
-    );
-  }
 
   return (
     <footer className="mt-auto border-t border-[var(--color-border)] bg-[var(--color-bg)]">

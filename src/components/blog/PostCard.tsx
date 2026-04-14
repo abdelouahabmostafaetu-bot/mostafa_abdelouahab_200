@@ -5,10 +5,10 @@ import { TagList } from './Tag';
 interface PostCardProps {
   slug: string;
   title: string;
-  date: string;
   category: string;
   excerpt: string;
   readingTime: string;
+  coverImageUrl?: string;
   tags?: string[];
   isLast?: boolean;
 }
@@ -16,10 +16,10 @@ interface PostCardProps {
 export default function PostCard({
   slug,
   title,
-  date,
   category,
   excerpt,
   readingTime,
+  coverImageUrl,
   tags,
   isLast = false,
 }: PostCardProps) {
@@ -29,8 +29,21 @@ export default function PostCard({
         href={`/blog/${slug}`}
         className="group block rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-6 transition-colors duration-150 hover:bg-[var(--color-bg-muted)]"
       >
+        {coverImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coverImageUrl}
+            alt={title}
+            className="mb-4 aspect-[16/9] w-full rounded-xl border border-[var(--color-border)] object-cover"
+          />
+        ) : null}
+
         <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs text-[var(--color-text-tertiary)]">
           <span className="font-medium uppercase tracking-widest">{category}</span>
+          <span className="inline-flex items-center gap-1">
+            <Clock size={12} />
+            {readingTime}
+          </span>
         </div>
 
         <h3 className="mt-2 text-base md:text-2xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-text)]" style={{ fontFamily: 'var(--font-serif)' }}>

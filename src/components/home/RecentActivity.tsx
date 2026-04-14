@@ -1,9 +1,8 @@
-import React from 'react';
 import Link from 'next/link';
 import { getBlogPosts } from '@/lib/content';
 
-export default function RecentActivity() {
-  const posts = getBlogPosts().slice(0, 2);
+export default async function RecentActivity() {
+  const posts = (await getBlogPosts()).slice(0, 2);
 
   return (
     <section className="py-16">
@@ -37,7 +36,15 @@ export default function RecentActivity() {
               </article>
             ))
           ) : (
-            <p className="text-[var(--color-text-secondary)] italic">No publications yet.</p>
+            <div>
+              <p className="text-[var(--color-text-secondary)] italic">No publications yet.</p>
+              <Link
+                href="/blog/admin"
+                className="mt-4 inline-flex rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                Write the first post
+              </Link>
+            </div>
           )}
         </div>
       </div>

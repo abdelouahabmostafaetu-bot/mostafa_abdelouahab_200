@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock } from 'lucide-react';
-import { getBlogPost, getBlogPosts } from '@/lib/content';
+import { getBlogPost } from '@/lib/content';
 import { renderMDX, extractHeadings } from '@/lib/mdx';
 import { formatDate } from '@/lib/utils';
 import TableOfContents from '@/components/blog/TableOfContents';
@@ -9,13 +9,10 @@ import { TagList } from '@/components/blog/Tag';
 import MathCopyButton from '@/components/blog/MathCopyButton';
 import PdfDownloadButton from '@/components/blog/PdfDownloadButton';
 
-export async function generateStaticParams() {
-  const posts = getBlogPosts();
-  return posts.map((post) => ({ slug: post.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = getBlogPost(params.slug);
+  const post = await getBlogPost(params.slug);
   if (!post) return { title: 'Post Not Found' };
   return {
     title: post.title,
@@ -28,7 +25,7 @@ export default async function BlogPostPage({
 }: {
   params: { slug: string };
 }) {
-  const post = getBlogPost(params.slug);
+  const post = await getBlogPost(params.slug);
 
   if (!post) {
     notFound();
@@ -69,12 +66,29 @@ export default async function BlogPostPage({
                   </p>
                 )}
 
+                <div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-[var(--color-text-secondary)]">
+                  <span>{formatDate(post.publishedAt || post.createdAt)}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock size={12} />
+                    {post.readingTime}
+                  </span>
+                </div>
+
                 {post.tags.length > 0 && (
                   <div className="mt-5">
                     <TagList tags={post.tags} size="md" />
                   </div>
                 )}
-                
+
+                {post.coverImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={post.coverImageUrl}
+                    alt={post.title}
+                    className="mt-8 w-full rounded-2xl border border-[var(--color-border)] object-cover"
+                  />
+                ) : null}
+
                 <PdfDownloadButton title={post.title} />
               </header>
 
