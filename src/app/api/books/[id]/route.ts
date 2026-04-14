@@ -1,6 +1,7 @@
 import { del } from '@vercel/blob';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { isAdminPasswordValid } from '@/lib/library-admin';
+import { isVercelBlobUrl } from '@/lib/library-files';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
 
@@ -34,7 +35,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     await book.deleteOne();
 
-    if (blobUrl) {
+    if (blobUrl && isVercelBlobUrl(blobUrl)) {
       try {
         await del(blobUrl);
       } catch (blobError) {

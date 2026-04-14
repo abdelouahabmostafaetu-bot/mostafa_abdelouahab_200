@@ -1,8 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { type FormEvent, useEffect, useState } from 'react';
-import { Shield, Plus, Trash2, BookOpen, ArrowLeft, Lock } from 'lucide-react';
+import { type FormEvent, useState } from 'react';
+import {
+  Shield,
+  Plus,
+  Trash2,
+  BookOpen,
+  ArrowLeft,
+  Lock,
+  Download,
+  Link2,
+  Upload,
+} from 'lucide-react';
 import { PRESET_CATEGORIES } from '@/lib/library-categories';
 import type { LibraryBook } from '@/types/library';
 
@@ -14,6 +24,7 @@ type AdminFormState = {
   category: string;
   description: string;
   coverUrl: string;
+  fileUrl: string;
 };
 
 const initialFormState: AdminFormState = {
@@ -22,6 +33,7 @@ const initialFormState: AdminFormState = {
   category: PRESET_CATEGORIES[0],
   description: '',
   coverUrl: '',
+  fileUrl: '',
 };
 
 function parseBooks(payload: unknown): LibraryBook[] {
@@ -97,6 +109,7 @@ export default function LibraryAdminClient() {
       formData.append('category', form.category);
       formData.append('description', form.description);
       formData.append('coverUrl', form.coverUrl);
+      formData.append('fileUrl', form.fileUrl);
 
       if (selectedFile) {
         formData.append('file', selectedFile);
@@ -245,10 +258,14 @@ export default function LibraryAdminClient() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider">
+                    <label
+                      htmlFor="library-admin-title"
+                      className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider"
+                    >
                       Title
                     </label>
                     <input
+                      id="library-admin-title"
                       value={form.title}
                       onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
                       placeholder="Book title"
@@ -257,10 +274,14 @@ export default function LibraryAdminClient() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider">
+                    <label
+                      htmlFor="library-admin-author"
+                      className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider"
+                    >
                       Author
                     </label>
                     <input
+                      id="library-admin-author"
                       value={form.author}
                       onChange={(e) => setForm((prev) => ({ ...prev, author: e.target.value }))}
                       placeholder="Author name"
@@ -271,10 +292,14 @@ export default function LibraryAdminClient() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider">
+                  <label
+                    htmlFor="library-admin-category"
+                    className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider"
+                  >
                     Category
                   </label>
                   <select
+                    id="library-admin-category"
                     value={form.category}
                     onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
                     className={inputClasses}
@@ -288,23 +313,31 @@ export default function LibraryAdminClient() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider">
+                  <label
+                    htmlFor="library-admin-description"
+                    className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider"
+                  >
                     Description
                   </label>
                   <textarea
+                    id="library-admin-description"
                     value={form.description}
                     onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                     placeholder="Brief description"
                     rows={3}
-                    className={inputClasses + ' resize-none'}
+                    className={`${inputClasses} resize-none`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider">
+                  <label
+                    htmlFor="library-admin-cover-url"
+                    className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider"
+                  >
                     Cover Image URL
                   </label>
                   <input
+                    id="library-admin-cover-url"
                     type="url"
                     value={form.coverUrl}
                     onChange={(e) => setForm((prev) => ({ ...prev, coverUrl: e.target.value }))}
@@ -314,9 +347,15 @@ export default function LibraryAdminClient() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider">
+                  <label
+                    htmlFor="library-admin-file"
+                    className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider"
+                  >
                     Book File
                   </label>
+                  <p className="mb-2 text-xs text-[var(--color-text-tertiary)]">
+                    Upload a PDF or EPUB, or paste a direct download link below.
+                  </p>
                   <input
                     id="library-admin-file"
                     type="file"
@@ -324,6 +363,32 @@ export default function LibraryAdminClient() {
                     onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                     className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-text)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-accent)] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#0f0e0d]"
                   />
+                  {selectedFile ? (
+                    <div className="mt-2 inline-flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                      <Upload size={12} />
+                      {selectedFile.name}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="library-admin-file-url"
+                    className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 uppercase tracking-wider"
+                  >
+                    Direct Download Link
+                  </label>
+                  <input
+                    id="library-admin-file-url"
+                    type="url"
+                    value={form.fileUrl}
+                    onChange={(e) => setForm((prev) => ({ ...prev, fileUrl: e.target.value }))}
+                    placeholder="https://example.com/book.pdf"
+                    className={inputClasses}
+                  />
+                  <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
+                    Use this when the file is already hosted online or blob upload is not configured.
+                  </p>
                 </div>
 
                 <button
@@ -348,8 +413,8 @@ export default function LibraryAdminClient() {
 
               {isLoadingBooks ? (
                 <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 animate-pulse">
+                  {['book-skeleton-1', 'book-skeleton-2', 'book-skeleton-3'].map((key) => (
+                    <div key={key} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 animate-pulse">
                       <div className="h-4 bg-[var(--color-bg-elevated)] rounded w-2/3 mb-2" />
                       <div className="h-3 bg-[var(--color-bg-elevated)] rounded w-1/2" />
                     </div>
@@ -375,8 +440,23 @@ export default function LibraryAdminClient() {
                             {book.author} &middot; {book.category}
                           </p>
                           <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
-                            {book.fileName || 'No file'} &middot; {formatFileSize(book.fileSize)}
+                            {book.fileName || (book.filePath ? 'Download ready' : 'No file')}
+                            {book.filePath
+                              ? ` · ${book.fileSize ? formatFileSize(book.fileSize) : 'Size unknown'}`
+                              : ''}
                           </p>
+                          {book.filePath ? (
+                            <a
+                              href={`/api/books/${book.id}/download`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-accent)] transition-opacity hover:opacity-80"
+                            >
+                              <Download size={12} />
+                              <span>Open download</span>
+                              <Link2 size={12} />
+                            </a>
+                          ) : null}
                         </div>
                         <button
                           type="button"

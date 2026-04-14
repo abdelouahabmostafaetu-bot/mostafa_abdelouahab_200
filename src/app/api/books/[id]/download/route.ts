@@ -17,7 +17,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const book = await BookModel.findById(context.params.id);
 
-    if (!book || !book.filePath) {
+    if (!book?.filePath) {
       return NextResponse.json({ error: 'Download file not found.' }, { status: 404 });
     }
 

@@ -1,7 +1,8 @@
 import { put } from '@vercel/blob';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { isAdminPasswordValid } from '@/lib/library-admin';
 import { normalizeCategory } from '@/lib/library-categories';
+import { getFileNameFromUrl, normalizeFileUrl } from '@/lib/library-files';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
 
@@ -22,6 +23,7 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string): {
 } {
   const rawMessage = error instanceof Error ? error.message : '';
   const isMissingMongoUri = rawMessage.includes('MONGODB_URI is not configured');
+  const isMissingBlobToken = rawMessage.includes('BLOB_READ_WRITE_TOKEN');
   const isDatabaseConnectionIssue = /ENOTFOUND|ECONNREFUSED|MongoServerSelectionError|buffering timed out/i.test(
     rawMessage,
   );
@@ -37,6 +39,14 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string): {
     return {
       status: 503,
       message: 'Database connection failed. Check MongoDB URI and Atlas network access.',
+    };
+  }
+
+  if (isMissingBlobToken) {
+    return {
+      status: 503,
+      message:
+        'File upload is not configured on this server. Paste a direct download link or set BLOB_READ_WRITE_TOKEN.',
     };
   }
 
@@ -99,6 +109,9 @@ export async function POST(request: NextRequest) {
     const categoryInput = String(formData.get('category') ?? '').trim();
     const description = String(formData.get('description') ?? '').trim();
     const coverUrl = String(formData.get('coverUrl') ?? '').trim();
+    const fileUrlInput = String(
+      formData.get('fileUrl') ?? formData.get('downloadUrl') ?? '',
+    ).trim();
 
     if (!title || !author || !categoryInput) {
       return NextResponse.json(
@@ -108,6 +121,16 @@ export async function POST(request: NextRequest) {
     }
 
     const category = normalizeCategory(categoryInput);
+    let fileUrl = '';
+
+    try {
+      fileUrl = normalizeFileUrl(fileUrlInput);
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Download link is invalid.' },
+        { status: 400 },
+      );
+    }
 
     let fileName = '';
     let fileSize = 0;
@@ -126,18 +149,34 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const blob = await put(
-        `library/${Date.now()}-${sanitizeFileName(fileValue.name || 'book-file')}`,
-        fileValue,
-        {
-          access: 'public',
-          addRandomSuffix: true,
-        },
-      );
+      if (process.env.BLOB_READ_WRITE_TOKEN) {
+        const blob = await put(
+          `library/${Date.now()}-${sanitizeFileName(fileValue.name || 'book-file')}`,
+          fileValue,
+          {
+            access: 'public',
+            addRandomSuffix: true,
+          },
+        );
 
-      filePath = blob.url;
-      fileName = fileValue.name;
-      fileSize = fileValue.size;
+        filePath = blob.url;
+        fileName = fileValue.name;
+        fileSize = fileValue.size;
+      } else if (fileUrl) {
+        filePath = fileUrl;
+        fileName = getFileNameFromUrl(fileUrl);
+      } else {
+        return NextResponse.json(
+          {
+            error:
+              'File upload is not configured on this server. Paste a direct download link or set BLOB_READ_WRITE_TOKEN.',
+          },
+          { status: 503 },
+        );
+      }
+    } else if (fileUrl) {
+      filePath = fileUrl;
+      fileName = getFileNameFromUrl(fileUrl);
     }
 
     const book = await BookModel.create({
