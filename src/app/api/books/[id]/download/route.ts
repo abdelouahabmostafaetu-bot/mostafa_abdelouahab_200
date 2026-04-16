@@ -11,7 +11,7 @@ type RouteContext = {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   try {
     await connectToDatabase();
 
@@ -21,7 +21,7 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Download file not found.' }, { status: 404 });
     }
 
-    return NextResponse.redirect(book.filePath, { status: 302 });
+    return NextResponse.redirect(new URL(book.filePath, request.url), { status: 302 });
   } catch (error) {
     console.error('GET /api/books/[id]/download failed:', error);
     return NextResponse.json({ error: 'Failed to download book.' }, { status: 500 });

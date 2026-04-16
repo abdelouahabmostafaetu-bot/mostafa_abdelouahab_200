@@ -1,7 +1,7 @@
 import { del } from '@vercel/blob';
 import { type NextRequest, NextResponse } from 'next/server';
 import { isAdminPasswordValid } from '@/lib/library-admin';
-import { isVercelBlobUrl } from '@/lib/library-files';
+import { deleteStoredLibraryFile, isVercelBlobUrl } from '@/lib/library-files';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
 
@@ -31,15 +31,21 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
     }
 
-    const blobUrl = book.filePath;
+    const storedFilePath = book.filePath;
 
     await book.deleteOne();
 
-    if (blobUrl && isVercelBlobUrl(blobUrl)) {
+    if (storedFilePath && isVercelBlobUrl(storedFilePath)) {
       try {
-        await del(blobUrl);
+        await del(storedFilePath);
       } catch (blobError) {
         console.error('Blob delete failed:', blobError);
+      }
+    } else if (storedFilePath) {
+      try {
+        await deleteStoredLibraryFile(storedFilePath);
+      } catch (fileError) {
+        console.error('Local file delete failed:', fileError);
       }
     }
 

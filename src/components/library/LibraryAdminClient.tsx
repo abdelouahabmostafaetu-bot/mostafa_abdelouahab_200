@@ -354,7 +354,7 @@ export default function LibraryAdminClient() {
                     Book File
                   </label>
                   <p className="mb-2 text-xs text-[var(--color-text-tertiary)]">
-                    Upload a PDF or EPUB, or paste a direct download link below.
+                    Upload a PDF or EPUB from your computer, or paste a direct download link below.
                   </p>
                   <input
                     id="library-admin-file"
@@ -387,7 +387,7 @@ export default function LibraryAdminClient() {
                     className={inputClasses}
                   />
                   <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
-                    Use this when the file is already hosted online or blob upload is not configured.
+                    Optional. Use this when the file is already hosted online.
                   </p>
                 </div>
 

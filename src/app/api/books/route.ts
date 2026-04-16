@@ -2,7 +2,11 @@ import { put } from '@vercel/blob';
 import { type NextRequest, NextResponse } from 'next/server';
 import { isAdminPasswordValid } from '@/lib/library-admin';
 import { normalizeCategory } from '@/lib/library-categories';
-import { getFileNameFromUrl, normalizeFileUrl } from '@/lib/library-files';
+import {
+  getFileNameFromUrl,
+  normalizeFileUrl,
+  saveLocalLibraryFile,
+} from '@/lib/library-files';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
 
@@ -42,17 +46,11 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string): {
     };
   }
 
-  if (isMissingBlobToken) {
-    return {
-      status: 503,
-      message:
-        'File upload is not configured on this server. Paste a direct download link or set BLOB_READ_WRITE_TOKEN.',
-    };
-  }
-
   return {
     status: 500,
-    message: fallbackMessage,
+    message: isMissingBlobToken
+      ? 'File storage is not configured correctly.'
+      : fallbackMessage,
   };
 }
 
@@ -162,17 +160,11 @@ export async function POST(request: NextRequest) {
         filePath = blob.url;
         fileName = fileValue.name;
         fileSize = fileValue.size;
-      } else if (fileUrl) {
-        filePath = fileUrl;
-        fileName = getFileNameFromUrl(fileUrl);
       } else {
-        return NextResponse.json(
-          {
-            error:
-              'File upload is not configured on this server. Paste a direct download link or set BLOB_READ_WRITE_TOKEN.',
-          },
-          { status: 503 },
-        );
+        const storedFile = await saveLocalLibraryFile(fileValue);
+        filePath = storedFile.filePath;
+        fileName = storedFile.fileName;
+        fileSize = storedFile.fileSize;
       }
     } else if (fileUrl) {
       filePath = fileUrl;
