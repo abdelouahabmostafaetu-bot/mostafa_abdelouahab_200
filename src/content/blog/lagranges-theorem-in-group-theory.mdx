@@ -1,0 +1,284 @@
+---
+title: "Lagrange's Theorem: Why Subgroup Orders Divide Group Orders"
+date: "2026-03-07"
+category: "Mathematics"
+excerpt: "We prove Lagrange's theorem — the fundamental result that the order of a subgroup divides the order of the group — and explore its many consequences, from Fermat's little theorem to the structure theory of finite groups."
+tags: ["Group Theory", "Algebra"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Lagrange's Theorem**
+
+If $G$ is a finite group and $H \leq G$ is a subgroup, then $|H|$ divides $|G|$. Moreover:
+
+$$|G| = |H| \cdot [G : H]$$
+
+where $[G : H]$ is the **index** of $H$ in $G$ — the number of left cosets of $H$.
+
+</div>
+
+This is one of the most fundamental theorems in algebra. It constrains which subgroups a group can have and is the starting point for much of finite group theory.
+
+---
+
+## Cosets
+
+The proof rests on the concept of **cosets**.
+
+### Definition
+
+For $g \in G$, the **left coset** of $H$ containing $g$ is:
+
+$$gH = \{gh : h \in H\}$$
+
+Similarly, the **right coset** is $Hg = \{hg : h \in H\}$.
+
+### Key Properties
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**Lemma.** Let $H \leq G$ be a subgroup of a finite group.
+
+1. Every coset $gH$ has exactly $|H|$ elements.
+2. Two cosets $aH$ and $bH$ are either **equal** or **disjoint**.
+3. $G$ is the disjoint union of its left cosets.
+
+</div>
+
+**Proof of (1).** The map $\varphi: H \to gH$ defined by $\varphi(h) = gh$ is a bijection: it is clearly surjective, and if $gh_1 = gh_2$ then $h_1 = h_2$ (multiply by $g^{-1}$). So $|gH| = |H|$. $\square$
+
+**Proof of (2).** Suppose $aH \cap bH \neq \emptyset$. Then there exist $h_1, h_2 \in H$ with $ah_1 = bh_2$, giving $a = bh_2h_1^{-1} \in bH$. For any $ah \in aH$, we have $ah = bh_2h_1^{-1}h \in bH$, so $aH \subseteq bH$. By symmetry, $bH \subseteq aH$. $\square$
+
+**Proof of (3).** Every $g \in G$ belongs to $gH$ (since $e \in H$, so $g = ge \in gH$). By (2), distinct cosets are disjoint. $\square$
+
+---
+
+## Proof of Lagrange's Theorem
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+By the lemma above, the left cosets of $H$ partition $G$ into disjoint subsets, each of size $|H|$:
+
+$$G = g_1 H \sqcup g_2 H \sqcup \cdots \sqcup g_k H$$
+
+where $k = [G:H]$ is the number of distinct cosets. Counting elements:
+
+$$|G| = k \cdot |H| = [G:H] \cdot |H|$$
+
+Therefore $|H|$ divides $|G|$. $\square$
+
+</div>
+
+The proof is remarkably simple, yet its consequences are deep.
+
+---
+
+## Example
+
+Consider $G = S_3$ (the symmetric group on 3 elements), which has order $|S_3| = 6$.
+
+The subgroup $H = \{e, (12)\}$ has order $2$. By Lagrange's theorem, $[S_3 : H] = 6/2 = 3$.
+
+The three left cosets are:
+
+$$eH = \{e, (12)\}, \quad (13)H = \{(13), (132)\}, \quad (23)H = \{(23), (123)\}$$
+
+These partition $S_3$ into three disjoint pairs.
+
+---
+
+## Immediate Consequences
+
+### Corollary 1: Order of Elements Divides Group Order
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+If $G$ is a finite group and $g \in G$, then $\operatorname{ord}(g)$ divides $|G|$.
+
+</div>
+
+**Proof.** The cyclic subgroup $\langle g \rangle = \{e, g, g^2, \ldots, g^{k-1}\}$ has order $k = \operatorname{ord}(g)$. By Lagrange's theorem, $k \mid |G|$. $\square$
+
+### Corollary 2: $g^{|G|} = e$
+
+For every $g$ in a finite group $G$:
+
+$$g^{|G|} = e$$
+
+since $|G| = k \cdot m$ and $g^{km} = (g^k)^m = e^m = e$.
+
+### Corollary 3: Groups of Prime Order Are Cyclic
+
+If $|G| = p$ is prime, then $G$ has no proper nontrivial subgroups (since the only divisors of $p$ are $1$ and $p$). Therefore $G = \langle g \rangle$ for any $g \neq e$, and $G \cong \mathbb{Z}/p\mathbb{Z}$.
+
+---
+
+## Fermat's Little Theorem
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**Fermat's Little Theorem.** If $p$ is prime and $\gcd(a, p) = 1$, then:
+
+$$a^{p-1} \equiv 1 \pmod{p}$$
+
+</div>
+
+**Proof via Lagrange.** The group $(\mathbb{Z}/p\mathbb{Z})^* = \{1, 2, \ldots, p-1\}$ under multiplication modulo $p$ has order $p - 1$. By Corollary 2:
+
+$$a^{p-1} \equiv 1 \pmod{p} \qquad \square$$
+
+### Euler's Generalization
+
+More generally, $(\mathbb{Z}/n\mathbb{Z})^*$ has order $\varphi(n)$ (Euler's totient), so:
+
+$$a^{\varphi(n)} \equiv 1 \pmod{n} \quad \text{whenever } \gcd(a, n) = 1$$
+
+This is **Euler's theorem**, also an immediate consequence of Lagrange's theorem.
+
+---
+
+## The Converse Is False
+
+<div style={{
+  borderLeft: "4px solid #e11d48",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+**Lagrange's theorem does not have a converse.** If $d$ divides $|G|$, there need not exist a subgroup of order $d$.
+
+**Example:** $A_4$ has order $12$, and $6 \mid 12$, but $A_4$ has **no** subgroup of order $6$.
+
+</div>
+
+However, partial converses exist:
+
+- **Cauchy's Theorem:** If a prime $p$ divides $|G|$, then $G$ has an element of order $p$ (hence a subgroup of order $p$).
+- **Sylow's Theorems:** If $p^k$ divides $|G|$ (with $p$ prime), then $G$ has a subgroup of order $p^k$.
+
+---
+
+## Cauchy's Theorem
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Cauchy's Theorem.** If $p$ is prime and $p \mid |G|$, then $G$ contains an element of order $p$.
+
+</div>
+
+**Proof (McKay).** Let $S = \{(g_1, \ldots, g_p) \in G^p : g_1 g_2 \cdots g_p = e\}$. Then $|S| = |G|^{p-1}$ (choose $g_1, \ldots, g_{p-1}$ freely; $g_p$ is determined). The cyclic group $\mathbb{Z}/p\mathbb{Z}$ acts on $S$ by cyclic permutation. Each orbit has size $1$ or $p$. The fixed points are tuples $(g, g, \ldots, g)$ with $g^p = e$. Since $|S| = |G|^{p-1} \equiv 0 \pmod{p}$ and the identity contributes one fixed point, the number of fixed points is $\equiv 0 \pmod{p}$, so there are at least $p - 1$ more fixed points, giving $g \neq e$ with $g^p = e$. $\square$
+
+---
+
+## The Index Formula
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+**Tower Law.** If $K \leq H \leq G$ are finite groups, then:
+
+$$[G : K] = [G : H] \cdot [H : K]$$
+
+</div>
+
+**Proof.** $|G| = [G:H] \cdot |H| = [G:H] \cdot [H:K] \cdot |K|$, and $|G| = [G:K] \cdot |K|$. $\square$
+
+This is the group-theoretic analogue of the tower law for field extensions: $[L:K] = [L:F][F:K]$.
+
+---
+
+## Applications
+
+### RSA Cryptography
+
+The RSA algorithm relies on Euler's theorem: for $n = pq$ and $\gcd(a, n) = 1$:
+
+$$a^{\varphi(n)} \equiv 1 \pmod{n}$$
+
+Choosing $e, d$ with $ed \equiv 1 \pmod{\varphi(n)}$ gives $(a^e)^d = a^{ed} = a^{1 + k\varphi(n)} = a \cdot (a^{\varphi(n)})^k \equiv a$, enabling encryption and decryption.
+
+### Counting Group Homomorphisms
+
+Lagrange's theorem constrains homomorphisms: if $\phi: G \to H$ is a homomorphism, then $|\operatorname{Im}(\phi)|$ divides both $|G|$ and $|H|$. If $\gcd(|G|, |H|) = 1$, the only homomorphism is trivial.
+
+### Burnside's Lemma
+
+In counting orbits under group actions, Lagrange's theorem ensures the orbit-stabilizer theorem: $|G| = |\operatorname{Orb}(x)| \cdot |\operatorname{Stab}(x)|$, which is a direct application.
+
+---
+
+## Historical Note
+
+Despite its name, Lagrange's theorem in its modern form was not stated by Lagrange himself. Joseph-Louis Lagrange (1770–71) proved the special case that the order of a permutation divides $n!$ in his work on polynomial equations. The general theorem emerged from the work of Galois and Cauchy in the early 19th century.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&H \leq G \implies |H| \mid |G| \\[6pt]
+&|G| = [G:H] \cdot |H| \quad \text{(coset counting)} \\[8pt]
+&\text{Consequences:} \\[4pt]
+&\quad \operatorname{ord}(g) \mid |G|, \quad g^{|G|} = e \\[4pt]
+&\quad |G| = p \implies G \cong \mathbb{Z}/p\mathbb{Z} \\[4pt]
+&\quad a^{p-1} \equiv 1 \pmod{p} \quad \text{(Fermat)} \\[4pt]
+&\quad a^{\varphi(n)} \equiv 1 \pmod{n} \quad \text{(Euler)}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Dummit, D. and Foote, R., *Abstract Algebra*, 3rd edition, Wiley, 2003.
+- Artin, M., *Algebra*, 2nd edition, Pearson, 2010.
+- Herstein, I. N., *Topics in Algebra*, 2nd edition, Wiley, 1975.
+- [Wikipedia — Lagrange's theorem (group theory)](https://en.wikipedia.org/wiki/Lagrange%27s_theorem_(group_theory))
+- [Wikipedia — Cauchy's theorem (group theory)](https://en.wikipedia.org/wiki/Cauchy%27s_theorem_(group_theory))
+- [Keith Conrad — Notes on Group Theory](https://kconrad.math.uconn.edu/blurbs/)

@@ -1,0 +1,302 @@
+---
+title: "Essential Tools for Writing Mathematics Papers"
+date: "2026-02-26"
+category: "Resources"
+excerpt: "A practical guide to the essential tools for writing mathematics papers: LaTeX editors, reference managers, diagram tools, collaboration platforms, and writing workflows used by working mathematicians."
+tags: ["Tools", "Writing"]
+---
+
+## The Mathematics Writing Toolkit
+
+Writing a mathematics paper requires more than mathematical knowledge. You need a set of tools for typesetting, managing references, drawing diagrams, collaborating with coauthors, and organizing your work. This guide covers the essential tools that mathematicians use, from students writing their first homework to researchers preparing journal submissions.
+
+---
+
+## LaTeX: The Foundation
+
+Every mathematics paper is written in LaTeX. There is no practical alternative for professional mathematical writing. If you are not yet comfortable with LaTeX, see our [guide to Overleaf and LaTeX](/blog/overleaf-and-latex-for-math-students).
+
+### Overleaf
+
+[Overleaf](https://www.overleaf.com/) is the most popular choice for writing mathematics, especially for:
+
+- **Beginners** who do not want to install a LaTeX distribution
+- **Collaborative papers** where multiple authors edit simultaneously
+- **Students** submitting homework and theses
+
+The free plan includes basic collaboration and compilation. The paid plans add track changes, longer compile times, and GitHub sync.
+
+### Local LaTeX Editors
+
+For longer projects or when you need more control, a local installation may be preferable:
+
+- **TeXstudio** ([texstudio.org](https://www.texstudio.org/)) — Full-featured IDE with autocomplete, integrated PDF viewer, and error highlighting
+- **VS Code + LaTeX Workshop** ([marketplace.visualstudio.com](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)) — Modern, extensible editor with excellent LaTeX support
+- **Vim/Neovim + VimTeX** ([github.com/lervag/vimtex](https://github.com/lervag/vimtex)) — For Vim users, extremely fast editing with snippet support
+- **Emacs + AUCTeX** — The traditional choice of many senior mathematicians
+
+<div style={{
+  border: "2px solid #2563eb",
+  borderRadius: "12px",
+  padding: "22px",
+  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+  margin: "28px 0"
+}}>
+
+**Speed tip:** Learn to use LaTeX snippets (automatic text expansions). For example, configure your editor so that typing `mk` expands to `$$` for inline math, or `beg` expands to `\begin{}\end{}`. This dramatically speeds up LaTeX writing. UltiSnips (Vim), Yasnippet (Emacs), and VS Code snippets all support this.
+
+</div>
+
+---
+
+## Reference Management
+
+### BibTeX and BibLaTeX
+
+LaTeX uses BibTeX (or its modern successor BibLaTeX) for managing references. You create a `.bib` file containing entries like:
+
+```bibtex
+@article{atiyah1963,
+  author  = {Atiyah, Michael F. and Singer, Isadore M.},
+  title   = {The Index of Elliptic Operators on Compact Manifolds},
+  journal = {Bulletin of the American Mathematical Society},
+  volume  = {69},
+  number  = {3},
+  pages   = {422--433},
+  year    = {1963}
+}
+```
+
+Then cite with `\cite{atiyah1963}` in your LaTeX document.
+
+### Where to Find BibTeX Entries
+
+You rarely need to type BibTeX entries manually:
+
+- **MathSciNet** ([mathscinet.ams.org](https://mathscinet.ams.org/)) — The standard reference database for mathematics. Every reviewed paper has a ready-made BibTeX entry. Requires institutional access.
+- **zbMATH Open** ([zbmath.org](https://zbmath.org/)) — An open-access alternative to MathSciNet with BibTeX export.
+- **Google Scholar** ([scholar.google.com](https://scholar.google.com/)) — Click "Cite" below any search result, then "BibTeX" for an entry. Not always perfectly formatted but convenient.
+- **arXiv** — Each paper's abstract page includes a link to export citation data.
+
+<div style={{
+  borderLeft: "4px solid #2563eb",
+  paddingLeft: "18px",
+  margin: "26px 0"
+}}>
+
+**Best practice:** Always use MathSciNet or zbMATH for your final bibliography. Their entries are carefully formatted and include DOIs and MR numbers, which journals require.
+
+</div>
+
+### Reference Managers
+
+For organizing large collections of papers:
+
+- **Zotero** ([zotero.org](https://www.zotero.org/)) — Free, open-source, with browser extensions for automatically saving papers, BibTeX export, and shared libraries. The best general-purpose choice.
+- **Mendeley** ([mendeley.com](https://www.mendeley.com/)) — Similar to Zotero with built-in PDF annotation.
+- **JabRef** ([jabref.org](https://www.jabref.org/)) — A free, open-source BibTeX-specific manager that works directly with `.bib` files.
+
+---
+
+## Diagram and Figure Tools
+
+Mathematics papers often need diagrams: commutative diagrams, graph theory figures, geometric illustrations, and plots.
+
+### TikZ and PGF
+
+[TikZ](https://ctan.org/pkg/pgf) is a LaTeX package for creating figures directly in your document:
+
+```latex
+\begin{tikzpicture}
+  \draw (0,0) circle (1);
+  \draw (-1,0) -- (1,0);
+  \draw (0,-1) -- (0,1);
+  \node at (0.5, 0.5) {$I$};
+\end{tikzpicture}
+```
+
+TikZ produces beautiful, publication-quality diagrams that match your document's fonts perfectly. It has a steep learning curve but is extremely powerful.
+
+### tikz-cd: Commutative Diagrams
+
+The [tikz-cd](https://ctan.org/pkg/tikz-cd) package simplifies commutative diagrams:
+
+```latex
+\begin{tikzcd}
+  A \arrow[r, "f"] \arrow[d, "g"'] & B \arrow[d, "h"] \\
+  C \arrow[r, "k"'] & D
+\end{tikzcd}
+```
+
+This renders a clean commutative square with labeled arrows — essential for algebra, topology, and category theory papers.
+
+### quiver: Visual Commutative Diagram Editor
+
+[quiver](https://q.uiverapp.com/) is a free, web-based visual editor for commutative diagrams. You draw the diagram with your mouse, and it exports tikz-cd code. This is invaluable for complex diagrams.
+
+### Inkscape
+
+[Inkscape](https://inkscape.org/) is a free vector graphics editor useful for creating figures that are too complex for TikZ. You can create SVG or PDF figures and include them in your LaTeX document.
+
+### Ipe
+
+[Ipe](https://ipe.otfried.org/) is a drawing editor specifically designed for creating figures for LaTeX documents. It uses LaTeX for text rendering, so labels in your figures match your document's fonts exactly.
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  padding: "20px",
+  background: "#fafafa",
+  margin: "24px 0"
+}}>
+
+**Decision guide:**
+- **Simple diagrams and commutative diagrams:** Use TikZ/tikz-cd
+- **Visual design first:** Use quiver (web) to design, then export to tikz-cd
+- **Complex geometric figures:** Use Ipe or Inkscape
+- **Data plots:** Use Matplotlib (Python) or pgfplots (LaTeX)
+
+</div>
+
+---
+
+## Computation and Verification
+
+### SageMath and Mathematica
+
+Use computational tools to verify calculations, generate examples, and produce data. See our guides to [SageMath and Python](/blog/using-sage-and-python-for-math) and [Wolfram Alpha and Mathematica](/blog/wolfram-alpha-and-mathematica-guide).
+
+### Lean and Other Proof Assistants
+
+Proof assistants like [Lean](https://leanprover.github.io/) are increasingly used to formally verify mathematical proofs. The [Mathlib library](https://leanprover-community.github.io/) contains a growing collection of formalized mathematics.
+
+While formal verification is not yet standard practice, familiarity with proof assistants is becoming valuable, especially in areas like combinatorics, algebra, and analysis where computer verification can catch subtle errors.
+
+---
+
+## Collaboration Tools
+
+### Overleaf (Real-Time Collaboration)
+
+Overleaf's collaboration features make it the default tool for multi-author papers. Share a link and multiple people can edit simultaneously.
+
+### Git and GitHub
+
+For more serious version control, use [Git](https://git-scm.com/) with [GitHub](https://github.com/) or [GitLab](https://gitlab.com/):
+
+- Track every change to your paper
+- Work offline and sync later
+- Branch for experimental sections
+- Review coauthors' changes through pull requests
+
+See our [guide to using GitHub for mathematics](/blog/using-github-for-math-projects).
+
+### Email and arXiv
+
+The traditional workflow is simple: write in LaTeX, email drafts to coauthors, and post the final version on arXiv. This still works perfectly well for many collaborations.
+
+---
+
+## Writing Tools
+
+### Grammarly and LanguageTool
+
+For checking prose in your paper's introduction and exposition, [Grammarly](https://www.grammarly.com/) and [LanguageTool](https://languagetool.org/) can catch grammatical errors and awkward phrasing. They do not understand mathematical notation, but they are useful for the non-mathematical text.
+
+### Detexify
+
+[Detexify](https://detexify.kirelabs.org/classify.html) lets you draw a symbol and find the corresponding LaTeX command. Invaluable when you know what a symbol looks like but not its name.
+
+### Mathpix Snip
+
+[Mathpix](https://mathpix.com/) converts screenshots of mathematical equations into LaTeX code. This is useful for digitizing handwritten mathematics or equations from PDFs.
+
+---
+
+## Organizing Your Paper
+
+### AMS Article Templates
+
+The [American Mathematical Society](https://www.ams.org/arc/tex/) provides LaTeX document classes and templates for AMS journals. Even if you are not submitting to an AMS journal, the `amsart` document class is a clean, professional starting point for any mathematics paper.
+
+### Standard Paper Structure
+
+Most mathematics papers follow this structure:
+
+1. **Title, authors, abstract**
+2. **Introduction** — State the main results, provide context, outline the paper
+3. **Preliminaries** — Definitions and known results you will need
+4. **Main sections** — Proofs of the main results
+5. **Applications or examples** (if applicable)
+6. **Acknowledgments**
+7. **References**
+
+### Writing Tips
+
+- **State your main theorem early.** Readers should know the main result by the end of the introduction.
+- **Define all notation.** Never use a symbol without defining it.
+- **Number all equations** that you reference later; leave unnumbered the ones you do not reference.
+- **Use `\label` and `\ref` consistently.** Never hardcode theorem or equation numbers.
+- **Write in the present tense** for mathematical statements: "Theorem 3 shows that..." not "Theorem 3 showed that..."
+
+---
+
+## A Complete Workflow
+
+Here is a realistic workflow for writing a mathematics paper:
+
+1. **Draft on paper.** Write proofs by hand first. Only move to LaTeX when you are confident in the mathematics.
+2. **Set up the project.** Create a folder with your `.tex` file, `.bib` file, and figure files. Initialize a Git repository.
+3. **Write the introduction last.** Draft the main sections first, then write an introduction that accurately reflects the final content.
+4. **Compile frequently.** Do not write 20 pages before compiling. Fix errors as they appear.
+5. **Get feedback.** Share drafts with your advisor, colleagues, and friends. Fresh eyes catch errors you will not see.
+6. **Polish.** Check every reference, verify every cross-reference, proofread every sentence.
+7. **Post on arXiv.** Then submit to a journal.
+
+---
+
+## Summary Table
+
+| Tool | Purpose | Cost |
+| --- | --- | --- |
+| Overleaf | LaTeX editing + collaboration | Free / Premium |
+| TeXstudio / VS Code | Local LaTeX editing | Free |
+| Zotero / JabRef | Reference management | Free |
+| MathSciNet / zbMATH | Finding BibTeX entries | Institutional / Free |
+| TikZ / tikz-cd | Diagrams in LaTeX | Free |
+| quiver | Visual commutative diagram editor | Free |
+| Inkscape / Ipe | Vector graphics | Free |
+| Git / GitHub | Version control | Free |
+| Detexify | Symbol lookup | Free |
+| Mathpix | Image to LaTeX | Freemium |
+
+---
+
+## Final Thoughts
+
+The right tools make mathematical writing more efficient and more enjoyable. But remember that tools are in service of the mathematics. A well-written paper with a beautiful proof, typed with care and checked thoroughly, will always be more valuable than a flashy document produced with every tool imaginable but containing a flawed argument.
+
+Master the tools, then focus on the mathematics.
+
+---
+
+## References
+
+- [Overleaf — Online LaTeX Editor](https://www.overleaf.com/)
+- [TeXstudio](https://www.texstudio.org/)
+- [LaTeX Workshop for VS Code](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)
+- [Zotero](https://www.zotero.org/)
+- [JabRef](https://www.jabref.org/)
+- [MathSciNet](https://mathscinet.ams.org/)
+- [zbMATH Open](https://zbmath.org/)
+- [TikZ/PGF on CTAN](https://ctan.org/pkg/pgf)
+- [tikz-cd on CTAN](https://ctan.org/pkg/tikz-cd)
+- [quiver — Commutative Diagram Editor](https://q.uiverapp.com/)
+- [Inkscape](https://inkscape.org/)
+- [Ipe Drawing Editor](https://ipe.otfried.org/)
+- [Detexify](https://detexify.kirelabs.org/classify.html)
+- [Mathpix](https://mathpix.com/)
+- [AMS LaTeX Resources](https://www.ams.org/arc/tex/)
+- [Lean Theorem Prover](https://leanprover.github.io/)
+- [Git](https://git-scm.com/)
+- [GitHub](https://github.com/)

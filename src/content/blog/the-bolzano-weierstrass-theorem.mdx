@@ -1,0 +1,220 @@
+---
+title: "The Bolzano-Weierstrass Theorem: Every Bounded Sequence Has a Convergent Subsequence"
+date: "2026-02-11"
+category: "Mathematics"
+excerpt: "We prove the Bolzano-Weierstrass theorem — that every bounded sequence in Euclidean space has a convergent subsequence — and explore its central role in real analysis as a bridge between boundedness and convergence."
+tags: ["Analysis"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Bolzano-Weierstrass Theorem**
+
+Every bounded sequence in $\mathbb{R}^n$ has a convergent subsequence.
+
+</div>
+
+That is: if $(x_k)_{k=1}^{\infty} \subset \mathbb{R}^n$ and there exists $M > 0$ with $\|x_k\| \leq M$ for all $k$, then there exist indices $k_1 < k_2 < k_3 < \cdots$ such that $(x_{k_j})$ converges.
+
+---
+
+## Intuition
+
+If infinitely many points are crammed into a bounded region, they must "pile up" somewhere. The accumulation point is the limit of a convergent subsequence.
+
+This is the sequential version of compactness: a set is compact if and only if every sequence in it has a convergent subsequence. The Bolzano-Weierstrass theorem is equivalent to the statement that closed bounded subsets of $\mathbb{R}^n$ are compact.
+
+---
+
+## Proof for $\mathbb{R}$ (Bisection Method)
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+Let $(x_k)$ be a bounded sequence in $\mathbb{R}$ with $x_k \in [a, b]$ for all $k$.
+
+**Step 1 — Bisect.** Divide $[a, b]$ into two halves: $[a, m]$ and $[m, b]$ where $m = (a+b)/2$. At least one half contains infinitely many terms of the sequence. Call it $[a_1, b_1]$ and choose an index $k_1$ with $x_{k_1} \in [a_1, b_1]$.
+
+**Step 2 — Iterate.** Bisect $[a_1, b_1]$ and choose a half $[a_2, b_2]$ containing infinitely many terms, picking $k_2 > k_1$ with $x_{k_2} \in [a_2, b_2]$.
+
+Continue to get nested intervals:
+
+$$[a, b] \supset [a_1, b_1] \supset [a_2, b_2] \supset \cdots$$
+
+with $b_j - a_j = (b - a)/2^j$ and $x_{k_j} \in [a_j, b_j]$.
+
+**Step 3 — Convergence.** Both sequences $(a_j)$ and $(b_j)$ are monotone and bounded, hence convergent. Since $b_j - a_j \to 0$, they converge to the same limit $L$:
+
+$$a_j \leq x_{k_j} \leq b_j \implies x_{k_j} \to L$$
+
+by the squeeze theorem. $\square$
+
+</div>
+
+---
+
+## Proof for $\mathbb{R}^n$
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof** *(component-wise extraction)*
+
+Let $(x_k) = ((x_k^{(1)}, \ldots, x_k^{(n)}))$ be bounded in $\mathbb{R}^n$.
+
+**Step 1.** The first components $(x_k^{(1)})$ are bounded in $\mathbb{R}$. By the $\mathbb{R}$ case, extract a subsequence $(x_{k_j^{(1)}})$ along which $x^{(1)}$ converges.
+
+**Step 2.** Along this subsequence, the second components are still bounded. Extract a further subsequence along which $x^{(2)}$ also converges.
+
+**Step $i$.** Continue for each component. After $n$ extractions, we have a subsequence along which *all* $n$ components converge, hence the subsequence converges in $\mathbb{R}^n$. $\square$
+
+</div>
+
+---
+
+## Alternative Proof via Monotone Subsequences
+
+There is a beautiful alternative using the following lemma:
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+**Lemma (Monotone Subsequence).** Every sequence of real numbers has a monotone subsequence (either non-decreasing or non-increasing).
+
+</div>
+
+**Proof of the Lemma.** Call index $k$ a **peak** if $x_k \geq x_j$ for all $j > k$.
+
+- If there are infinitely many peaks $k_1 < k_2 < \cdots$, then $x_{k_1} \geq x_{k_2} \geq \cdots$ is non-increasing.
+- If there are only finitely many peaks, let $N$ be larger than all peak indices. Starting from $N$, $x_N$ is not a peak, so there exists $k_1 > N$ with $x_{k_1} > x_N$. Then $k_1$ is not a peak, so there exists $k_2 > k_1$ with $x_{k_2} > x_{k_1}$. Continuing, we get $x_{k_1} < x_{k_2} < \cdots$, which is strictly increasing. $\square$
+
+Now, a bounded monotone sequence converges (the **Monotone Convergence Theorem**), giving Bolzano-Weierstrass.
+
+---
+
+## Equivalent Formulations
+
+In $\mathbb{R}^n$, the following are equivalent:
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+1. **Bolzano-Weierstrass:** Every bounded sequence has a convergent subsequence.
+2. **Heine-Borel:** Closed bounded sets are compact.
+3. **Completeness:** Every Cauchy sequence converges.
+4. **Least Upper Bound Property:** Every nonempty bounded-above set has a supremum.
+5. **Nested Intervals:** Nested closed intervals with lengths tending to zero have a common point.
+
+</div>
+
+These are all equivalent characterizations of the completeness of $\mathbb{R}$. Each can be derived from any other.
+
+---
+
+## Applications
+
+### Extreme Value Theorem
+
+**Theorem.** A continuous function $f: K \to \mathbb{R}$ on a compact set $K$ attains its supremum.
+
+**Proof using BW.** Let $M = \sup\{f(x) : x \in K\}$. Choose $(x_k) \subset K$ with $f(x_k) \to M$. By Bolzano-Weierstrass, $(x_k)$ has a convergent subsequence $x_{k_j} \to x^* \in K$ (since $K$ is closed). By continuity, $f(x^*) = M$. $\square$
+
+### Existence of Limits
+
+The theorem is used constantly to extract convergent subsequences from bounded approximating sequences. This is the standard technique for proving existence in:
+
+- Optimization problems (direct method of calculus of variations)
+- Fixed-point theorems
+- Solutions to differential equations
+
+### The Arzelà-Ascoli Theorem
+
+Bolzano-Weierstrass for sequences of *functions*: if a sequence of functions is uniformly bounded and equicontinuous, it has a uniformly convergent subsequence. The proof uses a diagonal argument applied to BW.
+
+---
+
+## Failure in Infinite Dimensions
+
+<div style={{
+  borderLeft: "4px solid #e11d48",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+In infinite-dimensional spaces, Bolzano-Weierstrass **fails**. In $\ell^2$, the standard basis vectors $e_1, e_2, e_3, \ldots$ satisfy $\|e_k\| = 1$ (bounded) but $\|e_j - e_k\| = \sqrt{2}$ for $j \neq k$, so no subsequence is Cauchy, let alone convergent.
+
+This failure motivates the study of **weak compactness**: the unit ball in a reflexive Banach space is weakly sequentially compact (every bounded sequence has a weakly convergent subsequence).
+
+</div>
+
+---
+
+## Historical Notes
+
+Bernard Bolzano (1817) proved that a continuous function changing sign on an interval must have a zero — the intermediate value theorem — using what amounted to the BW property. Karl Weierstrass systematically developed the theory of limits and subsequences in his Berlin lectures in the 1860s.
+
+The theorem was a key step in the **arithmetization of analysis** — the program of placing calculus on rigorous foundations, replacing geometric intuition with precise definitions of limits, continuity, and convergence.
+
+---
+
+## Limsup and Liminf
+
+Every bounded sequence $(x_k)$ in $\mathbb{R}$ has a largest and smallest subsequential limit:
+
+$$\limsup_{k \to \infty} x_k = \inf_{n \geq 1} \sup_{k \geq n} x_k, \qquad \liminf_{k \to \infty} x_k = \sup_{n \geq 1} \inf_{k \geq n} x_k$$
+
+Bolzano-Weierstrass guarantees these are achieved: there exists a subsequence converging to $\limsup$ and another converging to $\liminf$. The sequence converges if and only if $\limsup = \liminf$.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&(x_k) \text{ bounded in } \mathbb{R}^n \\[6pt]
+&\Downarrow \text{ Bolzano-Weierstrass} \\[6pt]
+&\exists\, \text{subsequence } x_{k_j} \to L \\[6pt]
+&\Updownarrow \\[6pt]
+&\text{Closed bounded sets in } \mathbb{R}^n \text{ are compact (Heine-Borel)} \\[6pt]
+&\text{Fails in infinite dimensions} \implies \text{weak compactness needed}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Rudin, W., *Principles of Mathematical Analysis*, 3rd edition, McGraw-Hill, 1976.
+- Abbott, S., *Understanding Analysis*, 2nd edition, Springer, 2015.
+- Bartle, R. and Sherbert, D., *Introduction to Real Analysis*, 4th edition, Wiley, 2011.
+- [Wikipedia — Bolzano-Weierstrass theorem](https://en.wikipedia.org/wiki/Bolzano%E2%80%93Weierstrass_theorem)
+- [Wikipedia — Compact space](https://en.wikipedia.org/wiki/Compact_space)
+- [MIT OpenCourseWare — Real Analysis](https://ocw.mit.edu/courses/18-100a-real-analysis-fall-2020/)

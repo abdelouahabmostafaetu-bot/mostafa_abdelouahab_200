@@ -1,0 +1,309 @@
+---
+title: "The Dominated Convergence Theorem: When Can We Swap Limits and Integrals?"
+date: "2026-03-04"
+category: "Mathematics"
+excerpt: "We prove the Dominated Convergence Theorem — the central result of Lebesgue integration theory that gives sharp conditions for interchanging limits and integrals — and compare it to weaker results like the Monotone Convergence Theorem."
+tags: ["Measure Theory", "Analysis"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Dominated Convergence Theorem (Lebesgue)**
+
+Let $(X, \mathcal{M}, \mu)$ be a measure space and let $f_n: X \to \mathbb{R}$ be measurable functions such that:
+
+1. $f_n(x) \to f(x)$ pointwise a.e.
+2. There exists an integrable function $g \geq 0$ with $|f_n(x)| \leq g(x)$ a.e. for all $n$.
+
+Then $f$ is integrable and:
+
+$$\lim_{n \to \infty} \int_X f_n \, d\mu = \int_X f \, d\mu$$
+
+</div>
+
+In short: **if a pointwise convergent sequence of functions is dominated by a single integrable function, we may pass the limit inside the integral.**
+
+---
+
+## Why We Need It
+
+The fundamental question of interchanging limits and integrals arises everywhere in analysis:
+
+$$\lim_{n \to \infty} \int f_n = \int \lim_{n \to \infty} f_n \quad \text{???}$$
+
+Without conditions, this can fail spectacularly:
+
+### A Counterexample
+
+Define $f_n: [0,1] \to \mathbb{R}$ by $f_n = n \cdot \mathbf{1}_{(0, 1/n]}$. Then:
+
+- $f_n(x) \to 0$ for all $x \in [0,1]$ (pointwise).
+- $\int_0^1 f_n \, dx = n \cdot \frac{1}{n} = 1$ for all $n$.
+
+So $\lim \int f_n = 1 \neq 0 = \int \lim f_n$.
+
+The problem: $f_n$ concentrates mass. No single integrable function dominates all $f_n$ (since $\sup_n f_n(x) = \infty$ near $0$).
+
+---
+
+## The Domination Condition
+
+The hypothesis $|f_n| \leq g$ with $g \in L^1$ is the key. It prevents the sequence from "escaping to infinity" or "concentrating mass" — the two main ways the interchange can fail.
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+Think of $g$ as a "safety net." As long as each $f_n$ stays below $g$ (in absolute value), and $g$ has finite integral, the convergence is well-behaved.
+
+</div>
+
+---
+
+## Proof
+
+The proof uses **Fatou's Lemma** as a stepping stone.
+
+### Fatou's Lemma
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Fatou's Lemma.** If $f_n \geq 0$ are measurable, then:
+
+$$\int_X \liminf_{n \to \infty} f_n \, d\mu \leq \liminf_{n \to \infty} \int_X f_n \, d\mu$$
+
+</div>
+
+Fatou's Lemma requires no domination — only non-negativity. The inequality can be strict (as our counterexample shows). The DCT upgrades this to an equality.
+
+### Proof of DCT
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+Since $|f_n| \leq g$ a.e. and $f_n \to f$ a.e., we have $|f| \leq g$ a.e., so $f \in L^1$.
+
+**Upper bound.** The functions $g - f_n \geq 0$ a.e. By Fatou's Lemma:
+
+$$\int (g - f)\, d\mu \leq \liminf \int (g - f_n)\, d\mu$$
+
+$$\int g - \int f \leq \int g - \limsup \int f_n$$
+
+$$\limsup \int f_n \leq \int f$$
+
+**Lower bound.** The functions $g + f_n \geq 0$ a.e. By Fatou's Lemma:
+
+$$\int (g + f)\, d\mu \leq \liminf \int (g + f_n)\, d\mu$$
+
+$$\int g + \int f \leq \int g + \liminf \int f_n$$
+
+$$\int f \leq \liminf \int f_n$$
+
+**Conclusion.** Combining both:
+
+$$\int f \leq \liminf \int f_n \leq \limsup \int f_n \leq \int f$$
+
+Therefore $\lim \int f_n = \int f$. $\square$
+
+</div>
+
+---
+
+## Comparison of Convergence Theorems
+
+<div style={{
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr 1fr",
+  gap: "12px",
+  margin: "24px 0"
+}}>
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "16px"
+}}>
+
+**Monotone Convergence**
+
+$0 \leq f_1 \leq f_2 \leq \cdots$
+
+$\int \lim f_n = \lim \int f_n$
+
+(Limit may be $+\infty$)
+
+</div>
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "16px"
+}}>
+
+**Fatou's Lemma**
+
+$f_n \geq 0$
+
+$\int \liminf f_n \leq \liminf \int f_n$
+
+(Inequality only)
+
+</div>
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "16px"
+}}>
+
+**Dominated Convergence**
+
+$|f_n| \leq g \in L^1$
+
+$\int \lim f_n = \lim \int f_n$
+
+(Exact equality)
+
+</div>
+
+</div>
+
+The DCT is the most powerful for applications, but requires the strongest hypothesis.
+
+---
+
+## The $L^p$ Version
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**$L^p$ Dominated Convergence.** If $f_n \to f$ a.e., $|f_n| \leq g$ a.e. with $g \in L^p$ ($1 \leq p < \infty$), then $f_n \to f$ in $L^p$:
+
+$$\lim_{n \to \infty} \int |f_n - f|^p \, d\mu = 0$$
+
+</div>
+
+This is stronger than just $\int f_n \to \int f$ — it gives convergence in the $L^p$ norm.
+
+---
+
+## Applications
+
+### Differentiating Under the Integral Sign
+
+**Leibniz's Rule.** Let $F(\theta) = \int_X f(x, \theta)\, d\mu(x)$. If $\partial f / \partial \theta$ exists and is dominated by an integrable function:
+
+$$\left|\frac{\partial f}{\partial \theta}(x, \theta)\right| \leq g(x) \quad \text{for all } \theta$$
+
+then:
+
+$$F'(\theta) = \int_X \frac{\partial f}{\partial \theta}(x, \theta)\, d\mu(x)$$
+
+**Proof.** Write the derivative as a limit of difference quotients and apply the DCT. $\square$
+
+This is used constantly in probability theory, physics, and PDE theory.
+
+### Moment Generating Functions
+
+For a random variable $X$ with $E[e^{tX}] < \infty$ for $|t| < c$, the moment generating function $M(t) = E[e^{tX}]$ is infinitely differentiable on $(-c, c)$, and:
+
+$$M^{(n)}(t) = E[X^n e^{tX}]$$
+
+by iterated application of the DCT.
+
+### Fourier Transform Continuity
+
+If $f \in L^1(\mathbb{R}^n)$, the Fourier transform $\hat{f}(\xi) = \int f(x) e^{-2\pi i x \cdot \xi}\, dx$ is continuous, because $|f(x)e^{-2\pi i x \cdot \xi}| \leq |f(x)|$ and the DCT applies to $\xi \to \xi_0$.
+
+### Interchange of Summation and Integration
+
+Since $\sum_{k=1}^n f_k = S_n$ is a sequence of partial sums, the DCT gives conditions for:
+
+$$\int \sum_{k=1}^{\infty} f_k = \sum_{k=1}^{\infty} \int f_k$$
+
+Specifically, if $\sum |f_k| \leq g \in L^1$, the interchange is valid.
+
+---
+
+## Vitali's Convergence Theorem
+
+A natural question: can the domination condition be weakened? Yes — if you replace it with **uniform integrability**.
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**Vitali's Convergence Theorem.** On a finite measure space, if $f_n \to f$ in measure and $\{f_n\}$ is uniformly integrable, then:
+
+$$\lim_{n \to \infty} \int f_n \, d\mu = \int f \, d\mu$$
+
+</div>
+
+Uniform integrability is the precise condition needed — domination implies uniform integrability but not conversely.
+
+---
+
+## Historical Context
+
+Henri Lebesgue introduced both the Lebesgue integral and the Dominated Convergence Theorem in his 1904 dissertation *"Intégrale, longueur, aire."* The DCT was one of the main motivations for the Lebesgue theory — the Riemann integral lacks a comparably powerful convergence theorem.
+
+The Monotone Convergence Theorem (Beppo Levi, 1906) and Fatou's Lemma (Pierre Fatou, 1906) completed the trio of fundamental convergence results.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&f_n \to f \text{ a.e.}, \quad |f_n| \leq g \in L^1 \\[6pt]
+&\Downarrow \text{ DCT} \\[6pt]
+&\int f_n \to \int f \\[8pt]
+&\text{Key applications:} \\[4pt]
+&\quad \text{Differentiation under the integral} \\[4pt]
+&\quad \text{Fourier analysis, probability, PDEs} \\[4pt]
+&\quad \text{Interchange of }\sum \text{ and } \int
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Folland, G. B., *Real Analysis*, 2nd edition, Wiley, 1999.
+- Rudin, W., *Real and Complex Analysis*, 3rd edition, McGraw-Hill, 1987.
+- Stein, E. M. and Shakarchi, R., *Real Analysis*, Princeton University Press, 2005.
+- [Wikipedia — Dominated convergence theorem](https://en.wikipedia.org/wiki/Dominated_convergence_theorem)
+- [Wikipedia — Fatou's lemma](https://en.wikipedia.org/wiki/Fatou%27s_lemma)
+- [MIT OpenCourseWare — Measure and Integration](https://ocw.mit.edu/courses/18-125-measure-and-integration-fall-2003/)

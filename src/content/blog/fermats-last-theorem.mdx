@@ -1,0 +1,224 @@
+---
+title: "Fermat's Last Theorem: From Margin Notes to Andrew Wiles"
+date: "2026-01-29"
+category: "Mathematics"
+excerpt: "We trace the 358-year history of Fermat's Last Theorem — from Fermat's tantalizing margin note to Andrew Wiles's monumental proof via elliptic curves and modular forms — and explain the mathematical ideas that made the proof possible."
+tags: ["Number Theory", "History"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Fermat's Last Theorem (Wiles, 1995)**
+
+There are no positive integer solutions to the equation:
+
+$$x^n + y^n = z^n \quad \text{for any integer } n \geq 3$$
+
+</div>
+
+For $n = 2$, there are infinitely many solutions — the Pythagorean triples such as $(3, 4, 5)$ and $(5, 12, 13)$. But raise the exponent to $3$ or higher, and solutions vanish entirely.
+
+---
+
+## The Margin Note
+
+Around 1637, Pierre de Fermat wrote in the margin of his copy of Diophantus's *Arithmetica*:
+
+> *"Cubum autem in duos cubos, aut quadratoquadratum in duos quadratoquadratos, et generaliter nullam in infinitum ultra quadratum potestatem in duos eiusdem nominis fas est dividere cuius rei demonstrationem mirabilem sane detexi. Hanc marginis exiguitas non caperet."*
+
+In English: *"It is impossible to separate a cube into two cubes, or a fourth power into two fourth powers, or in general, any power higher than the second, into two like powers. I have discovered a truly marvelous proof of this, which this margin is too narrow to contain."*
+
+No proof was ever found among Fermat's papers. The consensus among mathematicians is that Fermat did not have a valid proof for the general case.
+
+---
+
+## Early Progress
+
+### Small Exponents
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+- **$n = 4$**: Fermat himself proved this case using the method of **infinite descent** — the only proof of FLT he left behind. The key is that $x^4 + y^4 = z^2$ has no solutions, which is actually stronger.
+- **$n = 3$**: Euler (1770) gave a proof, though with a gap later filled by others.
+- **$n = 5$**: Dirichlet and Legendre (1825) proved this independently.
+- **$n = 7$**: Lamé (1839) proved this case.
+- **$n = 14$**: Dirichlet (1832).
+
+</div>
+
+Each case required new ideas. There was no unified method.
+
+### Sophie Germain's Theorem
+
+**Sophie Germain** (c. 1820) proved a general result: if $p$ is an odd prime such that $2p + 1$ is also prime (a "Sophie Germain prime"), then $x^p + y^p = z^p$ has no solutions with $p \nmid xyz$. This handled infinitely many exponents at once — the first general result.
+
+### Kummer and Ideal Numbers
+
+**Ernst Kummer** (1847) proved FLT for all **regular primes** — primes $p$ that do not divide the class number of $\mathbb{Q}(\zeta_p)$. He introduced the theory of ideal numbers (later formalized as ideals by Dedekind) to handle the failure of unique factorization in cyclotomic fields.
+
+By the mid-20th century, FLT was verified for all exponents up to $4 \times 10^6$ via computation, but a proof for all $n$ remained elusive.
+
+---
+
+## The Modern Approach
+
+The eventual proof came not from number-theoretic methods for specific exponents, but from a deep connection between two seemingly unrelated areas of mathematics.
+
+### Elliptic Curves
+
+An **elliptic curve** over $\mathbb{Q}$ is a curve of the form:
+
+$$E: \quad y^2 = x^3 + ax + b \qquad (a, b \in \mathbb{Q}, \; 4a^3 + 27b^2 \neq 0)$$
+
+For each prime $p$, we can reduce $E$ modulo $p$ and count solutions. Define $a_p = p - \#E(\mathbb{F}_p)$, and assemble these into an **$L$-function**:
+
+$$L(E, s) = \prod_{p \text{ good}} \frac{1}{1 - a_p p^{-s} + p^{1-2s}}$$
+
+### Modular Forms
+
+A **modular form** of weight $2$ and level $N$ is a holomorphic function $f: \mathbb{H} \to \mathbb{C}$ on the upper half-plane satisfying:
+
+$$f\!\left(\frac{az+b}{cz+d}\right) = (cz+d)^2 f(z) \quad \text{for all } \begin{pmatrix} a & b \\ c & d \end{pmatrix} \in \Gamma_0(N)$$
+
+along with growth conditions. Each modular form has a Fourier expansion $f(z) = \sum_{n=1}^{\infty} b_n q^n$ (where $q = e^{2\pi iz}$) and an associated $L$-function.
+
+---
+
+## The Taniyama-Shimura-Weil Conjecture
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Modularity Conjecture (Taniyama-Shimura-Weil)**
+
+Every elliptic curve over $\mathbb{Q}$ is **modular**: its $L$-function equals the $L$-function of some modular form of weight $2$.
+
+</div>
+
+This conjecture, first formulated by Yutaka Taniyama (1956) and refined by Goro Shimura and André Weil, seemed far removed from Fermat's Last Theorem. The connection was made by two breakthroughs.
+
+---
+
+## The Frey-Serre-Ribet Bridge
+
+### Frey's Idea (1984)
+
+Gerhard Frey proposed: if $a^p + b^p = c^p$ is a counterexample to FLT, consider the **Frey curve**:
+
+$$E_{a,b,c}: \quad y^2 = x(x - a^p)(x + b^p)$$
+
+This elliptic curve has remarkable properties — its discriminant $\Delta = (abc)^{2p}/2^8$ is an unusually high power, making the curve "too strange" to be modular.
+
+### Ribet's Theorem (1986)
+
+Kenneth Ribet proved that the Frey curve, if it existed, could **not** be modular. More precisely, he showed that the modularity of $E_{a,b,c}$ would imply the existence of a modular form of weight $2$ and level $2$, but the space $S_2(\Gamma_0(2))$ is trivial — it contains no nonzero cusp forms.
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+**The logical chain:**
+
+$$\text{FLT is false} \implies \text{Frey curve exists} \implies \text{Frey curve is not modular}$$
+
+Contrapositive:
+
+$$\text{All elliptic curves are modular} \implies \text{Frey curve cannot exist} \implies \text{FLT is true}$$
+
+</div>
+
+Thus, the Modularity Conjecture (for semistable elliptic curves) implies Fermat's Last Theorem.
+
+---
+
+## Wiles's Proof
+
+Andrew Wiles worked in secret for seven years (1986–1993) to prove the Modularity Conjecture for semistable elliptic curves. He announced his proof in a famous lecture series at Cambridge in June 1993.
+
+### The Strategy
+
+Wiles proved modularity by showing that certain **Galois representations** attached to elliptic curves are modular. The key steps:
+
+1. **Base case.** Show modularity for the residual representation $\bar{\rho}_{E,3}: \operatorname{Gal}(\bar{\mathbb{Q}}/\mathbb{Q}) \to \operatorname{GL}_2(\mathbb{F}_3)$ using results of Langlands and Tunnell.
+
+2. **Lifting.** Prove that if $\bar{\rho}_{E,3}$ is modular, then the full $3$-adic representation $\rho_{E,3}: \operatorname{Gal}(\bar{\mathbb{Q}}/\mathbb{Q}) \to \operatorname{GL}_2(\mathbb{Z}_3)$ is also modular. This is the hardest part, requiring a study of **deformation rings** and **Hecke algebras**.
+
+3. **Conclusion.** A modular $3$-adic representation implies the elliptic curve is modular.
+
+### The Gap and the Fix
+
+A gap was discovered in September 1993 in the argument comparing deformation rings and Hecke algebras. After over a year of intense work, Wiles — with crucial help from Richard Taylor — found a new approach using the **Iwasawa theory** of elliptic curves. The corrected proof was published in 1995.
+
+---
+
+## The Published Papers
+
+- Wiles, A., "Modular elliptic curves and Fermat's Last Theorem," *Annals of Mathematics*, 141(3), 443–551, 1995.
+- Taylor, R. and Wiles, A., "Ring-theoretic properties of certain Hecke algebras," *Annals of Mathematics*, 141(3), 553–572, 1995.
+
+Together, these 130 pages proved the most famous conjecture in mathematics.
+
+---
+
+## After Wiles
+
+The full Modularity Conjecture (for all elliptic curves, not just semistable ones) was proved by **Breuil, Conrad, Diamond, and Taylor** in 2001, building on Wiles's methods.
+
+The techniques pioneered by Wiles have led to an explosion of results in the **Langlands program** — a vast web of conjectures connecting number theory, representation theory, and algebraic geometry.
+
+---
+
+## Why Every Condition Matters
+
+**Why $n \geq 3$?** For $n = 2$, Pythagorean triples $(3,4,5)$, $(5,12,13)$, etc. provide infinitely many solutions.
+
+**Why positive integers?** Over $\mathbb{Q}$, the equation $x^n + y^n = z^n$ is equivalent to $X^n + Y^n = 1$ (divide by $z^n$), and the question becomes: does the Fermat curve have rational points other than the obvious ones?
+
+**Why not $n = 1$?** $x + y = z$ has infinitely many solutions.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&\text{Fermat (1637): } x^n + y^n = z^n \text{ has no positive integer solutions for } n \geq 3 \\[8pt]
+&\text{Frey (1984): Counterexample} \implies \text{strange elliptic curve} \\[4pt]
+&\text{Ribet (1986): Frey curve is not modular} \\[4pt]
+&\text{Wiles (1995): All semistable elliptic curves are modular} \\[8pt]
+&\therefore \text{ No counterexample can exist} \quad \square
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Wiles, A., "Modular elliptic curves and Fermat's Last Theorem," *Annals of Mathematics*, 141(3), 443–551, 1995.
+- Singh, S., *Fermat's Enigma*, Anchor Books, 1997.
+- Cornell, G., Silverman, J. H., and Stevens, G. (eds.), *Modular Forms and Fermat's Last Theorem*, Springer, 1997.
+- [Wikipedia — Fermat's Last Theorem](https://en.wikipedia.org/wiki/Fermat%27s_Last_Theorem)
+- [Wikipedia — Modularity theorem](https://en.wikipedia.org/wiki/Modularity_theorem)
+- [Numberphile — Fermat's Last Theorem (YouTube)](https://www.youtube.com/watch?v=qiNcEguuFSA)

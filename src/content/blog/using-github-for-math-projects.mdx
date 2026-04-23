@@ -1,0 +1,374 @@
+---
+title: "Using GitHub for Mathematics Projects and Collaboration"
+date: "2026-03-07"
+category: "Resources"
+excerpt: "A practical guide to using GitHub for mathematics: version control for LaTeX papers, collaborative research, sharing code and notes, building an academic portfolio, and contributing to open-source mathematical software."
+tags: ["Tools", "Collaboration"]
+---
+
+## Why Mathematicians Should Use GitHub
+
+[GitHub](https://github.com/) is the world's largest platform for hosting and collaborating on code and documents using Git version control. While it is most associated with software development, GitHub is increasingly valuable for mathematicians:
+
+- **Version control for papers.** Track every change to your LaTeX documents, revert mistakes, and maintain a complete history.
+- **Collaboration.** Work on papers and projects with coauthors across the world.
+- **Sharing.** Make your code, lecture notes, and computations publicly available.
+- **Portfolio.** Build a visible record of your mathematical work.
+- **Contributing to open-source math software.** Participate in projects like SageMath, Lean's Mathlib, and others.
+
+This guide covers everything you need to know to start using GitHub effectively for mathematics.
+
+---
+
+## Git and GitHub Basics
+
+### What Is Git?
+
+[Git](https://git-scm.com/) is a version control system that tracks changes to files. It was created by Linus Torvalds (the creator of Linux) and is the standard tool for managing any evolving collection of text files — including LaTeX documents.
+
+Key concepts:
+
+- **Repository (repo):** A folder tracked by Git, containing your files and their complete change history
+- **Commit:** A snapshot of your files at a point in time, with a message describing what changed
+- **Branch:** A parallel version of your repository for trying ideas without affecting the main version
+- **Merge:** Combining changes from one branch into another
+- **Remote:** A copy of your repository hosted online (e.g., on GitHub)
+
+### What Is GitHub?
+
+GitHub is a web platform that hosts Git repositories and adds collaboration features:
+
+- **Pull requests:** Propose changes and have them reviewed before merging
+- **Issues:** Track bugs, tasks, and ideas
+- **Actions:** Automate tasks like compiling LaTeX documents
+- **Pages:** Host websites directly from a repository
+- **README files:** Provide documentation rendered as formatted web pages
+
+### Getting Started
+
+1. **Create a GitHub account** at [github.com](https://github.com/)
+2. **Install Git** on your computer ([git-scm.com/downloads](https://git-scm.com/downloads))
+3. **Create your first repository** on GitHub's website
+4. **Clone it** to your computer: `git clone https://github.com/username/repo-name.git`
+
+<div style={{
+  border: "2px solid #2563eb",
+  borderRadius: "12px",
+  padding: "22px",
+  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+  margin: "28px 0"
+}}>
+
+**For complete beginners:** GitHub provides an excellent interactive tutorial at [skills.github.com](https://skills.github.com/). Complete the "Introduction to GitHub" course — it takes about an hour and teaches you the fundamentals.
+
+</div>
+
+---
+
+## Using GitHub for LaTeX Papers
+
+### Setting Up a Paper Repository
+
+Create a repository with this structure:
+
+```
+my-paper/
+├── main.tex          # Main LaTeX file
+├── references.bib    # Bibliography
+├── sections/
+│   ├── introduction.tex
+│   ├── preliminaries.tex
+│   ├── main-results.tex
+│   └── applications.tex
+├── figures/
+│   ├── diagram1.pdf
+│   └── diagram2.pdf
+├── .gitignore        # Files Git should ignore
+└── README.md         # Description of the paper
+```
+
+### The .gitignore File
+
+LaTeX compilation produces many auxiliary files that should not be tracked. Create a `.gitignore` file:
+
+```
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Compiled output (track only source)
+# *.pdf  # Uncomment if you don't want to track PDFs
+```
+
+GitHub provides a [standard LaTeX .gitignore template](https://github.com/github/gitignore/blob/main/TeX.gitignore) that you can use.
+
+### Daily Workflow
+
+```bash
+# Start of day: pull any changes from coauthors
+git pull
+
+# Work on your paper...
+
+# See what changed
+git status
+git diff
+
+# Stage your changes
+git add main.tex sections/main-results.tex
+
+# Commit with a descriptive message
+git commit -m "Add proof of Theorem 3.2 using spectral gap bound"
+
+# Push to GitHub
+git push
+```
+
+<div style={{
+  borderLeft: "4px solid #2563eb",
+  paddingLeft: "18px",
+  margin: "26px 0"
+}}>
+
+**Commit message tips:** Write clear commit messages that describe *what* changed mathematically:
+- Good: "Fix error in Lemma 2.1: bound should be $n^2$ not $n$"
+- Good: "Add section on applications to random graphs"
+- Bad: "updated file"
+- Bad: "changes"
+
+</div>
+
+### Collaborating with Coauthors
+
+For collaborative papers:
+
+1. **Add collaborators** in your repository's Settings → Collaborators
+2. **Use branches** for major changes: each author works on their own branch
+3. **Create pull requests** to review each other's changes before merging
+4. **Use issues** to track tasks: "Write introduction," "Check proof of Theorem 4," "Add figure for Section 3"
+
+### Automatic LaTeX Compilation
+
+Use [GitHub Actions](https://github.com/features/actions) to automatically compile your LaTeX document every time you push:
+
+```yaml
+# .github/workflows/compile.yml
+name: Compile LaTeX
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper
+          path: main.pdf
+```
+
+This ensures your paper always compiles and provides the latest PDF as a downloadable artifact.
+
+---
+
+## Sharing Mathematical Code
+
+### Computational Mathematics Projects
+
+If your research involves computation, GitHub is the natural place to share your code:
+
+- **SageMath notebooks** for algebraic computations
+- **Python scripts** for numerical experiments
+- **Lean proofs** for formalized mathematics
+- **R code** for statistical analysis
+- **Julia scripts** for computational research
+
+### Writing Good README Files
+
+Every repository should have a `README.md` that explains:
+
+1. What the project does
+2. How to run the code
+3. What dependencies are needed
+4. How to reproduce the results
+
+Example:
+
+```markdown
+# Spectral Gap Bounds for Random Regular Graphs
+
+This repository contains the code for the paper
+"New Spectral Gap Bounds for Random Regular Graphs"
+by A. Author and B. Coauthor.
+
+## Requirements
+- SageMath 10.0 or later
+- Python 3.10+
+- matplotlib
+
+## Reproducing the results
+Run `sage experiments/main_computation.sage` to reproduce
+the numerical experiments in Section 5.
+```
+
+---
+
+## Building an Academic Portfolio on GitHub
+
+### What to Put on GitHub
+
+- **Papers** (LaTeX source and compiled PDFs)
+- **Lecture notes** you have written
+- **Course materials** and homework solutions (after the course ends)
+- **Computational projects** and research code
+- **Your personal/academic website** (using GitHub Pages)
+
+### GitHub Pages for Academic Websites
+
+[GitHub Pages](https://pages.github.com/) lets you host a website directly from a GitHub repository for free. Many mathematicians use this for their personal academic websites. See our [guide to building a math website](/blog/how-to-build-a-math-website) for details.
+
+### Your GitHub Profile
+
+Treat your GitHub profile as part of your academic identity:
+
+- Use your real name
+- Add a bio mentioning your institution and research interests
+- Pin your most important repositories
+- Keep your repositories organized and documented
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  padding: "20px",
+  background: "#fafafa",
+  margin: "24px 0"
+}}>
+
+**For job and grad school applications:** A well-maintained GitHub profile demonstrates technical skills, organizational ability, and the quality of your mathematical work. Some research groups specifically look for GitHub profiles when evaluating applicants.
+
+</div>
+
+---
+
+## Contributing to Open-Source Mathematics Projects
+
+### Lean's Mathlib
+
+[Mathlib](https://github.com/leanprover-community/mathlib4) is the mathematical library for the Lean theorem prover. It is one of the most active open-source mathematics projects in the world, with thousands of contributors formalizing mathematics ranging from undergraduate algebra to research-level results.
+
+Contributing to Mathlib is an excellent way to:
+- Learn formalized mathematics
+- Contribute to a project with real mathematical impact
+- Join a welcoming community of mathematicians and computer scientists
+
+The [Lean Community](https://leanprover-community.github.io/) provides guides for getting started.
+
+### SageMath
+
+[SageMath](https://github.com/sagemath/sage) is developed on GitHub. Contributing can mean:
+- Fixing bugs
+- Improving documentation
+- Adding new mathematical functionality
+- Reviewing other people's contributions
+
+### Other Mathematical Software
+
+- **GAP** ([github.com/gap-system/gap](https://github.com/gap-system/gap)) — Computational group theory
+- **Macaulay2** ([github.com/Macaulay2/M2](https://github.com/Macaulay2/M2)) — Commutative algebra and algebraic geometry
+- **OSCAR** ([github.com/oscar-system](https://github.com/oscar-system)) — Open Source Computer Algebra Research system
+- **SymPy** ([github.com/sympy/sympy](https://github.com/sympy/sympy)) — Symbolic mathematics in Python
+
+---
+
+## Tips for Mathematicians Using Git
+
+### 1. Commit Often
+
+Make small, frequent commits rather than large, infrequent ones. Each commit should represent a logical unit of change.
+
+### 2. Use Branches for Experiments
+
+If you want to try a different proof approach or reorganize a section, create a branch:
+
+```bash
+git checkout -b alternative-proof-theorem-3
+# Work on the alternative approach...
+# If it works, merge it back
+git checkout main
+git merge alternative-proof-theorem-3
+# If it doesn't, just delete the branch
+git branch -d alternative-proof-theorem-3
+```
+
+### 3. Do Not Track Binary Files
+
+Avoid tracking large binary files (compiled PDFs, images in non-vector formats) in Git. They bloat the repository. Use Git LFS (Large File Storage) if necessary.
+
+### 4. Use GitHub Issues as a To-Do List
+
+Even for solo projects, GitHub Issues are useful for tracking tasks:
+- "Prove the base case of Lemma 4.2"
+- "Check if bound in Theorem 5.1 is tight"
+- "Respond to referee comment about Section 3"
+
+### 5. Learn the Command Line
+
+While GitHub Desktop and VS Code's Git integration are fine starting points, learning the Git command line gives you more power and understanding.
+
+---
+
+## Learning Resources
+
+- [GitHub Skills](https://skills.github.com/) — Interactive courses from GitHub
+- [Pro Git Book](https://git-scm.com/book/en/v2) — The comprehensive free Git reference
+- [GitHub Docs](https://docs.github.com/) — Official documentation
+- [Atlassian Git Tutorials](https://www.atlassian.com/git/tutorials) — Clear explanations of Git concepts
+- [The Missing Semester (MIT)](https://missing.csail.mit.edu/2020/version-control/) — Excellent lecture on version control
+
+---
+
+## Summary
+
+| Use Case | GitHub Feature |
+| --- | --- |
+| Track paper changes | Git commits + version history |
+| Collaborate on papers | Branches + pull requests |
+| Share code | Public repositories + README |
+| Build website | GitHub Pages |
+| Compile LaTeX automatically | GitHub Actions |
+| Track tasks | GitHub Issues |
+| Contribute to math software | Fork + pull request workflow |
+
+---
+
+## Final Thoughts
+
+GitHub is not just for software developers. It is a tool for organizing, sharing, and collaborating on any text-based project — and mathematics, written in LaTeX, is fundamentally text. Learning Git and GitHub is a small investment that pays dividends throughout your mathematical career.
+
+Start with a single repository for your current paper or project. As you become comfortable, expand to sharing your notes, code, and eventually building your academic website.
+
+---
+
+## References
+
+- [GitHub](https://github.com/)
+- [Git](https://git-scm.com/)
+- [GitHub Skills — Interactive Tutorials](https://skills.github.com/)
+- [Pro Git Book (free)](https://git-scm.com/book/en/v2)
+- [GitHub Pages](https://pages.github.com/)
+- [GitHub Actions](https://github.com/features/actions)
+- [LaTeX .gitignore Template](https://github.com/github/gitignore/blob/main/TeX.gitignore)
+- [Lean Community — Mathlib](https://github.com/leanprover-community/mathlib4)
+- [Lean Community — Getting Started](https://leanprover-community.github.io/)
+- [SageMath on GitHub](https://github.com/sagemath/sage)
+- [SymPy on GitHub](https://github.com/sympy/sympy)
+- [The Missing Semester — Version Control](https://missing.csail.mit.edu/2020/version-control/)

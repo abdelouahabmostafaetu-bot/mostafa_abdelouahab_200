@@ -1,0 +1,275 @@
+---
+title: "Common Mistakes in Mathematical Proofs and How to Avoid Them"
+date: "2026-02-01"
+category: "Study Guide"
+excerpt: "A catalog of the most common errors students make when writing mathematical proofs, with explanations of why each error is wrong and how to fix it."
+tags: ["Proof Writing"]
+---
+
+## Why This Matters
+
+Every mathematics student makes mistakes in proofs. That is part of learning. But some mistakes are so common that they deserve to be cataloged and studied. By learning to recognize these patterns, you can catch errors before your professor does.
+
+This guide covers the most frequent proof errors, organized by type, with clear explanations and corrected versions.
+
+---
+
+## Category 1: Logical Errors
+
+### Mistake 1: Circular Reasoning
+
+**The error:** Using the conclusion of the proof as part of the argument.
+
+**Example (wrong):**
+
+> *Claim: $a^2 - b^2 = (a-b)(a+b)$.*
+>
+> *Proof:* Start with $a^2 - b^2 = (a-b)(a+b)$. Expanding the right side: $(a-b)(a+b) = a^2 + ab - ab - b^2 = a^2 - b^2$. So $a^2 - b^2 = a^2 - b^2$, which is true. $\square$
+
+**Why it is wrong:** The proof assumes the identity it is trying to prove. Starting from the conclusion and arriving at a tautology proves nothing.
+
+**Correct version:**
+
+> *Proof:* Consider $(a-b)(a+b)$. Expanding: $(a-b)(a+b) = a \cdot a + a \cdot b - b \cdot a - b \cdot b = a^2 - b^2$. $\square$
+
+The correct proof starts from one side and derives the other.
+
+### Mistake 2: Confusing the Direction of Implication
+
+**The error:** Proving "if $Q$ then $P$" instead of "if $P$ then $Q$."
+
+**Example (wrong):**
+
+> *Claim: If $n$ is a prime greater than 2, then $n$ is odd.*
+>
+> *Proof:* Suppose $n$ is odd. Then $n$ is not divisible by 2. [Attempts to show $n$ is prime...] $\square$
+
+**Why it is wrong:** The proof starts by assuming the conclusion ($n$ is odd) rather than the hypothesis ($n$ is prime greater than 2).
+
+**Correct version:**
+
+> *Proof:* Suppose $n$ is a prime greater than 2. If $n$ were even, then $n = 2k$ for some integer $k > 1$, which means $2 \mid n$. Since $n > 2$, we have $k > 1$, so $n$ is not prime — contradiction. Therefore $n$ is odd. $\square$
+
+### Mistake 3: Affirming the Consequent
+
+**The error:** From "$P \implies Q$" and "$Q$," concluding "$P$."
+
+**Example (wrong):**
+
+> *If it rains, the ground is wet. The ground is wet. Therefore it rained.*
+
+In mathematical form: from $f$ differentiable $\implies$ $f$ continuous, and $f$ continuous, concluding $f$ differentiable. This is false — $f(x) = |x|$ is continuous but not differentiable at $x = 0$.
+
+### Mistake 4: Denying the Antecedent
+
+**The error:** From "$P \implies Q$" and "$\neg P$," concluding "$\neg Q$."
+
+**Example (wrong):**
+
+> *If $n$ is divisible by 4, then $n$ is even. $n = 6$ is not divisible by 4. Therefore $n = 6$ is not even.*
+
+This is clearly wrong since 6 is even.
+
+---
+
+## Category 2: Quantifier Errors
+
+### Mistake 5: Confusing $\forall$ and $\exists$
+
+**The error:** Mixing up "for all" and "there exists."
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  padding: "20px",
+  background: "#fafafa",
+  margin: "24px 0"
+}}>
+
+**Key distinction:**
+
+"For every $\epsilon > 0$ there exists $\delta > 0$" means $\delta$ can depend on $\epsilon$.
+
+"There exists $\delta > 0$ such that for every $\epsilon > 0$" means a single $\delta$ works for all $\epsilon$.
+
+These are very different statements.
+
+</div>
+
+This error is especially common in analysis. The definition of a **limit**
+
+$$
+\forall \epsilon > 0,\ \exists N \in \mathbb{N},\ \forall n \ge N : |a_n - L| < \epsilon
+$$
+
+is **not** the same as
+
+$$
+\exists N \in \mathbb{N},\ \forall \epsilon > 0,\ \forall n \ge N : |a_n - L| < \epsilon.
+$$
+
+The second statement says the sequence is eventually **exactly** equal to $L$, which is much stronger.
+
+### Mistake 6: Using a Specific Example to Prove a Universal Statement
+
+**The error:** "It works for $n = 3$, so it works for all $n$."
+
+**Example (wrong):**
+
+> *Claim: For all $n \ge 1$, $n^2 \ge 2n$.*
+>
+> *Proof:* Let $n = 5$. Then $25 \ge 10$. ✓ $\square$
+
+This proves the statement for $n = 5$ only. (And the claim is false anyway: $n = 1$ gives $1 \ge 2$, which is false.)
+
+A universal statement requires proof that works for **all** values, not just one.
+
+### Mistake 7: Choosing the Wrong Witness in Existence Proofs
+
+**The error:** In an existence proof, choosing an object that does not have the required property.
+
+When proving "there exists $\delta > 0$ such that $P(\delta)$," you must actually **produce** a specific $\delta$ and verify that $P(\delta)$ holds. You cannot just say "$\delta$ exists."
+
+---
+
+## Category 3: Algebraic and Computational Errors
+
+### Mistake 8: Dividing by Something That Might Be Zero
+
+**The error:** Dividing both sides of an equation by an expression without checking that it is nonzero.
+
+**Example (wrong):**
+
+> *Claim: $a = b$ implies $0 = 1$.*
+>
+> *"Proof":* $a = b \implies a^2 = ab \implies a^2 - b^2 = ab - b^2 \implies (a-b)(a+b) = b(a-b) \implies a + b = b \implies a = 0.$ But $a = b$, so $b = 0$. Then $a = b$ gives $0 = 0$. Setting $a = b = 1$: $0 = 1$. $\square$
+
+**The error** is dividing by $(a - b) = 0$.
+
+### Mistake 9: Mishandling Inequalities
+
+Common errors:
+
+- Multiplying both sides of an inequality by a negative number without flipping the sign.
+- Assuming $a^2 > b^2$ implies $a > b$ (fails when $a$ and $b$ can be negative).
+- Confusing strict and non-strict inequalities.
+
+### Mistake 10: Dropping Absolute Values
+
+**The error:** Writing $|a + b| = |a| + |b|$ in general.
+
+The correct statement is the triangle inequality: $|a + b| \le |a| + |b|$. Equality holds only when $a$ and $b$ have the same sign (or one is zero).
+
+---
+
+## Category 4: Proof Structure Errors
+
+### Mistake 11: Incomplete Induction
+
+**The error:** Proving the inductive step but forgetting the base case, or proving the base case but not the inductive step.
+
+Both parts are necessary. Without the base case, the inductive step has nothing to stand on. The classic joke:
+
+> "All horses are the same color. Proof by induction: the base case is left to the reader."
+
+### Mistake 12: Assuming What You Want to Prove in a Proof by Contradiction
+
+**The error:** In a proof by contradiction, you should assume the **negation** of what you want to prove. But students sometimes accidentally assume the statement itself.
+
+**Correct structure:**
+
+> We want to prove $P$. Suppose, for contradiction, that $\neg P$. Then... [derive contradiction]. Therefore $P$.
+
+### Mistake 13: Claiming "Without Loss of Generality" Incorrectly
+
+**The error:** Saying "WLOG assume $a \ge b$" in a situation where the problem is not symmetric in $a$ and $b$.
+
+"Without loss of generality" is only valid when there is a genuine symmetry or when you can reduce the general case to the specific case by relabeling. If the hypothesis treats $a$ and $b$ differently, you cannot assume WLOG that $a \ge b$.
+
+---
+
+## Category 5: Set Theory Errors
+
+### Mistake 14: Confusing $\in$ and $\subseteq$
+
+**The error:** Writing $x \subseteq A$ when you mean $x \in A$, or $\{a\} \in A$ when you mean $\{a\} \subseteq A$.
+
+- $x \in A$ means $x$ is an element of $A$.
+- $B \subseteq A$ means every element of $B$ is an element of $A$.
+- $\{x\} \subseteq A$ means $x \in A$.
+- $\{x\} \in A$ means the **set** $\{x\}$ is an element of $A$.
+
+### Mistake 15: Misusing the Empty Set
+
+The empty set $\varnothing$ is a subset of every set. But $\varnothing$ is not an element of every set. Also, $\varnothing \ne \{\varnothing\}$: the first is the empty set, the second is a set containing one element (which happens to be the empty set).
+
+---
+
+## Category 6: Analysis-Specific Errors
+
+### Mistake 16: Interchanging Limits Illegally
+
+**The error:** Assuming you can swap the order of limits, integrals, sums, or derivatives without justification.
+
+In general:
+
+$$
+\lim_{n \to \infty} \int f_n \ne \int \lim_{n \to \infty} f_n
+$$
+
+unless you have a theorem that allows the interchange (such as the dominated convergence theorem or the monotone convergence theorem).
+
+<div style={{
+  borderLeft: "4px solid #dc2626",
+  paddingLeft: "18px",
+  margin: "26px 0"
+}}>
+
+**Rule of thumb.** Every time you want to interchange two limiting operations, you need a theorem that says you can. Name the theorem explicitly.
+
+</div>
+
+### Mistake 17: Confusing Pointwise and Uniform Convergence
+
+Pointwise convergence: for each fixed $x$, $f_n(x) \to f(x)$.
+
+Uniform convergence: $\sup_x |f_n(x) - f(x)| \to 0$.
+
+Uniform convergence implies pointwise convergence, but not vice versa. Many theorems in analysis require uniform convergence and fail for mere pointwise convergence.
+
+---
+
+## How to Avoid These Mistakes
+
+1. **Read your proof out loud.** This often catches logical and grammatical errors.
+2. **Check the logic explicitly.** For each "therefore" and "hence," verify that the deduction is valid.
+3. **Test with examples.** Plug in specific values to check that each step is correct.
+4. **Verify hypotheses.** Before applying a theorem, check that all of its hypotheses are satisfied.
+5. **Have someone else read your proof.** A fresh pair of eyes catches errors you have become blind to.
+6. **Wait a day and re-read.** Distance from your own work helps you see it critically.
+
+---
+
+## A Checklist for Proof Review
+
+Before submitting a proof, check:
+
+- [ ] Every variable is introduced before it is used.
+- [ ] The proof starts from the hypotheses, not the conclusion.
+- [ ] Quantifiers are in the correct order.
+- [ ] No division by zero.
+- [ ] Inequalities are handled correctly (sign, direction, strict vs. non-strict).
+- [ ] The base case of any induction is verified.
+- [ ] "WLOG" is used only when there is genuine symmetry.
+- [ ] Every theorem cited has its hypotheses verified.
+- [ ] The proof ends by stating the conclusion.
+
+---
+
+## References
+
+- Daniel Velleman, *How to Prove It*, Cambridge University Press, 2019.
+- Kevin Houston, *How to Think Like a Mathematician*, Cambridge University Press, 2009.
+- Joel David Hamkins, [*Proof and the Art of Mathematics*](https://mitpress.mit.edu/9780262539791/proof-and-the-art-of-mathematics/), MIT Press, 2020.
+- Maxwell Rosenlicht, *Introduction to Analysis*, Dover, 1986.
+- Paul Halmos, "How to Write Mathematics," *L'Enseignement Mathématique*, 1970.

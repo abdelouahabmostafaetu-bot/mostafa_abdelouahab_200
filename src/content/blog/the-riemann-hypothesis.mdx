@@ -1,0 +1,236 @@
+---
+title: "The Riemann Hypothesis: The Greatest Unsolved Problem in Mathematics"
+date: "2026-02-17"
+category: "Mathematics"
+excerpt: "We explore the Riemann Hypothesis — the conjecture that all non-trivial zeros of the Riemann zeta function have real part 1/2 — its deep connections to prime numbers, and why it remains the most important open problem in mathematics."
+tags: ["Number Theory", "Analysis"]
+---
+
+## The Conjecture
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**The Riemann Hypothesis (1859)**
+
+All non-trivial zeros of the Riemann zeta function $\zeta(s)$ have real part equal to $\frac{1}{2}$.
+
+$$\zeta(s) = 0 \text{ and } 0 < \operatorname{Re}(s) < 1 \implies \operatorname{Re}(s) = \frac{1}{2}$$
+
+</div>
+
+The Riemann Hypothesis (RH) is listed as one of the seven Millennium Prize Problems by the Clay Mathematics Institute, with a $1,000,000 reward for a proof or disproof. It has been open since 1859 and is widely considered the most important unsolved problem in pure mathematics.
+
+---
+
+## The Riemann Zeta Function
+
+### Definition and Analytic Continuation
+
+For $\operatorname{Re}(s) > 1$, the zeta function is defined by the convergent series:
+
+$$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}$$
+
+This series diverges for $\operatorname{Re}(s) \leq 1$, but $\zeta(s)$ extends to a meromorphic function on all of $\mathbb{C}$ with a single **simple pole** at $s = 1$ with residue $1$.
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+The analytic continuation can be obtained via the functional equation or by the integral representation:
+
+$$\zeta(s) = \frac{1}{\Gamma(s)} \int_0^\infty \frac{x^{s-1}}{e^x - 1}\, dx \qquad (\operatorname{Re}(s) > 1)$$
+
+which extends to the whole plane via contour integration.
+
+</div>
+
+### The Functional Equation
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Functional Equation**
+
+$$\zeta(s) = 2^s \pi^{s-1} \sin\!\left(\frac{\pi s}{2}\right) \Gamma(1-s)\, \zeta(1-s)$$
+
+</div>
+
+Or in the symmetric form: define $\xi(s) = \frac{1}{2}s(s-1)\pi^{-s/2}\Gamma(s/2)\zeta(s)$. Then:
+
+$$\xi(s) = \xi(1-s)$$
+
+This symmetry about the line $\operatorname{Re}(s) = \frac{1}{2}$ is the reason the critical line plays a central role.
+
+---
+
+## Trivial and Non-Trivial Zeros
+
+### Trivial Zeros
+
+From the functional equation, $\zeta(s) = 0$ at $s = -2, -4, -6, \ldots$ (the **trivial zeros**), because $\sin(\pi s/2) = 0$ at these points.
+
+### Non-Trivial Zeros
+
+All other zeros lie in the **critical strip** $0 < \operatorname{Re}(s) < 1$. The Riemann Hypothesis asserts that they all lie on the **critical line** $\operatorname{Re}(s) = \frac{1}{2}$.
+
+The first few non-trivial zeros (on the upper half of the critical line) are:
+
+$$\rho_1 = \frac{1}{2} + 14.1347\ldots \, i$$
+$$\rho_2 = \frac{1}{2} + 21.0220\ldots \, i$$
+$$\rho_3 = \frac{1}{2} + 25.0109\ldots \, i$$
+
+Over $10^{13}$ zeros have been computed, and all lie exactly on $\operatorname{Re}(s) = \frac{1}{2}$.
+
+---
+
+## Connection to Prime Numbers
+
+### Euler's Product
+
+$$\zeta(s) = \prod_{p \text{ prime}} \frac{1}{1 - p^{-s}} \qquad (\operatorname{Re}(s) > 1)$$
+
+This product formula encodes the fundamental theorem of arithmetic and shows that the analytic properties of $\zeta(s)$ are intimately tied to the distribution of primes.
+
+### The Explicit Formula
+
+Riemann derived a remarkable formula connecting primes and zeros of $\zeta$:
+
+$$\psi(x) = x - \sum_\rho \frac{x^\rho}{\rho} - \ln(2\pi) - \frac{1}{2}\ln(1 - x^{-2})$$
+
+where $\psi(x) = \sum_{p^k \leq x} \ln p$ and the sum runs over all non-trivial zeros $\rho$.
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+Each zero $\rho = \beta + i\gamma$ contributes an oscillatory term $x^\rho / \rho$ of magnitude $\sim x^\beta$. If $\beta = 1/2$ for all zeros (RH), these oscillations have size $\sim \sqrt{x}$ — the smallest possible. If any zero has $\beta > 1/2$, the error in the Prime Number Theorem is larger.
+
+</div>
+
+### RH and Prime Counting
+
+If the Riemann Hypothesis is true:
+
+$$|\pi(x) - \operatorname{Li}(x)| = O(\sqrt{x}\, \ln x)$$
+
+This is the strongest possible error bound for the Prime Number Theorem.
+
+---
+
+## Evidence For the Hypothesis
+
+### Numerical Evidence
+
+Over $10^{13}$ non-trivial zeros have been computed, all on the critical line. The first zero off the line (if it exists) must have imaginary part greater than $10^{13}$.
+
+### Partial Results
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+- **Hardy (1914):** Infinitely many zeros lie on the critical line.
+- **Selberg (1942):** A positive proportion of zeros lie on the critical line.
+- **Levinson (1974):** At least $1/3$ of zeros are on the critical line.
+- **Conrey (1989):** At least $40\%$ of zeros are on the critical line.
+- **Zero-free regions:** $\zeta(s) \neq 0$ for $\operatorname{Re}(s) > 1 - c/\ln|t|$ (various authors), but no one has proved $\operatorname{Re}(s) = 1/2$ for all zeros.
+
+</div>
+
+### Analogues
+
+The Riemann Hypothesis has been **proved** for the analogous zeta functions over finite fields (the **Weil conjectures**, proved by Deligne in 1974). This is the strongest indirect evidence.
+
+---
+
+## Consequences of RH
+
+The Riemann Hypothesis, if true, would have enormous consequences:
+
+### Prime Gaps
+
+RH implies $p_{n+1} - p_n = O(\sqrt{p_n}\, \ln p_n)$, where $p_n$ is the $n$-th prime. This is much stronger than what is currently known unconditionally.
+
+### Goldbach-Type Results
+
+Many results in additive number theory (e.g., the ternary Goldbach conjecture, already proved) become simpler or stronger under RH.
+
+### Cryptography
+
+The security of RSA encryption relies on the difficulty of factoring large numbers. RH would sharpen our understanding of the distribution of primes, though it would not directly break RSA.
+
+### The Generalized Riemann Hypothesis
+
+The GRH extends RH to all **Dirichlet $L$-functions** $L(s, \chi)$ and is used (often as an unproven hypothesis) throughout analytic number theory and algebraic number theory.
+
+---
+
+## Why It's Hard
+
+Several features make RH resistant to proof:
+
+1. **Analytic nature.** The zeros of $\zeta(s)$ are controlled by subtle cancellations in oscillatory integrals, not by algebraic identities.
+
+2. **No known structural reason.** Unlike the finite field case, where the zeros are eigenvalues of a Frobenius endomorphism, there is no known geometric or algebraic object whose spectrum gives the zeros of $\zeta(s)$.
+
+3. **The Hilbert-Pólya conjecture.** It has been speculated that the zeros correspond to eigenvalues of a self-adjoint operator. If true, RH would follow from the spectral theorem. But no such operator has been found.
+
+4. **Random matrix connections.** Montgomery (1973) discovered that the pair correlation of zeros matches the eigenvalue statistics of random unitary matrices (GUE). This deep connection, confirmed computationally, remains unexplained.
+
+---
+
+## A Timeline
+
+| Year | Event |
+|---|---|
+| 1737 | Euler discovers the product formula |
+| 1859 | Riemann's memoir: analytic continuation, functional equation, explicit formula, RH |
+| 1896 | Hadamard and de la Vallée-Poussin prove PNT (using $\zeta(1+it) \neq 0$) |
+| 1900 | Hilbert lists RH as problem 8 |
+| 1914 | Hardy: infinitely many zeros on critical line |
+| 1974 | Deligne proves Weil conjectures (RH for finite fields) |
+| 2000 | Clay Millennium Prize: \$1,000,000 for proof or disproof |
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&\text{RH: All non-trivial zeros of } \zeta(s) \text{ satisfy } \operatorname{Re}(s) = \tfrac{1}{2} \\[8pt]
+&\text{Connection: } \pi(x) - \operatorname{Li}(x) = O(\sqrt{x}\ln x) \iff \text{RH} \\[8pt]
+&\text{Evidence: } >10^{13} \text{ zeros checked, all on the line} \\[8pt]
+&\text{Status: Open since 1859, Millennium Prize Problem}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Riemann, B., "Ueber die Anzahl der Primzahlen unter einer gegebenen Grösse," *Monatsberichte der Berliner Akademie*, 1859. [English translation](https://www.claymath.org/sites/default/files/ezeta.pdf)
+- Edwards, H. M., *Riemann's Zeta Function*, Academic Press, 1974. Reprinted by Dover, 2001.
+- Titchmarsh, E. C., *The Theory of the Riemann Zeta-Function*, 2nd edition (revised by D. R. Heath-Brown), Oxford University Press, 1986.
+- Bombieri, E., "The Riemann Hypothesis," Clay Mathematics Institute, 2000. [Official problem description](https://www.claymath.org/millennium-problems/riemann-hypothesis)
+- [Wikipedia — Riemann hypothesis](https://en.wikipedia.org/wiki/Riemann_hypothesis)
+- [Numberphile — The Riemann Hypothesis (YouTube)](https://www.youtube.com/watch?v=d6c6uIyieoo)

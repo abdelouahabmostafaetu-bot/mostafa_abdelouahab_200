@@ -1,0 +1,371 @@
+/* ===== KaTeX Styles ===== */
+@import 'katex/dist/katex.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Base Styles — Dark Mode Only ===== */
+@layer base {
+  :root {
+    --font-sans: var(--font-manrope), system-ui, sans-serif;
+    --font-serif: var(--font-newsreader), 'Georgia', serif;
+
+    /* Dark palette — always active */
+    --color-primary: #e8e4de;
+    --color-accent: #4f98a3;
+    --color-accent-hover: #227f8b;
+    --color-accent-light: #6db8c4;
+    --color-surface: #141312;
+    --color-bg: #0f0e0d;
+    --color-bg-muted: #1a1918;
+    --color-bg-elevated: #1f1e1c;
+    --color-text: #cdccca;
+    --color-text-secondary: #908f8d;
+    --color-text-tertiary: #5a5957;
+    --color-border: #2a2928;
+    --color-border-light: #1f1e1d;
+    --color-hover: #1c1b19;
+    --color-gold: #c9a84c;
+    --color-gold-muted: #9f8a58;
+    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+
+    --tag-bg: #1a1918;
+    --tag-border: #2a2928;
+    --tag-text: #908f8d;
+    --tag-bg-hover: #242321;
+    --tag-border-hover: #3a3938;
+    --tag-text-hover: #cdccca;
+    --tag-bg-active: #1d4a50;
+    --tag-border-active: #4f98a3;
+    --tag-text-active: #e8e4de;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-[var(--color-bg)] text-[var(--color-text)];
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: 0;
+    line-height: 1.6;
+  }
+
+  ::selection {
+    background-color: rgba(79, 152, 163, 0.28);
+  }
+
+  /* Elegant scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-tertiary);
+  }
+}
+
+/* ===== Prose / Article Styles ===== */
+@layer components {
+  .prose-academic {
+    @apply leading-relaxed;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  @screen md {
+    .prose-academic {
+      font-size: 15px;
+    }
+  }
+
+  .prose-academic h1 {
+    @apply text-xl md:text-2xl font-semibold mt-10 md:mt-12 mb-4 md:mb-5 text-[var(--color-text)];
+    font-family: var(--font-serif);
+    line-height: 1.25;
+  }
+
+  .prose-academic h2 {
+    @apply text-lg md:text-xl font-semibold mt-8 md:mt-10 mb-3 md:mb-4 text-[var(--color-text)];
+    font-family: var(--font-serif);
+    line-height: 1.3;
+  }
+
+  .prose-academic h3 {
+    @apply text-base md:text-lg font-semibold mt-7 md:mt-8 mb-2 md:mb-3 text-[var(--color-text)];
+    font-family: var(--font-serif);
+    line-height: 1.35;
+  }
+
+  .prose-academic p {
+    @apply mb-4 md:mb-5 text-[var(--color-text-secondary)] leading-[1.8] md:leading-[1.85];
+  }
+
+  .prose-academic a {
+    @apply text-[var(--color-accent)] underline underline-offset-[3px] decoration-1 hover:decoration-2 transition-all duration-200;
+    text-decoration-color: currentColor;
+  }
+  .prose-academic a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .prose-academic ul, .prose-academic ol {
+    @apply mb-4 md:mb-5 pl-5 md:pl-6 text-[var(--color-text-secondary)];
+  }
+
+  .prose-academic ul {
+    @apply list-disc;
+  }
+
+  .prose-academic ol {
+    @apply list-decimal;
+  }
+
+  .prose-academic li {
+    @apply mb-2 leading-[1.75] md:leading-[1.8];
+  }
+
+  .prose-academic blockquote {
+    @apply border-l-[3px] pl-4 md:pl-5 italic my-5 md:my-6 text-[var(--color-text-secondary)];
+    border-color: var(--color-accent);
+  }
+
+  .prose-academic code {
+    @apply bg-[var(--color-bg-muted)] px-1.5 py-0.5 rounded text-[0.875em] font-mono text-[var(--color-text)];
+    border: 1px solid var(--color-border);
+  }
+
+  .prose-academic pre {
+    @apply p-4 md:p-5 rounded-xl md:rounded-2xl overflow-x-auto my-6 md:my-8 text-sm leading-relaxed;
+    background: #111110;
+    color: #d4d2ce;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--color-border);
+  }
+
+  .prose-academic pre code {
+    @apply bg-transparent p-0;
+    border: none;
+  }
+
+  .prose-academic img {
+    @apply rounded-xl my-6 md:my-8 mx-auto;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .prose-academic hr {
+    @apply border-[var(--color-border)] my-8 md:my-10;
+  }
+
+  .prose-academic table {
+    @apply w-full border-collapse my-6 md:my-8;
+  }
+
+  .prose-academic th {
+    @apply bg-[var(--color-bg-muted)] px-4 py-3 text-left text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text)];
+  }
+
+  .prose-academic td {
+    @apply px-4 py-3 border border-[var(--color-border)] text-sm;
+  }
+}
+
+@media (min-width: 768px) {
+  .prose-academic {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+}
+
+/* ===== Animations ===== */
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  .slide-in-left {
+    animation: slideInLeft 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  .slide-in-right {
+    animation: slideInRight 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  .stagger-1 { animation-delay: 0.1s; }
+  .stagger-2 { animation-delay: 0.2s; }
+  .stagger-3 { animation-delay: 0.3s; }
+  .stagger-4 { animation-delay: 0.4s; }
+  .stagger-5 { animation-delay: 0.5s; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== Focus Styles ===== */
+@layer base {
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[var(--color-accent)];
+  }
+}
+
+/* ===== KaTeX Overrides ===== */
+.katex-display {
+  @apply my-6 overflow-x-auto;
+}
+
+.katex {
+  font-size: 1em;
+}
+
+@media (min-width: 768px) {
+  .katex {
+    font-size: 1.1em;
+  }
+}
+
+/* ===== Math Copy Button ===== */
+.katex-display {
+  position: relative;
+}
+
+.math-copy-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  z-index: 10;
+}
+
+.katex-display:hover .math-copy-btn {
+  opacity: 1;
+}
+
+.math-copy-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.math-copy-btn.copied {
+  color: #22c55e;
+  border-color: #22c55e;
+}
+
+/* ===== Scrollbar Styles ===== */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full;
+  background: var(--color-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ===== Code Highlighting ===== */
+[data-rehype-pretty-code-figure] pre {
+  @apply border border-[var(--color-border)] !bg-[#111110];
+}
+
+[data-rehype-pretty-code-figure] code {
+  @apply text-sm;
+  counter-reset: line;
+}
+
+[data-rehype-pretty-code-figure] code > [data-line]::before {
+  counter-increment: line;
+  content: counter(line);
+  @apply inline-block w-8 mr-4 text-right text-gray-600;
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  header, footer, nav, aside, .print\:hidden {
+    display: none !important;
+  }
+  .prose-academic {
+    font-size: 11pt !important;
+  }
+  @page {
+    margin: 2cm;
+  }
+}

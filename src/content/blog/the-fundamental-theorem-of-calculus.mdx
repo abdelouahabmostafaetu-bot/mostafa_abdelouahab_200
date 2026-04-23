@@ -1,0 +1,258 @@
+---
+title: "The Fundamental Theorem of Calculus: Connecting Derivatives and Integrals"
+date: "2026-01-13"
+category: "Mathematics"
+excerpt: "We state and prove both parts of the Fundamental Theorem of Calculus, explore why it is the single most important result in analysis, and trace its historical development from Newton and Leibniz to Riemann and Lebesgue."
+tags: ["Analysis"]
+---
+
+## The Theorem
+
+The Fundamental Theorem of Calculus (FTC) has two parts, each establishing a deep link between differentiation and integration — two operations that appear, at first glance, to have nothing to do with each other.
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Fundamental Theorem of Calculus — Part I**
+
+Let $f: [a,b] \to \mathbb{R}$ be continuous. Define $F: [a,b] \to \mathbb{R}$ by
+
+$$F(x) = \int_a^x f(t)\, dt$$
+
+Then $F$ is differentiable on $(a,b)$ and $F'(x) = f(x)$ for all $x \in (a,b)$.
+
+</div>
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Fundamental Theorem of Calculus — Part II**
+
+Let $f: [a,b] \to \mathbb{R}$ be continuous and let $G$ be any antiderivative of $f$ (i.e., $G'(x) = f(x)$). Then:
+
+$$\int_a^b f(x)\, dx = G(b) - G(a)$$
+
+</div>
+
+---
+
+## Intuition
+
+### Part I: Integration then Differentiation
+
+Think of $f(t)$ as a rate — say, velocity. Then $F(x) = \int_a^x f(t)\,dt$ is the accumulated distance from time $a$ to time $x$. The theorem says: the rate of change of accumulated distance is the velocity itself. This is almost tautological in the physical picture, but proving it rigorously requires care.
+
+### Part II: The Evaluation Formula
+
+Part II is the computational workhorse: to evaluate a definite integral, find *any* function whose derivative is $f$, then evaluate it at the endpoints. This transforms the problem of computing areas (limits of Riemann sums) into the often simpler problem of finding antiderivatives.
+
+---
+
+## Proof of Part I
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+We must show that $\lim_{h \to 0} \frac{F(x+h) - F(x)}{h} = f(x)$.
+
+**Step 1.** By definition of $F$:
+
+$$F(x+h) - F(x) = \int_a^{x+h} f(t)\,dt - \int_a^x f(t)\,dt = \int_x^{x+h} f(t)\,dt$$
+
+**Step 2.** Therefore:
+
+$$\frac{F(x+h) - F(x)}{h} = \frac{1}{h}\int_x^{x+h} f(t)\,dt$$
+
+**Step 3.** Since $f$ is continuous at $x$, for every $\varepsilon > 0$ there exists $\delta > 0$ such that $|t - x| < \delta$ implies $|f(t) - f(x)| < \varepsilon$.
+
+For $|h| < \delta$:
+
+$$\left|\frac{1}{h}\int_x^{x+h} f(t)\,dt - f(x)\right| = \left|\frac{1}{h}\int_x^{x+h} [f(t) - f(x)]\,dt\right| \leq \frac{1}{|h|}\int_x^{x+h} |f(t) - f(x)|\,dt < \varepsilon$$
+
+Since $\varepsilon$ was arbitrary, $F'(x) = f(x)$. $\square$
+
+</div>
+
+---
+
+## Proof of Part II
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof.**
+
+Let $F(x) = \int_a^x f(t)\,dt$ as in Part I, and let $G$ be any antiderivative of $f$.
+
+By Part I, $F'(x) = f(x) = G'(x)$, so $(F - G)'(x) = 0$ for all $x \in (a,b)$.
+
+By the Mean Value Theorem, $F - G$ is constant on $[a,b]$: there exists $C$ such that $F(x) = G(x) + C$.
+
+Evaluating at $x = a$: $F(a) = \int_a^a f(t)\,dt = 0 = G(a) + C$, so $C = -G(a)$.
+
+Evaluating at $x = b$:
+
+$$\int_a^b f(t)\,dt = F(b) = G(b) + C = G(b) - G(a) \qquad \square$$
+
+</div>
+
+---
+
+## Examples
+
+### Example 1: A Direct Computation
+
+$$\int_0^1 x^2\, dx$$
+
+An antiderivative of $x^2$ is $G(x) = \frac{x^3}{3}$. By FTC Part II:
+
+$$\int_0^1 x^2\, dx = G(1) - G(0) = \frac{1}{3} - 0 = \frac{1}{3}$$
+
+### Example 2: Differentiating an Integral
+
+Let $F(x) = \int_0^x e^{-t^2}\, dt$. By FTC Part I:
+
+$$F'(x) = e^{-x^2}$$
+
+Note: $F(x)$ has no elementary closed form (it is related to the error function $\operatorname{erf}(x)$), yet we can compute its derivative instantly.
+
+### Example 3: Chain Rule Variant
+
+For $F(x) = \int_0^{x^2} \sin(t)\, dt$, we apply the chain rule:
+
+$$F'(x) = \sin(x^2) \cdot 2x$$
+
+---
+
+## The Mean Value Theorem for Integrals
+
+A useful corollary of FTC Part I:
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+**Mean Value Theorem for Integrals.** If $f: [a,b] \to \mathbb{R}$ is continuous, there exists $c \in (a,b)$ such that:
+
+$$\int_a^b f(x)\, dx = f(c)(b - a)$$
+
+</div>
+
+**Proof.** Apply the Mean Value Theorem to $F(x) = \int_a^x f(t)\,dt$: there exists $c \in (a,b)$ with $F(b) - F(a) = F'(c)(b-a) = f(c)(b-a)$. $\square$
+
+Geometrically, the area under the curve equals the area of a rectangle of width $b-a$ and height $f(c)$ for some well-chosen $c$.
+
+---
+
+## Before the FTC: Riemann Sums
+
+Without the FTC, computing $\int_0^1 x^2\, dx$ requires evaluating a limit of Riemann sums:
+
+$$\int_0^1 x^2\, dx = \lim_{n \to \infty} \sum_{k=1}^{n} \left(\frac{k}{n}\right)^2 \cdot \frac{1}{n} = \lim_{n \to \infty} \frac{1}{n^3}\sum_{k=1}^{n} k^2$$
+
+Using $\sum_{k=1}^n k^2 = \frac{n(n+1)(2n+1)}{6}$:
+
+$$= \lim_{n \to \infty} \frac{n(n+1)(2n+1)}{6n^3} = \lim_{n \to \infty} \frac{2n^3 + 3n^2 + n}{6n^3} = \frac{1}{3}$$
+
+The FTC eliminates this laborious computation entirely.
+
+---
+
+## Historical Development
+
+The connection between tangent problems (differentiation) and area problems (integration) was understood in various forms before Newton and Leibniz:
+
+- **Isaac Barrow** (1670) proved a geometric version of FTC in his *Lectiones Geometricae*.
+- **Isaac Newton** (c. 1666) and **Gottfried Leibniz** (c. 1675) independently developed calculus as a systematic method, with the FTC at its core.
+- **Augustin-Louis Cauchy** (1823) gave the first rigorous proof using limits.
+- **Bernhard Riemann** (1854) defined the integral precisely, enabling a rigorous statement of FTC.
+- **Henri Lebesgue** (1902) generalized the integral, leading to more powerful versions of the theorem.
+
+---
+
+## Generalizations
+
+### The Lebesgue Version
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0"
+}}>
+
+If $f: [a,b] \to \mathbb{R}$ is Lebesgue integrable and $F(x) = \int_a^x f(t)\,dt$, then $F$ is absolutely continuous and $F'(x) = f(x)$ almost everywhere.
+
+Conversely, if $G$ is absolutely continuous on $[a,b]$, then $G'$ exists a.e., is Lebesgue integrable, and $G(x) - G(a) = \int_a^x G'(t)\,dt$.
+
+</div>
+
+### Stokes' Theorem
+
+The FTC generalizes to higher dimensions via Stokes' theorem:
+
+$$\int_M d\omega = \int_{\partial M} \omega$$
+
+where $M$ is an oriented manifold with boundary $\partial M$ and $\omega$ is a differential form. When $M = [a,b]$, this reduces to $\int_a^b f'(x)\,dx = f(b) - f(a)$.
+
+The FTC, Green's theorem, the divergence theorem, and the classical Stokes theorem are all special cases of this single formula.
+
+---
+
+## Why It Matters
+
+The Fundamental Theorem of Calculus is arguably the most important theorem in all of mathematics:
+
+1. **Computation.** It transforms integral evaluation from infinite summation into simple substitution.
+2. **Physics.** It underlies conservation laws, work-energy theorems, and the relationship between force and potential energy.
+3. **Engineering.** Signal processing, control theory, and fluid mechanics all rely on freely converting between derivatives and integrals.
+4. **Unification.** It reveals that differentiation and integration are *inverse operations* — a fact that is the starting point for all of analysis.
+
+---
+
+## Summary
+
+$$
+\begin{aligned}
+&\textbf{Part I: } \frac{d}{dx}\int_a^x f(t)\,dt = f(x) \\[8pt]
+&\textbf{Part II: } \int_a^b f(x)\,dx = G(b) - G(a) \quad \text{where } G' = f \\[8pt]
+&\textbf{Key idea: } \text{Differentiation and integration are inverse operations}
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Rudin, W., *Principles of Mathematical Analysis*, 3rd edition, McGraw-Hill, 1976.
+- Spivak, M., *Calculus*, 4th edition, Publish or Perish, 2008.
+- Apostol, T., *Mathematical Analysis*, 2nd edition, Addison-Wesley, 1974.
+- [Wikipedia — Fundamental theorem of calculus](https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus)
+- [Khan Academy — Fundamental Theorem of Calculus](https://www.khanacademy.org/math/ap-calculus-ab/ab-integration-new/ab-6-4/a/fundamental-theorem-of-calculus-review)
+- [MIT OpenCourseWare — Single Variable Calculus](https://ocw.mit.edu/courses/18-01-single-variable-calculus-fall-2006/)

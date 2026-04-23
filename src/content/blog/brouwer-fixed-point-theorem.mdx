@@ -1,0 +1,267 @@
+---
+title: "Brouwer's Fixed-Point Theorem: A Proof via the Fundamental Group"
+date: "2026-03-18"
+category: "Mathematics"
+excerpt: "We prove Brouwer's Fixed-Point Theorem for the closed disk using the fundamental group and the non-existence of a retraction, deriving an algebraic contradiction."
+tags: ["Topology"]
+---
+
+## The Theorem
+
+<div style={{
+  border: "2px solid #6366f1",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0f0ff, #e8e8ff)",
+  margin: "32px 0",
+  textAlign: "center"
+}}>
+
+**Theorem (Brouwer, 1911)**
+
+> Every continuous function $f: D^2 \to D^2$ has at least one fixed point $x_0$ such that:
+$$\\f(x_0) = x_0$$
+
+</div>
+
+Here $D^2 = \{(x,y) \in \mathbb{R}^2 : x^2 + y^2 \leq 1\}$ is the closed unit disk and $S^1 = \partial D^2$ is its boundary circle.
+
+---
+
+## Intuition
+
+Before the formal proof, here are two everyday examples that capture the idea.
+
+> **The coffee cup.** Stir a cup of coffee, then let it settle. No matter how you stirred, at least one point of the liquid ends up exactly where it started.
+
+> **The map.** Place a map of a city on a table inside that same city. There is always one point on the map that lies directly above the real location it represents.
+
+Both examples reflect the same fact: you cannot continuously move every point of a compact convex region — something always stays fixed.
+
+---
+
+## Background
+
+### The Fundamental Group
+
+The **fundamental group** $\pi_1(X)$ classifies loops in a space $X$ up to continuous deformation. A loop based at $x_0$ is a continuous map
+
+$$\gamma: [0,1] \to X \quad \text{with} \quad \gamma(0) = \gamma(1) = x_0$$
+
+Two loops $\gamma_0$ and $\gamma_1$ are **homotopic** (written $\gamma_0 \simeq \gamma_1$) if one can be continuously deformed into the other while keeping the basepoint fixed.
+
+### The Two Groups We Need
+
+<div style={{
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "16px",
+  margin: "24px 0"
+}}>
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  textAlign: "center"
+}}>
+
+**Disk** $D^2$
+
+$$\pi_1(D^2) = 0$$
+
+Every loop shrinks to a point via the straight-line homotopy
+
+$$H(t,s) = (1-s)\,\gamma(t) + s \cdot x_0$$
+
+</div>
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "8px",
+  padding: "20px",
+  textAlign: "center"
+}}>
+
+**Circle** $S^1$
+
+$$\pi_1(S^1) = \mathbb{Z}$$
+
+Loops are classified by their winding number: how many times they wrap around the circle.
+
+</div>
+
+</div>
+
+---
+
+## Key Lemma
+
+<div style={{
+  borderLeft: "4px solid #6366f1",
+  paddingLeft: "20px",
+  margin: "24px 0"
+}}>
+
+> **Lemma.** Let $f_1, f_2 : X \to Y$ and $g_1, g_2 : Y \to Z$ be continuous maps. If $f_1 \simeq f_2$ and $g_1 \simeq g_2$, then
+$$\\g_1 \circ f_1 \simeq g_2 \circ f_2$$
+
+Homotopy is preserved under composition.
+
+</div>
+
+**Proof.** Let $H_f$ be the homotopy from $f_1$ to $f_2$ and $H_g$ from $g_1$ to $g_2$. Define
+
+$$H(t,s) = H_g(H_f(t,s),\, s)$$
+
+This is a valid homotopy from $g_1 \circ f_1$ to $g_2 \circ f_2$. $\square$
+
+---
+
+## Proof
+
+<div style={{
+  background: "#fafafa",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "28px",
+  margin: "24px 0"
+}}>
+
+**Proof** *(by contradiction)*
+
+**Step 1 — Assume no fixed point.**
+
+Suppose $f: D^2 \to D^2$ is continuous and satisfies $f(x) \neq x$ for all $x \in D^2$.
+
+---
+
+**Step 2 — Construct a retraction $r: D^2 \to S^1$.**
+
+Since $f(x) \neq x$ everywhere, we can draw a ray from $f(x)$ through $x$ and extend it until it hits the boundary $S^1$. Define $r(x)$ to be that intersection point.
+
+The map $r$ satisfies:
+- $r$ is continuous.
+- $r(x) = x$ for all $x \in S^1$.
+
+This makes $r$ a **retraction** of $D^2$ onto $S^1$.
+
+---
+
+**Step 3 — Apply the Key Lemma.**
+
+Let $h_0, h_1 : [0,1] \to D^2$ be any two paths inside $D^2$. Since $\pi_1(D^2) = 0$, any two paths with the same endpoints are homotopic:
+
+$$h_0 \simeq h_1 \quad \text{in } D^2$$
+
+Composing with $r$ and applying the Key Lemma:
+
+$$r \circ h_0 \simeq r \circ h_1 \quad \text{in } S^1$$
+
+---
+
+**Step 4 — Reach a contradiction.**
+
+Choose paths carefully:
+
+- $h_0(t) = x_0$ constant $\Rightarrow$ $r \circ h_0$ is a single point, winding number $= 0$
+- $h_1(t) = (\cos 2\pi t,\, \sin 2\pi t)$ loops around $S^1$ once, winding number $= 1$
+
+But $r \circ h_0 \simeq r \circ h_1$ forces equal winding numbers:
+
+$$0 = 1 \quad \text{in } \pi_1(S^1) = \mathbb{Z}$$
+
+This is impossible. $\square$
+
+</div>
+
+---
+
+## The Algebraic Picture
+
+The contradiction has a clean algebraic form. The retraction $r$ gives the chain:
+
+$$S^1 \xrightarrow{\;i\;} D^2 \xrightarrow{\;r\;} S^1$$
+
+where $i$ is the inclusion and $r \circ i = \mathrm{id}_{S^1}$. Applying $\pi_1$:
+
+$$\mathbb{Z} \xrightarrow{\;i_*\;} 0 \xrightarrow{\;r_*\;} \mathbb{Z}$$
+
+The composition $r_* \circ i_*$ must equal $\mathrm{id}_\mathbb{Z}$, but any map factoring through $0$ is the zero map:
+
+$$1 \;\longmapsto\; 0 \;\longmapsto\; 0 \;\neq\; 1$$
+
+---
+
+## Why Every Condition Is Necessary
+
+**Without continuity.** The map $f: [0,1] \to [0,1]$ with $f(x) = 1$ for $x < \tfrac{1}{2}$ and $f(x) = 0$ for $x \geq \tfrac{1}{2}$ has no fixed point.
+
+**Without compactness.** The map $f: (0,1) \to (0,1)$ with $f(x) = x/2$ has no fixed point since $x = 0 \notin (0,1)$.
+
+**Without convexity.** The map $f: S^1 \to S^1$ with $f(z) = -z$ has no fixed point since $-z \neq z$ for all $z \in S^1$.
+
+---
+
+## The General Theorem
+
+<div style={{
+  border: "2px solid #10b981",
+  borderRadius: "12px",
+  padding: "24px",
+  background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+  margin: "32px 0"
+}}>
+
+**General Brouwer Fixed-Point Theorem.**
+
+Let $K \subset \mathbb{R}^n$ be a nonempty compact convex set. Every continuous function $f: K \to K$ has at least one fixed point.
+
+</div>
+
+The proof is identical in every dimension: build a retraction $r: B^n \to S^{n-1}$ and derive
+
+$$\pi_{n-1}(S^{n-1}) = \mathbb{Z} \xrightarrow{} \pi_{n-1}(B^n) = 0 \xrightarrow{} \mathbb{Z}$$
+
+which forces $1 = 0$ in $\mathbb{Z}$.
+
+---
+
+## Applications
+
+**Economics.** Arrow and Debreu used Brouwer's theorem to prove that competitive markets always have a price equilibrium — work that earned them the Nobel Prize in Economics.
+
+**Game Theory.** Nash used a fixed-point theorem to prove every finite game has at least one Nash equilibrium, the foundation of modern game theory.
+
+**Differential Equations.** The theorem guarantees existence of solutions to certain ODEs via the Peano existence theorem.
+
+---
+
+## Proof at a Glance
+
+$$
+\begin{aligned}
+&\textbf{Assume } f: D^2 \to D^2 \text{ has no fixed point} \\[6pt]
+&\Downarrow \\[6pt]
+&\textbf{Build retraction } r: D^2 \to S^1,\quad r|_{S^1} = \mathrm{id} \\[6pt]
+&\Downarrow \\[6pt]
+&\pi_1(D^2) = 0 \implies \text{all paths in } D^2 \text{ are homotopic} \\[6pt]
+&\Downarrow \text{ Key Lemma} \\[6pt]
+&r \circ h_0 \simeq r \circ h_1 \text{ in } S^1 \\[6pt]
+&\Downarrow \\[6pt]
+&0 = 1 \text{ in } \mathbb{Z} \quad \textbf{Contradiction!} \\[6pt]
+&\Downarrow \\[6pt]
+&\therefore\ f \text{ must have a fixed point.} \quad \square
+\end{aligned}
+$$
+
+---
+
+## References
+
+- Hatcher, A., *Algebraic Topology*, Cambridge University Press, 2002. [Free PDF](https://pi.math.cornell.edu/~hatcher/AT/ATpage.html)
+- Munkres, J., *Topology*, 2nd edition, Prentice Hall, 2000.
+- [Wikipedia — Brouwer Fixed-Point Theorem](https://en.wikipedia.org/wiki/Brouwer_fixed-point_theorem)
+- [3Blue1Brown — YouTube](https://www.youtube.com/watch?v=KMoHvoUI7oI)
+- [MIT OpenCourseWare — Algebraic Topology](https://ocw.mit.edu)
+- [MIT OpenCourseWare — Algebraic Topology](https://ocw.mit.edu)

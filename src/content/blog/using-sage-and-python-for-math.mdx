@@ -1,0 +1,456 @@
+---
+title: "Using SageMath and Python for Mathematical Exploration"
+date: "2026-02-11"
+category: "Resources"
+excerpt: "A practical guide to using SageMath and Python for mathematical computation, from basic algebra and plotting to number theory, group theory, and symbolic computation."
+tags: ["Tools", "Programming"]
+---
+
+## Why Programming Matters for Mathematicians
+
+Programming is no longer optional for mathematicians. Whether you are exploring conjectures, checking computations, visualizing data, or running simulations, computational tools can dramatically accelerate your mathematical work.
+
+Two tools stand out for mathematical use:
+
+- **Python** is the most popular general-purpose programming language in science, with powerful libraries for numerical computation, symbolic math, and visualization.
+- **SageMath** is a free, open-source mathematics software system built on top of Python, specifically designed for pure and applied mathematics.
+
+This guide shows you how to get started with both and how to use them for real mathematical work.
+
+---
+
+## Getting Started with SageMath
+
+### What Is SageMath?
+
+[SageMath](https://www.sagemath.org/) (often just called "Sage") is a free, open-source computer algebra system that aims to be a viable alternative to Mathematica, Magma, Maple, and MATLAB. It was created by William Stein, a number theorist at the University of Washington.
+
+SageMath wraps many powerful open-source mathematical libraries into a unified Python-based interface:
+
+- **GAP** for group theory and combinatorics
+- **PARI/GP** for number theory
+- **Singular** for commutative algebra
+- **Maxima** for symbolic computation
+- **R** for statistics
+- **NumPy** and **SciPy** for numerical computation
+- **Matplotlib** for plotting
+
+### Installation Options
+
+You have several ways to use SageMath:
+
+1. **CoCalc** ([cocalc.com](https://cocalc.com/)): A free online platform where you can use SageMath in a web-based notebook without installing anything. Created by the same William Stein who founded SageMath.
+
+2. **SageMathCell** ([sagecell.sagemath.org](https://sagecell.sagemath.org/)): A simple web interface for running single SageMath computations — no account needed.
+
+3. **Local installation**: Download from [sagemath.org](https://www.sagemath.org/download.html) for Linux, macOS, or Windows.
+
+<div style={{
+  border: "2px solid #2563eb",
+  borderRadius: "12px",
+  padding: "22px",
+  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+  margin: "28px 0"
+}}>
+
+**For beginners:** Start with CoCalc or SageMathCell. No installation is needed, and you can begin exploring immediately.
+
+</div>
+
+---
+
+## SageMath by Example
+
+### Basic Algebra
+
+```python
+# Factor a polynomial
+factor(x^4 - 1)
+# Output: (x - 1) * (x + 1) * (x^2 + 1)
+
+# Solve an equation
+solve(x^2 - 5*x + 6 == 0, x)
+# Output: [x == 2, x == 3]
+
+# Simplify an expression
+simplify(sin(x)^2 + cos(x)^2)
+# Output: 1
+
+# Partial fraction decomposition
+(x^2 + 1) / ((x - 1)*(x + 2))
+partial_fraction()
+```
+
+### Calculus
+
+```python
+# Compute a derivative
+diff(sin(x) * exp(x), x)
+# Output: cos(x)*e^x + sin(x)*e^x
+
+# Compute an integral
+integrate(x^2 * exp(-x), x, 0, infinity)
+# Output: 2
+
+# Taylor series
+taylor(exp(x), x, 0, 5)
+# Output: 1 + x + 1/2*x^2 + 1/6*x^3 + 1/24*x^4 + 1/120*x^5
+
+# Limits
+limit(sin(x)/x, x=0)
+# Output: 1
+```
+
+### Linear Algebra
+
+```python
+# Define a matrix
+A = matrix([[2, 1], [1, 2]])
+
+# Eigenvalues
+A.eigenvalues()
+# Output: [3, 1]
+
+# Eigenvectors
+A.eigenvectors_right()
+
+# Determinant
+A.det()
+# Output: 3
+
+# Characteristic polynomial
+A.characteristic_polynomial()
+# Output: x^2 - 4*x + 3
+
+# Row reduction
+B = matrix([[1, 2, 3], [4, 5, 6], [7, 8, 10]])
+B.echelon_form()
+```
+
+### Number Theory
+
+```python
+# Check primality
+is_prime(2^61 - 1)
+# Output: True
+
+# Factor an integer
+factor(123456789)
+# Output: 3^2 * 3607 * 3803
+
+# List primes in a range
+prime_range(1, 50)
+# Output: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+
+# Euler's totient function
+euler_phi(100)
+# Output: 40
+
+# Continued fraction expansion
+continued_fraction(sqrt(2))
+```
+
+### Group Theory
+
+```python
+# Symmetric group
+G = SymmetricGroup(4)
+G.order()
+# Output: 24
+
+# List subgroups
+G.subgroups()
+
+# Check properties
+G.is_abelian()
+# Output: False
+
+# Dihedral group
+D = DihedralGroup(6)
+D.order()
+# Output: 12
+
+# Cyclic group
+C = CyclicPermutationGroup(7)
+C.is_cyclic()
+# Output: True
+```
+
+<div style={{
+  borderLeft: "4px solid #2563eb",
+  paddingLeft: "18px",
+  margin: "26px 0"
+}}>
+
+**Example problem:** "Find all groups of order 8 up to isomorphism." In Sage, you can simply ask:
+
+```python
+for G in gap.AllSmallGroups(8):
+    print(G.StructureDescription())
+```
+
+This uses the GAP library to enumerate all five groups of order 8: $\mathbb{Z}_8$, $\mathbb{Z}_4 \times \mathbb{Z}_2$, $\mathbb{Z}_2 \times \mathbb{Z}_2 \times \mathbb{Z}_2$, $D_4$, and $Q_8$.
+
+</div>
+
+### Plotting
+
+```python
+# 2D plot
+plot(sin(x)/x, (x, -10, 10))
+
+# Multiple functions
+plot([sin(x), cos(x)], (x, -2*pi, 2*pi), legend_label=['sin', 'cos'])
+
+# 3D surface plot
+var('x y')
+plot3d(sin(x*y), (x, -3, 3), (y, -3, 3))
+
+# Parametric curve
+parametric_plot((cos(3*t), sin(2*t)), (t, 0, 2*pi))
+```
+
+---
+
+## Python Libraries for Mathematics
+
+Even without SageMath, Python's ecosystem provides powerful mathematical tools.
+
+### SymPy — Symbolic Mathematics
+
+[SymPy](https://www.sympy.org/) is a pure Python library for symbolic computation:
+
+```python
+from sympy import *
+
+x = symbols('x')
+
+# Integrate
+integrate(x**2 * sin(x), x)
+
+# Solve
+solve(x**3 - 6*x**2 + 11*x - 6, x)
+# Output: [1, 2, 3]
+
+# Matrix eigenvalues
+M = Matrix([[2, 1], [1, 2]])
+M.eigenvals()
+# Output: {1: 1, 3: 1}
+
+# Simplify
+simplify(sin(x)**2 + cos(x)**2)
+# Output: 1
+```
+
+SymPy is lighter than SageMath and integrates seamlessly with the Python ecosystem. Install it with `pip install sympy`.
+
+### NumPy — Numerical Computation
+
+[NumPy](https://numpy.org/) is the foundation of scientific computing in Python:
+
+```python
+import numpy as np
+
+# Create arrays
+A = np.array([[2, 1], [1, 2]])
+
+# Eigenvalues
+np.linalg.eigvals(A)
+# Output: array([3., 1.])
+
+# Matrix multiplication
+B = np.array([[1, 0], [0, -1]])
+A @ B
+
+# Solve a linear system Ax = b
+b = np.array([5, 4])
+np.linalg.solve(A, b)
+```
+
+### Matplotlib — Visualization
+
+[Matplotlib](https://matplotlib.org/) produces publication-quality plots:
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(-10, 10, 1000)
+y = np.sin(x) / x
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y)
+plt.title('sinc function')
+plt.xlabel('x')
+plt.ylabel('sin(x)/x')
+plt.grid(True)
+plt.savefig('sinc.pdf')
+plt.show()
+```
+
+### SciPy — Scientific Computing
+
+[SciPy](https://scipy.org/) extends NumPy with specialized functions:
+
+```python
+from scipy import integrate, optimize, special
+
+# Numerical integration
+result, error = integrate.quad(lambda x: np.exp(-x**2), 0, np.inf)
+# result ≈ 0.8862... (which is sqrt(pi)/2)
+
+# Find roots of a function
+optimize.brentq(lambda x: x**3 - 2, 0, 2)
+# Output: 1.2599... (the cube root of 2)
+
+# Special functions (Gamma, Bessel, etc.)
+special.gamma(0.5)
+# Output: 1.7724... (which is sqrt(pi))
+```
+
+---
+
+## Practical Projects for Math Students
+
+### Project 1: Visualizing Convergence of Fourier Series
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+def fourier_square_wave(x, n_terms):
+    result = np.zeros_like(x)
+    for k in range(1, n_terms + 1):
+        result += (4 / (np.pi * (2*k - 1))) * np.sin((2*k - 1) * x)
+    return result
+
+x = np.linspace(-np.pi, 3*np.pi, 1000)
+
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+for ax, n in zip(axes.flatten(), [1, 3, 10, 50]):
+    ax.plot(x, fourier_square_wave(x, n))
+    ax.set_title(f'{n} terms')
+    ax.grid(True)
+
+plt.tight_layout()
+plt.savefig('fourier_convergence.pdf')
+```
+
+### Project 2: Exploring the Mandelbrot Set
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+def mandelbrot(c, max_iter=100):
+    z = 0
+    for n in range(max_iter):
+        if abs(z) > 2:
+            return n
+        z = z*z + c
+    return max_iter
+
+x = np.linspace(-2, 1, 800)
+y = np.linspace(-1.5, 1.5, 800)
+img = np.zeros((len(y), len(x)))
+
+for i, yi in enumerate(y):
+    for j, xj in enumerate(x):
+        img[i, j] = mandelbrot(complex(xj, yi))
+
+plt.figure(figsize=(10, 10))
+plt.imshow(img, extent=[-2, 1, -1.5, 1.5], cmap='hot')
+plt.title('Mandelbrot Set')
+plt.savefig('mandelbrot.pdf')
+```
+
+### Project 3: Random Walks and the Central Limit Theorem
+
+Use NumPy to simulate thousands of random walks and observe the central limit theorem empirically.
+
+---
+
+## Tips for Using Python in Mathematics
+
+### 1. Use Jupyter Notebooks
+
+[Jupyter notebooks](https://jupyter.org/) let you combine code, output, mathematical equations (in LaTeX), and explanatory text in a single document. They are the standard tool for computational exploration in mathematics and science.
+
+### 2. Learn Vectorized Operations
+
+In NumPy, avoid writing explicit loops. Use vectorized operations instead:
+
+```python
+# Slow:
+result = [x**2 for x in range(1000000)]
+
+# Fast:
+x = np.arange(1000000)
+result = x**2
+```
+
+### 3. Use SageMath for Exact Computation, NumPy for Numerical
+
+SageMath and SymPy work with exact symbolic values (e.g., $\sqrt{2}$ stays as $\sqrt{2}$). NumPy works with floating-point approximations (e.g., $\sqrt{2} \approx 1.41421356...$). Choose the right tool for your task.
+
+<div style={{
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  padding: "20px",
+  background: "#fafafa",
+  margin: "24px 0"
+}}>
+
+**Important:** Floating-point arithmetic can introduce subtle errors. For number theory, algebra, and other areas where exact results matter, always use a symbolic system like SageMath or SymPy. Use NumPy only when numerical approximations are acceptable.
+
+</div>
+
+### 4. Read the Documentation
+
+Both SageMath and Python's scientific libraries have excellent documentation:
+
+- [SageMath documentation](https://doc.sagemath.org/)
+- [SymPy documentation](https://docs.sympy.org/)
+- [NumPy documentation](https://numpy.org/doc/)
+- [Matplotlib documentation](https://matplotlib.org/stable/contents.html)
+
+---
+
+## SageMath vs Mathematica: A Comparison
+
+| Feature | SageMath | Mathematica |
+| --- | --- | --- |
+| Cost | Free and open-source | Expensive (free at some universities) |
+| Language | Python-based | Wolfram Language |
+| Symbolic computation | Excellent | Excellent |
+| Number theory | Excellent (via PARI/GP) | Good |
+| Group theory | Excellent (via GAP) | Limited |
+| Visualization | Good (via Matplotlib) | Excellent |
+| Documentation | Good | Excellent |
+| Community | Smaller but active | Large |
+| Integration with Python ecosystem | Native | Requires bridges |
+
+---
+
+## Final Thoughts
+
+SageMath and Python give you a free, powerful toolkit for mathematical exploration. Whether you are checking computations in a problem set, exploring a conjecture, visualizing a theorem, or conducting computational research, these tools can make you a more effective mathematician.
+
+Start with SageMathCell for quick computations, move to Jupyter notebooks for longer explorations, and learn the Python scientific stack as your computational needs grow.
+
+---
+
+## References
+
+- [SageMath](https://www.sagemath.org/)
+- [SageMath Documentation](https://doc.sagemath.org/)
+- [SageMathCell](https://sagecell.sagemath.org/)
+- [CoCalc](https://cocalc.com/)
+- [SymPy](https://www.sympy.org/)
+- [NumPy](https://numpy.org/)
+- [SciPy](https://scipy.org/)
+- [Matplotlib](https://matplotlib.org/)
+- [Jupyter](https://jupyter.org/)
+- [Python.org](https://www.python.org/)
+- [GAP — Groups, Algorithms, Programming](https://www.gap-system.org/)
+- [PARI/GP](https://pari.math.u-bordeaux.fr/)
