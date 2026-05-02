@@ -1,6 +1,6 @@
 import { put } from '@vercel/blob';
 import { type NextRequest, NextResponse } from 'next/server';
-import { isAdminPasswordValid } from '@/lib/library-admin';
+import { requireAdmin } from '@/lib/admin';
 import { normalizeCategory } from '@/lib/library-categories';
 import {
   getFileNameFromUrl,
@@ -153,12 +153,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = checkRateLimit(request, 'books-post', 20);
+  if (limited) return limited;
+
+  await requireAdmin();
+
   try {
-    const limited = checkRateLimit(request, 'books-post', 20);
-    if (limited) return limited;
-
-    await connectToDatabase();
-
     const contentType = request.headers.get('content-type') ?? '';
     if (!contentType.includes('multipart/form-data')) {
       return NextResponse.json(
@@ -167,12 +167,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const formData = await request.formData();
-    const password = String(formData.get('password') ?? '');
+    await connectToDatabase();
 
-    if (!isAdminPasswordValid(password)) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
+    const formData = await request.formData();
 
     const title = String(formData.get('title') ?? '').trim();
     const author = String(formData.get('author') ?? '').trim();

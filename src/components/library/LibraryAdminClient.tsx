@@ -1,18 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import {
   Shield,
-  Plus,
-  Trash2,
-  BookOpen,
   ArrowLeft,
-  Lock,
-  Download,
-  Link2,
-  Upload,
 } from 'lucide-react';
+import SiteIcon from '@/components/ui/SiteIcon';
 import { PRESET_CATEGORIES } from '@/lib/library-categories';
 import type { LibraryBook } from '@/types/library';
 
@@ -58,9 +52,6 @@ function formatFileSize(bytes: number): string {
 }
 
 export default function LibraryAdminClient() {
-  const [passwordInput, setPasswordInput] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
-
   const [form, setForm] = useState<AdminFormState>(initialFormState);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -86,41 +77,12 @@ export default function LibraryAdminClient() {
     }
   };
 
-  const handleUnlock = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setErrorMessage('');
-    setStatusMessage('');
-
-    try {
-      const response = await fetch('/api/admin/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: passwordInput }),
-      });
-
-      const payload = (await response.json().catch(() => null)) as {
-        error?: string;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? 'Invalid admin password.');
-      }
-
-      setIsAuthorized(true);
-      setStatusMessage('Access granted.');
-      await loadBooks();
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Invalid admin password.');
-      setStatusMessage('');
-    }
-  };
+  useEffect(() => {
+    void loadBooks();
+  }, []);
 
   const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isAuthorized) {
-      setErrorMessage('You are not authorized.');
-      return;
-    }
 
     setIsSubmitting(true);
     setErrorMessage('');
@@ -128,7 +90,6 @@ export default function LibraryAdminClient() {
 
     try {
       const formData = new FormData();
-      formData.append('password', passwordInput);
       formData.append('title', form.title);
       formData.append('author', form.author);
       formData.append('category', form.category);
@@ -180,7 +141,6 @@ export default function LibraryAdminClient() {
       const response = await fetch(`/api/books/${book.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: passwordInput }),
       });
 
       const payload = (await response.json().catch(() => null)) as {
@@ -232,51 +192,14 @@ export default function LibraryAdminClient() {
           </Link>
         </div>
 
-        {/* Login gate */}
-        {!isAuthorized ? (
-          <div className="mt-12 flex justify-center">
-            <form
-              onSubmit={handleUnlock}
-              className="w-full max-w-sm rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-8"
-            >
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-[var(--color-bg-elevated)] p-4">
-                  <Lock size={24} className="text-[var(--color-accent)]" />
-                </div>
-              </div>
-              <h2 className="text-center text-lg font-bold mb-1">Authentication Required</h2>
-              <p className="text-center text-xs text-[var(--color-text-secondary)] mb-6">
-                Enter your admin password to continue
-              </p>
-
-              <input
-                id="library-admin-password"
-                type="password"
-                value={passwordInput}
-                onChange={(event) => setPasswordInput(event.target.value)}
-                className={inputClasses}
-                placeholder="Admin password"
-                required
-              />
-
-              <button
-                type="submit"
-                className="mt-4 w-full rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[#0f0e0d] transition-all hover:opacity-90"
-              >
-                Unlock
-              </button>
-            </form>
-          </div>
-        ) : (
-          /* Admin content */
-          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             {/* Add book form */}
             <form
               onSubmit={handleCreate}
               className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-6"
             >
               <div className="flex items-center gap-2 mb-6">
-                <Plus size={18} className="text-[var(--color-accent)]" />
+                <SiteIcon name="add" alt="" className="h-5 w-5" />
                 <h2 className="text-lg font-bold">Add New Book</h2>
               </div>
 
@@ -390,7 +313,7 @@ export default function LibraryAdminClient() {
                   />
                   {selectedFile ? (
                     <div className="mt-2 inline-flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
-                      <Upload size={12} />
+                      <SiteIcon name="download" alt="" className="h-3.5 w-3.5" />
                       {selectedFile.name}
                     </div>
                   ) : null}
@@ -421,6 +344,7 @@ export default function LibraryAdminClient() {
                   disabled={isSubmitting}
                   className="w-full rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[#0f0e0d] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
+                  <SiteIcon name="add" alt="" className="mr-2 inline h-4 w-4" />
                   {isSubmitting ? 'Saving...' : 'Add Book'}
                 </button>
               </div>
@@ -429,7 +353,7 @@ export default function LibraryAdminClient() {
             {/* Books list */}
             <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-6">
               <div className="flex items-center gap-2 mb-6">
-                <BookOpen size={18} className="text-[var(--color-accent)]" />
+                <SiteIcon name="library" alt="" className="h-5 w-5" />
                 <h2 className="text-lg font-bold">Books</h2>
               </div>
 
@@ -474,9 +398,9 @@ export default function LibraryAdminClient() {
                               rel="noreferrer"
                               className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-accent)] transition-opacity hover:opacity-80"
                             >
-                              <Download size={12} />
+                              <SiteIcon name="download" alt="" className="h-3.5 w-3.5" />
                               <span>Open download</span>
-                              <Link2 size={12} />
+                              <SiteIcon name="external-link" alt="" className="h-3.5 w-3.5" />
                             </a>
                           ) : null}
                         </div>
@@ -487,7 +411,7 @@ export default function LibraryAdminClient() {
                           className="shrink-0 rounded-lg border border-red-500/30 p-2 text-red-400 transition-all hover:bg-red-500/10 hover:border-red-500/50 disabled:cursor-not-allowed disabled:opacity-50"
                           title="Delete book"
                         >
-                          <Trash2 size={14} />
+                          <SiteIcon name="delete" alt="" className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -496,7 +420,6 @@ export default function LibraryAdminClient() {
               )}
             </div>
           </div>
-        )}
 
         {/* Status / Error messages */}
         {statusMessage ? (

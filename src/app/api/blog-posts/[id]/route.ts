@@ -8,7 +8,7 @@ import {
   normalizeBlogSlug,
   normalizeTags,
 } from '@/lib/content';
-import { isAdminPasswordValid } from '@/lib/library-admin';
+import { requireAdmin } from '@/lib/admin';
 import { checkRateLimit } from '@/lib/security';
 
 type RouteContext = {
@@ -37,13 +37,14 @@ async function deleteBlobUrls(urls: string[]) {
 }
 
 export async function PUT(request: NextRequest, context: RouteContext) {
-  try {
-    const limited = checkRateLimit(request, 'blog-posts-put', 30);
-    if (limited) return limited;
+  const limited = checkRateLimit(request, 'blog-posts-put', 30);
+  if (limited) return limited;
 
+  await requireAdmin();
+
+  try {
     const body = (await request.json().catch(() => null)) as
       | {
-          password?: string;
           title?: string;
           slug?: string;
           excerpt?: string;
@@ -54,10 +55,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
           isPublished?: boolean;
         }
       | null;
-
-    if (!isAdminPasswordValid(body?.password)) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
 
     await connectToDatabase();
 
@@ -123,18 +120,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
+  const limited = checkRateLimit(request, 'blog-posts-delete', 30);
+  if (limited) return limited;
+
+  await requireAdmin();
+
   try {
-    const limited = checkRateLimit(request, 'blog-posts-delete', 30);
-    if (limited) return limited;
-
-    const body = (await request.json().catch(() => ({}))) as {
-      password?: string;
-    };
-
-    if (!isAdminPasswordValid(body.password)) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     await connectToDatabase();
 
     const { id } = await context.params;

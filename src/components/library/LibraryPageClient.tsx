@@ -3,13 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  BookOpen,
   ChevronLeft,
   ChevronRight,
-  Download,
-  ExternalLink,
-  Search,
 } from 'lucide-react';
+import SiteIcon from '@/components/ui/SiteIcon';
 import type { LibraryBook } from '@/types/library';
 
 type BooksPayload = {
@@ -71,7 +68,7 @@ function BookCard({ book }: { book: LibraryBook }) {
             />
           ) : (
             <div className="flex h-full items-center justify-center p-2 text-center">
-              <BookOpen size={20} className="text-[var(--color-text-tertiary)]" />
+              <SiteIcon name="book" alt="" className="h-6 w-6 opacity-70" />
             </div>
           )}
         </div>
@@ -106,7 +103,7 @@ function BookCard({ book }: { book: LibraryBook }) {
                 href={`/api/books/${book.id}/download`}
                 className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-[var(--color-accent)] px-2 text-[11px] font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
               >
-                <Download size={13} />
+                <SiteIcon name="download" alt="" className="h-3.5 w-3.5" />
                 Download
                 {book.fileSize ? (
                   <span className="font-medium opacity-70">({formatFileSize(book.fileSize)})</span>
@@ -124,7 +121,11 @@ function BookCard({ book }: { book: LibraryBook }) {
   );
 }
 
-export default function LibraryPageClient() {
+export default function LibraryPageClient({
+  showAdminLink = false,
+}: {
+  showAdminLink?: boolean;
+}) {
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [categories, setCategories] = useState<string[]>(['All']);
   const [searchInput, setSearchInput] = useState('');
@@ -234,7 +235,7 @@ export default function LibraryPageClient() {
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--color-border)] pb-5">
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <BookOpen size={15} className="text-[var(--color-accent)]" />
+              <SiteIcon name="library" alt="" className="h-4 w-4" />
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
                 My Favourite Books
               </p>
@@ -251,20 +252,23 @@ export default function LibraryPageClient() {
             </p>
           </div>
 
-          <Link
-            href="/library/admin"
-            className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-          >
-            Admin
-            <ExternalLink size={12} />
-          </Link>
+          {showAdminLink ? (
+            <Link
+              href="/library/admin"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            >
+              Admin
+              <SiteIcon name="external-link" alt="" className="h-3.5 w-3.5" />
+            </Link>
+          ) : null}
         </div>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_180px_110px]">
           <div className="relative">
-            <Search
-              size={14}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            <SiteIcon
+              name="search"
+              alt=""
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
             />
             <input
               value={searchInput}
@@ -323,7 +327,7 @@ export default function LibraryPageClient() {
           </div>
         ) : books.length === 0 ? (
           <div className="mt-12 rounded-lg border border-dashed border-[var(--color-border)] px-4 py-12 text-center">
-            <BookOpen size={32} className="mx-auto mb-3 text-[var(--color-text-tertiary)]" />
+            <SiteIcon name="book" alt="" className="mx-auto mb-3 h-8 w-8 opacity-65" />
             <p className="text-sm font-medium text-[var(--color-text)]">
               {activeFilters ? 'No books matched your filters.' : 'No books yet.'}
             </p>

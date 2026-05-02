@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Mail, Github } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import SiteIcon from '@/components/ui/SiteIcon';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -45,7 +46,7 @@ export default function Footer() {
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-3 py-2 text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               aria-label="GitHub"
             >
-              <Github size={15} />
+              <SiteIcon name="github" alt="" className="h-4 w-4" />
               GitHub
             </a>
           </div>

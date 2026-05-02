@@ -4,13 +4,20 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import {
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from '@clerk/nextjs';
+import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
 
 const navLinks = [
-  { href: '/', label: 'About' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/search', label: 'Search' },
-  { href: '/library', label: 'My Library' },
-];
+  { href: '/', label: 'About', icon: 'home' },
+  { href: '/blog', label: 'Blog', icon: 'blog' },
+  { href: '/search', label: 'Search', icon: 'search' },
+  { href: '/library', label: 'My Library', icon: 'library' },
+] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,20 +58,50 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-lg px-3 py-2 text-sm transition-all duration-150 ${
-                  isActive(link.href)
-                    ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text)] font-medium'
-                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-lg px-3 py-2 text-sm transition-all duration-150 ${
+                    isActive(link.href)
+                      ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text)] font-medium'
+                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <SiteIcon name={link.icon} alt="" className="h-4 w-4" />
+                  {link.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="ml-2 flex items-center gap-2">
+              <Show when="signed-out">
+                <SignInButton mode="redirect">
+                  <button
+                    type="button"
+                    className="rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                  >
+                    Sign in
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="redirect">
+                  <button
+                    type="button"
+                    className="rounded-lg bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
+                  >
+                    Sign up
+                  </button>
+                </SignUpButton>
+              </Show>
+
+              <Show when="signed-in">
+                <UserButton />
+              </Show>
+            </div>
           </div>
 
           <div className="md:hidden flex items-center gap-2">
@@ -107,9 +144,42 @@ export default function Navbar() {
                     : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
+                <span className="inline-flex items-center gap-3">
+                  <SiteIcon name={link.icon} alt="" className="h-4 w-4" />
                 {link.label}
+                </span>
               </Link>
             ))}
+
+            <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+              <Show when="signed-out">
+                <div className="flex flex-col gap-2">
+                  <SignInButton mode="redirect">
+                    <button
+                      type="button"
+                      className="w-full rounded-lg border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                    >
+                      Sign in
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="redirect">
+                    <button
+                      type="button"
+                      className="w-full rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
+                    >
+                      Sign up
+                    </button>
+                  </SignUpButton>
+                </div>
+              </Show>
+
+              <Show when="signed-in">
+                <div className="flex items-center justify-between rounded-lg border border-[var(--color-border)] px-4 py-2.5">
+                  <span className="text-sm text-[var(--color-text-secondary)]">Account</span>
+                  <UserButton />
+                </div>
+              </Show>
+            </div>
           </div>
         </aside>
       </nav>

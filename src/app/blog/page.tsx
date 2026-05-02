@@ -4,6 +4,8 @@ import Tag from '@/components/blog/Tag';
 import { getAllTags, getBlogPosts } from '@/lib/content';
 import Pagination from '@/components/blog/Pagination';
 import Link from 'next/link';
+import { getCurrentAdminUser } from '@/lib/admin';
+import SiteIcon from '@/components/ui/SiteIcon';
 
 const POSTS_PER_PAGE = 15;
 
@@ -20,6 +22,7 @@ export default async function BlogPage({
   searchParams: Promise<{ tag?: string; page?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
+  const adminUser = await getCurrentAdminUser();
   const allPosts = await getBlogPosts();
   const allTags = await getAllTags();
   const activeTag = resolvedSearchParams.tag || '';
@@ -41,6 +44,7 @@ export default async function BlogPage({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[10px] md:text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-2">
+                <SiteIcon name="blog" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
                 Writing
               </p>
               <h1
@@ -56,12 +60,15 @@ export default async function BlogPage({
               </p>
             </div>
 
-            <Link
-              href="/blog/admin"
-              className="inline-flex items-center rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            >
-              Manage Posts
-            </Link>
+            {adminUser ? (
+              <Link
+                href="/blog/admin"
+                className="inline-flex items-center rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                <SiteIcon name="settings" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
+                Manage Posts
+              </Link>
+            ) : null}
           </div>
 
           {allTags.length > 0 ? (
@@ -94,11 +101,12 @@ export default async function BlogPage({
             <p className="text-sm text-[var(--color-text-secondary)]">
               {activeTag ? 'No posts found for this tag.' : 'No blog posts yet.'}
             </p>
-            {!activeTag ? (
+            {!activeTag && adminUser ? (
               <Link
                 href="/blog/admin"
                 className="mt-4 inline-flex rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
+                <SiteIcon name="add" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
                 Open Blog Admin
               </Link>
             ) : null}

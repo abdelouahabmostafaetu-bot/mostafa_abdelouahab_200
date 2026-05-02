@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Manrope, Newsreader } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
 import '@/styles/globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -57,7 +58,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${newsreader.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${manrope.variable} ${newsreader.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Favicon */}
         <link
@@ -67,10 +72,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
-        <SpeedInsights />
+        <ClerkProvider>
+          <Navbar />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+          <SpeedInsights />
+        </ClerkProvider>
       </body>
     </html>
   );

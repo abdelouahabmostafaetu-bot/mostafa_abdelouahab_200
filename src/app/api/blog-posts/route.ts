@@ -6,7 +6,7 @@ import {
   normalizeBlogSlug,
   normalizeTags,
 } from '@/lib/content';
-import { isAdminPasswordValid } from '@/lib/library-admin';
+import { requireAdmin } from '@/lib/admin';
 import { checkRateLimit } from '@/lib/security';
 
 export const runtime = 'nodejs';
@@ -48,10 +48,9 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string): {
 export async function GET(request: NextRequest) {
   const search = request.nextUrl.searchParams.get('search')?.trim() ?? '';
   const adminMode = request.nextUrl.searchParams.get('admin') === '1';
-  const password = request.headers.get('x-admin-password');
 
-  if (adminMode && !isAdminPasswordValid(password)) {
-    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
+  if (adminMode) {
+    await requireAdmin();
   }
 
   try {
@@ -88,15 +87,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = checkRateLimit(request, 'blog-posts-post', 20);
+  if (limited) return limited;
+
+  await requireAdmin();
+
   try {
-    const limited = checkRateLimit(request, 'blog-posts-post', 20);
-    if (limited) return limited;
-
-    await connectToDatabase();
-
     const body = (await request.json().catch(() => null)) as
       | {
-          password?: string;
           title?: string;
           slug?: string;
           excerpt?: string;
@@ -108,9 +106,7 @@ export async function POST(request: NextRequest) {
         }
       | null;
 
-    if (!isAdminPasswordValid(body?.password)) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
+    await connectToDatabase();
 
     const title = String(body?.title ?? '').trim();
     const content = String(body?.content ?? '').trim();

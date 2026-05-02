@@ -1,6 +1,6 @@
 import { del } from '@vercel/blob';
 import { type NextRequest, NextResponse } from 'next/server';
-import { isAdminPasswordValid } from '@/lib/library-admin';
+import { requireAdmin } from '@/lib/admin';
 import { deleteStoredLibraryFile, isVercelBlobUrl } from '@/lib/library-files';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
@@ -16,18 +16,12 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
+  const limited = checkRateLimit(request, 'books-delete', 30);
+  if (limited) return limited;
+
+  await requireAdmin();
+
   try {
-    const limited = checkRateLimit(request, 'books-delete', 30);
-    if (limited) return limited;
-
-    const body = (await request.json().catch(() => ({}))) as {
-      password?: string;
-    };
-
-    if (!isAdminPasswordValid(body.password)) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     await connectToDatabase();
 
     const { id } = await context.params;

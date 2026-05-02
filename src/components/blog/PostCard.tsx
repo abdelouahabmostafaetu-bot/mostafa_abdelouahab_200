@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Clock } from 'lucide-react';
+import SiteIcon from '@/components/ui/SiteIcon';
 import { TagList } from './Tag';
 
 interface PostCardProps {
@@ -39,9 +39,12 @@ export default function PostCard({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs text-[var(--color-text-tertiary)]">
-          <span className="font-medium uppercase tracking-widest">{category}</span>
+          <span className="inline-flex items-center gap-1.5 font-medium uppercase tracking-widest">
+            <SiteIcon name="document" alt="" className="h-3.5 w-3.5" />
+            {category}
+          </span>
           <span className="inline-flex items-center gap-1">
-            <Clock size={12} />
+            <SiteIcon name="notebook" alt="" className="h-3.5 w-3.5" />
             {readingTime}
           </span>
         </div>

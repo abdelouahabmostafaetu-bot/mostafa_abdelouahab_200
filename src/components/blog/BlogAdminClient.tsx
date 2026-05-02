@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import {
   type ChangeEvent,
-  type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   useEffect,
@@ -25,20 +24,16 @@ import {
   Link2,
   List,
   ListOrdered,
-  Lock,
   Minus,
-  PencilLine,
-  Plus,
   Quote,
   Redo2,
-  Save,
-  Search,
   Sigma,
   Trash2,
   Undo2,
   Upload,
   X,
 } from 'lucide-react';
+import SiteIcon from '@/components/ui/SiteIcon';
 import { formatDate, slugify } from '@/lib/utils';
 import type { BlogPost } from '@/types/blog';
 
@@ -124,11 +119,11 @@ function countWords(content: string): number {
   return trimmed.split(/\s+/).length;
 }
 
-async function requestPreviewHtml(password: string, content: string) {
+async function requestPreviewHtml(content: string) {
   const response = await fetch('/api/blog-preview', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password, content }),
+    body: JSON.stringify({ content }),
   });
 
   const payload = (await response.json().catch(() => null)) as
@@ -150,9 +145,6 @@ export default function BlogAdminClient() {
   const historyRef = useRef<string[]>([initialFormState.content]);
   const historyIndexRef = useRef(0);
   const toastIdRef = useRef(0);
-
-  const [passwordInput, setPasswordInput] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
@@ -295,9 +287,6 @@ export default function BlogAdminClient() {
     try {
       const response = await fetch('/api/blog-posts?admin=1', {
         cache: 'no-store',
-        headers: {
-          'x-admin-password': passwordInput,
-        },
       });
 
       const payload = (await response.json().catch(() => null)) as
@@ -332,6 +321,11 @@ export default function BlogAdminClient() {
   };
 
   useEffect(() => {
+    void loadPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (slugTouched) {
       return;
     }
@@ -353,10 +347,6 @@ export default function BlogAdminClient() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthorized) {
-      return;
-    }
-
     try {
       const raw = window.localStorage.getItem(AUTOSAVE_KEY);
       if (!raw) {
@@ -377,16 +367,16 @@ export default function BlogAdminClient() {
     } catch {
       window.localStorage.removeItem(AUTOSAVE_KEY);
     }
-  }, [isAuthorized]);
+  }, []);
 
   useEffect(() => {
-    if (!isAuthorized || mode !== 'preview') {
+    if (mode !== 'preview') {
       return;
     }
 
     setIsPreviewLoading(true);
     const timeout = window.setTimeout(() => {
-      void requestPreviewHtml(passwordInput, form.content)
+      void requestPreviewHtml(form.content)
         .then((html) => {
           setPreviewHtml(html);
           setErrorMessage('');
@@ -401,13 +391,9 @@ export default function BlogAdminClient() {
     }, 250);
 
     return () => window.clearTimeout(timeout);
-  }, [form.content, isAuthorized, mode, passwordInput]);
+  }, [form.content, mode]);
 
   useEffect(() => {
-    if (!isAuthorized) {
-      return;
-    }
-
     const interval = window.setInterval(() => {
       if (!hasDraftContent(form)) {
         window.localStorage.removeItem(AUTOSAVE_KEY);
@@ -425,7 +411,7 @@ export default function BlogAdminClient() {
     }, 30000);
 
     return () => window.clearInterval(interval);
-  }, [form, isAuthorized, selectedPostId]);
+  }, [form, selectedPostId]);
 
   useEffect(() => {
     if (!isImagePopoverOpen && !pendingDeletePost && !showRestoreDraft) {
@@ -486,35 +472,6 @@ export default function BlogAdminClient() {
       ...current,
       tags: current.tags.filter((tag) => tag !== tagToRemove),
     }));
-  };
-
-  const handleUnlock = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    try {
-      const response = await fetch('/api/admin/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: passwordInput }),
-      });
-
-      const payload = (await response.json().catch(() => null)) as {
-        error?: string;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? 'Invalid admin password.');
-      }
-
-      setIsAuthorized(true);
-      setErrorMessage('');
-      showToast('success', 'Admin unlocked.');
-      await loadPosts();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Invalid admin password.';
-      setErrorMessage(message);
-      showToast('error', message);
-    }
   };
 
   const insertSnippet = (before: string, after = '', fallback = '') => {
@@ -625,7 +582,6 @@ export default function BlogAdminClient() {
   const uploadFile = (file: File) =>
     new Promise<string>((resolve, reject) => {
       const requestBody = new FormData();
-      requestBody.append('password', passwordInput);
       requestBody.append('file', file);
 
       const xhr = new XMLHttpRequest();
@@ -729,7 +685,6 @@ export default function BlogAdminClient() {
           method: selectedPostId ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            password: passwordInput,
             title: form.title,
             slug: form.slug,
             excerpt: form.excerpt,
@@ -780,7 +735,6 @@ export default function BlogAdminClient() {
       const response = await fetch(`/api/blog-posts/${pendingDeletePost.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: passwordInput }),
       });
 
       const payload = (await response.json().catch(() => null)) as
@@ -931,7 +885,7 @@ export default function BlogAdminClient() {
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="mb-3 flex items-center gap-2">
-              <PencilLine size={16} className="text-[var(--color-accent)]" />
+              <SiteIcon name="notebook" alt="" className="h-4 w-4" />
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)]">
                 Blog Admin
               </p>
@@ -963,47 +917,7 @@ export default function BlogAdminClient() {
           </div>
         ) : null}
 
-        {!isAuthorized ? (
-          <div className="flex justify-center">
-            <form
-              onSubmit={handleUnlock}
-              className="w-full max-w-md rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-muted)]/90 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.22)] transition-all duration-300 sm:p-10"
-            >
-              <div className="mb-6 flex items-center justify-center">
-                <div className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-4 shadow-[0_0_0_8px_rgba(255,255,255,0.02)]">
-                  <Lock size={24} className="text-[var(--color-accent)]" />
-                </div>
-              </div>
-              <h2
-                className="text-center text-2xl font-semibold"
-                style={{ fontFamily: 'var(--font-serif)' }}
-              >
-                Unlock the editor
-              </h2>
-              <p className="mt-2 text-center text-sm leading-6 text-[var(--color-text-secondary)]">
-                Enter your admin password to open the writing studio.
-              </p>
-              <div className="mt-8 space-y-4">
-                <input
-                  type="password"
-                  value={passwordInput}
-                  onChange={(event) => setPasswordInput(event.target.value)}
-                  className={inputClasses}
-                  placeholder="Admin password"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[#0f0e0d] transition-all duration-150 hover:opacity-90"
-                >
-                  Unlock
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <div className="space-y-8">
+        <div className="space-y-8">
             <div className="mx-auto w-full max-w-4xl">
               <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-muted)]/90 shadow-[0_20px_80px_rgba(0,0,0,0.22)] transition-all duration-300">
                 <div className="border-b border-[var(--color-border)] px-5 py-5 sm:px-8">
@@ -1021,7 +935,7 @@ export default function BlogAdminClient() {
                       onClick={resetComposer}
                       className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
                     >
-                      <Plus size={14} />
+                      <SiteIcon name="add" alt="" className="h-4 w-4" />
                       New post
                     </button>
                   </div>
@@ -1602,7 +1516,7 @@ export default function BlogAdminClient() {
                           disabled={isSaving}
                           className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          <Save size={14} />
+                          <SiteIcon name="document" alt="" className="h-4 w-4" />
                           Save draft
                         </button>
                         <button
@@ -1611,7 +1525,7 @@ export default function BlogAdminClient() {
                           disabled={isSaving}
                           className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[#0f0e0d] transition-all duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          <Save size={14} />
+                          <SiteIcon name="document" alt="" className="h-4 w-4" />
                           {isSaving ? 'Saving...' : 'Publish post'}
                         </button>
                         {currentPost ? (
@@ -1620,7 +1534,7 @@ export default function BlogAdminClient() {
                             onClick={() => setPendingDeletePost(currentPost)}
                             className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/30 px-4 py-3 text-sm font-medium text-red-300 transition-all duration-150 hover:border-red-400/60 hover:bg-red-500/10"
                           >
-                            <Trash2 size={14} />
+                            <SiteIcon name="delete" alt="" className="h-4 w-4" />
                             Delete
                           </button>
                         ) : null}
@@ -1665,9 +1579,10 @@ export default function BlogAdminClient() {
                 <div className="min-h-0">
                   <div className="space-y-5 px-5 py-5 sm:px-8 sm:py-6">
                     <div className="relative">
-                      <Search
-                        size={15}
-                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                      <SiteIcon
+                        name="search"
+                        alt=""
+                        className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
                       />
                       <input
                         value={postSearch}
@@ -1710,6 +1625,7 @@ export default function BlogAdminClient() {
                                 onClick={() => applySelectedPost(post)}
                                 className="min-w-0 flex-1 text-left"
                               >
+                                <SiteIcon name="edit" alt="" className="float-left mr-3 mt-1 h-4 w-4" />
                                 <p className="truncate text-lg font-semibold text-[var(--color-text)]">
                                   {post.title}
                                 </p>
@@ -1738,7 +1654,7 @@ export default function BlogAdminClient() {
                                 className="inline-flex items-center justify-center rounded-xl border border-red-500/30 p-3 text-red-300 transition-all duration-150 hover:border-red-400/60 hover:bg-red-500/10"
                                 title="Delete post"
                               >
-                                <Trash2 size={14} />
+                                <SiteIcon name="delete" alt="" className="h-4 w-4" />
                               </button>
                             </div>
                           </div>
@@ -1750,7 +1666,6 @@ export default function BlogAdminClient() {
               </div>
             </div>
           </div>
-        )}
 
         {showRestoreDraft && pendingRestoreDraft ? (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/55 px-4">

@@ -26,7 +26,12 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env*
+!.env.example
 .env*.local
+env.local
+*.secret.ps1
+scripts/doppler-secrets.local.ps1
 
 # vercel
 .vercel

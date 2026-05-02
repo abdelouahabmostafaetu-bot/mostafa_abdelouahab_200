@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdminPasswordValid } from '@/lib/library-admin';
+import { requireAdmin } from '@/lib/admin';
 import { checkRateLimit } from '@/lib/security';
 
 export const runtime = 'nodejs';
@@ -31,10 +31,12 @@ async function saveLocalBlogImage(file: File): Promise<string> {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const limited = checkRateLimit(request, 'blog-assets-post', 20);
-    if (limited) return limited;
+  const limited = checkRateLimit(request, 'blog-assets-post', 20);
+  if (limited) return limited;
 
+  await requireAdmin();
+
+  try {
     const contentType = request.headers.get('content-type') ?? '';
     if (!contentType.includes('multipart/form-data')) {
       return NextResponse.json(
@@ -44,11 +46,6 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData();
-    const password = String(formData.get('password') ?? '');
-
-    if (!isAdminPasswordValid(password)) {
-      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
 
     const fileValue = formData.get('file');
     if (!(fileValue instanceof File) || fileValue.size === 0) {

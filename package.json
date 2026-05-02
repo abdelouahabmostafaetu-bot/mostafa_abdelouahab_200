@@ -4,13 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/dev-with-search.mjs",
+    "dev:doppler": "doppler run -- npm run dev",
     "dev:site": "next dev",
     "dev:search": "python -u public/search-app/server.py",
+    "icons:sync": "node scripts/iconscout-sync.mjs",
     "build": "next build",
+    "build:doppler": "doppler run -- npm run build",
     "start": "next start",
     "lint": "eslint src next.config.mjs"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.3.0",
     "@emailjs/browser": "^4.4.1",
     "@mdx-js/mdx": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
