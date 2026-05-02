@@ -75,7 +75,7 @@ function createImageMarkdown(url: string, altText: string) {
 
 const initialFormState: BlogFormState = {
   title: '',
-  slug: 'blog',
+  slug: '',
   content: '',
   isPublished: true,
 };

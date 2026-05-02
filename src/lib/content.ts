@@ -49,7 +49,8 @@ export function normalizeTags(rawTags: string[] | string): string[] {
 }
 
 export function normalizeBlogSlug(title: string, requestedSlug = ''): string {
-  const safeSlug = slugify(requestedSlug || title);
+  const trimmedSlug = requestedSlug.trim();
+  const safeSlug = slugify(!trimmedSlug || trimmedSlug === 'blog' ? title : trimmedSlug);
   return safeSlug || `post-${Date.now()}`;
 }
 
