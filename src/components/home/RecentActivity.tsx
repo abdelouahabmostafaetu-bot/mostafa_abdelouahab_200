@@ -4,7 +4,7 @@ import { getCurrentAdminUser } from '@/lib/admin';
 import { getBlogPosts } from '@/lib/content';
 
 export default async function RecentActivity() {
-  const posts = (await getBlogPosts()).slice(0, 2);
+  const posts = (await getBlogPosts()).slice(0, 1);
   const adminUser = await getCurrentAdminUser();
 
   return (

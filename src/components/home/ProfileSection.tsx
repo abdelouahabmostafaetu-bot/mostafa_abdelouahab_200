@@ -23,7 +23,7 @@ export default function ProfileSection() {
             Abdelouahab Mostafa
           </h1>
           <p className="mx-auto line-clamp-2 max-w-2xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:mx-0 md:line-clamp-none md:text-lg md:leading-relaxed">
-            Master student in fundamental mathematics at the University of Mila. My research and studies primarily focus on analysis, topology, and their interconnections.
+            Master&apos;s student in fundamental mathematics, interested in analysis and topology.
           </p>
 
           <div className="mt-6 border-t border-[var(--color-border)] pt-5 md:mt-10 md:pt-8">
