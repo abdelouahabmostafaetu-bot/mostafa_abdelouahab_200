@@ -93,7 +93,7 @@ export default async function BlogPostPage({
                 <PdfDownloadButton title={post.title} coverImageUrl={post.coverImageUrl} />
               </header>
 
-              <div className="prose-academic">
+              <div className="blog-content prose-academic">
                 {content}
               </div>
 

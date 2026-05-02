@@ -175,7 +175,20 @@
 
   .prose-academic img {
     @apply rounded-xl my-6 md:my-8 mx-auto;
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
     box-shadow: var(--shadow-soft);
+  }
+
+  .blog-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.25rem auto;
+    border-radius: 14px;
+    object-fit: contain;
   }
 
   .prose-academic hr {
@@ -266,6 +279,11 @@
   .prose-academic code {
     border: 0;
     box-shadow: none;
+  }
+
+  .blog-content img {
+    margin: 1rem auto;
+    border-radius: 10px;
   }
 }
 

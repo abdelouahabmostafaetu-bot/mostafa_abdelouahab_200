@@ -9,6 +9,7 @@ const isAdminRoute = createRouteMatcher([
   '/manage-library(.*)',
   '/api/admin(.*)',
   '/api/blog-assets(.*)',
+  '/api/blog/upload-image(.*)',
   '/api/blog-preview(.*)',
 ]);
 

@@ -41,14 +41,36 @@ type ToastMessage = {
   message: string;
 };
 
-const MOBILE_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/heic,image/heif';
+const BLOG_IMAGE_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
+const BLOG_IMAGE_MAX_SIZE = 4 * 1024 * 1024;
+const BLOG_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
 
 function parseUploadResponse(responseText: string) {
   try {
-    return JSON.parse(responseText || '{}') as { url?: string; error?: string };
+    return JSON.parse(responseText || '{}') as {
+      url?: string;
+      markdown?: string;
+      error?: string;
+    };
   } catch {
     return { error: 'Failed to upload image.' };
   }
+}
+
+function validateBlogImageFile(file: File): string | null {
+  if (!BLOG_IMAGE_TYPES.has(file.type)) {
+    return 'Only PNG, JPG, JPEG, and WEBP images are allowed.';
+  }
+
+  if (file.size > BLOG_IMAGE_MAX_SIZE) {
+    return 'Images must be smaller than 4 MB.';
+  }
+
+  return null;
+}
+
+function createImageMarkdown(url: string, altText: string) {
+  return `![${altText.trim() || 'Blog image'}](${url})`;
 }
 
 const initialFormState: BlogFormState = {
@@ -95,7 +117,7 @@ export default function AddBlogPostClient() {
   const [isImagePopoverOpen, setIsImagePopoverOpen] = useState(false);
   const [imageTab, setImageTab] = useState<ImageTab>('url');
   const [imageUrlInput, setImageUrlInput] = useState('');
-  const [imageAltInput, setImageAltInput] = useState('Describe the image');
+  const [imageAltInput, setImageAltInput] = useState('Blog image');
   const [imageUploadFile, setImageUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -236,9 +258,20 @@ export default function AddBlogPostClient() {
       return;
     }
 
-    insertBlock(`\n![${altText.trim() || 'Describe the image'}](${safeUrl})\n`);
+    if (safeUrl.startsWith('data:image/')) {
+      showToast('error', 'Base64 images are not allowed. Upload the image first.');
+      return;
+    }
+
+    const markdown = `\n${createImageMarkdown(safeUrl, altText)}\n`;
+    const textarea = editorRef.current;
+    if (!textarea) {
+      applyEditorContent(`${form.content}${markdown}`);
+    } else {
+      insertBlock(markdown);
+    }
     setImageUrlInput('');
-    setImageAltInput('Describe the image');
+    setImageAltInput('Blog image');
     setImageUploadFile(null);
     setIsImagePopoverOpen(false);
   };
@@ -313,7 +346,7 @@ export default function AddBlogPostClient() {
       requestBody.append('file', file);
 
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/blog-assets');
+      xhr.open('POST', '/api/blog/upload-image');
 
       xhr.upload.addEventListener('progress', (event) => {
         if (!event.lengthComputable) {
@@ -344,6 +377,13 @@ export default function AddBlogPostClient() {
   const handleInlineImageUpload = async () => {
     if (!imageUploadFile) {
       showToast('error', 'Choose an image first.');
+      return;
+    }
+
+    const validationError = validateBlogImageFile(imageUploadFile);
+    if (validationError) {
+      setErrorMessage(validationError);
+      showToast('error', validationError);
       return;
     }
 
@@ -621,7 +661,7 @@ export default function AddBlogPostClient() {
                         <input
                           ref={imageUploadInputRef}
                           type="file"
-                          accept={MOBILE_IMAGE_ACCEPT}
+                          accept={BLOG_IMAGE_ACCEPT}
                           onChange={(e) => setImageUploadFile(e.target.files?.[0] ?? null)}
                           className="w-full text-sm text-[var(--color-text-secondary)] file:mr-4 file:rounded file:border-0 file:bg-[var(--color-accent)] file:px-3 file:py-1 file:text-sm file:text-[#0f0e0d] file:font-semibold"
                         />
@@ -685,7 +725,7 @@ export default function AddBlogPostClient() {
               />
             ) : (
               <div
-                className="min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
+                className="blog-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             )}

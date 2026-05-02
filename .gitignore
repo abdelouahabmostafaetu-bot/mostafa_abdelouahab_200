@@ -42,3 +42,5 @@ next-env.d.ts
 .env.local
 .env.local.private*
 env-local-private-backup.txt
+.vercel
+.env*.local

@@ -61,7 +61,9 @@ type AutosavedDraft = {
 };
 
 const AUTOSAVE_KEY = 'blog-admin-autosave-v2';
-const MOBILE_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/heic,image/heif';
+const BLOG_IMAGE_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
+const BLOG_IMAGE_MAX_SIZE = 4 * 1024 * 1024;
+const BLOG_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
 
 const initialFormState: BlogAdminFormState = {
   title: '',
@@ -109,10 +111,30 @@ function hasDraftContent(form: BlogAdminFormState): boolean {
 
 function parseUploadResponse(responseText: string) {
   try {
-    return JSON.parse(responseText || '{}') as { url?: string; error?: string };
+    return JSON.parse(responseText || '{}') as {
+      url?: string;
+      markdown?: string;
+      error?: string;
+    };
   } catch {
     return { error: 'Failed to upload image.' };
   }
+}
+
+function validateBlogImageFile(file: File): string | null {
+  if (!BLOG_IMAGE_TYPES.has(file.type)) {
+    return 'Only PNG, JPG, JPEG, and WEBP images are allowed.';
+  }
+
+  if (file.size > BLOG_IMAGE_MAX_SIZE) {
+    return 'Images must be smaller than 4 MB.';
+  }
+
+  return null;
+}
+
+function createImageMarkdown(url: string, altText: string) {
+  return `![${altText.trim() || 'Blog image'}](${url})`;
 }
 
 async function requestPreviewHtml(content: string) {
@@ -155,7 +177,7 @@ export default function BlogAdminClient() {
   const [isImagePopoverOpen, setIsImagePopoverOpen] = useState(false);
   const [imageTab, setImageTab] = useState<ImageTab>('url');
   const [imageUrlInput, setImageUrlInput] = useState('');
-  const [imageAltInput, setImageAltInput] = useState('Describe the image');
+  const [imageAltInput, setImageAltInput] = useState('Blog image');
   const [imageUploadFile, setImageUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -471,9 +493,20 @@ export default function BlogAdminClient() {
       return;
     }
 
-    insertBlock(`\n![${altText.trim() || 'Describe the image'}](${safeUrl})\n`);
+    if (safeUrl.startsWith('data:image/')) {
+      showToast('error', 'Base64 images are not allowed. Upload the image first.');
+      return;
+    }
+
+    const markdown = `\n${createImageMarkdown(safeUrl, altText)}\n`;
+    const textarea = editorRef.current;
+    if (!textarea) {
+      applyEditorContent(`${form.content}${markdown}`);
+    } else {
+      insertBlock(markdown);
+    }
     setImageUrlInput('');
-    setImageAltInput('Describe the image');
+    setImageAltInput('Blog image');
     setImageUploadFile(null);
     setIsImagePopoverOpen(false);
   };
@@ -516,7 +549,7 @@ export default function BlogAdminClient() {
       requestBody.append('file', file);
 
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/blog-assets');
+      xhr.open('POST', '/api/blog/upload-image');
 
       xhr.upload.addEventListener('progress', (event) => {
         if (!event.lengthComputable) {
@@ -547,6 +580,13 @@ export default function BlogAdminClient() {
   const handleInlineImageUpload = async () => {
     if (!imageUploadFile) {
       showToast('error', 'Choose an image first.');
+      return;
+    }
+
+    const validationError = validateBlogImageFile(imageUploadFile);
+    if (validationError) {
+      setErrorMessage(validationError);
+      showToast('error', validationError);
       return;
     }
 
@@ -947,7 +987,7 @@ export default function BlogAdminClient() {
                               title="Insert image"
                             >
                               <ImagePlus size={iconSize} />
-                              Image
+                              Upload Image
                             </button>
 
                             {isImagePopoverOpen ? (
@@ -1009,7 +1049,7 @@ export default function BlogAdminClient() {
                                       <input
                                         ref={imageUploadInputRef}
                                         type="file"
-                                        accept={MOBILE_IMAGE_ACCEPT}
+                                        accept={BLOG_IMAGE_ACCEPT}
                                         className="hidden"
                                         onChange={(event) =>
                                           setImageUploadFile(event.target.files?.[0] ?? null)
@@ -1183,7 +1223,7 @@ export default function BlogAdminClient() {
                             </div>
                           ) : (
                             <div
-                              className="prose-academic max-w-none"
+                              className="blog-content prose-academic max-w-none"
                               style={{ fontFamily: 'var(--font-serif)' }}
                               dangerouslySetInnerHTML={{ __html: previewHtml }}
                             />
