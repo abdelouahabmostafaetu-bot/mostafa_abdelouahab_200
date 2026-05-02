@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import {
   type ChangeEvent,
-  type KeyboardEvent as ReactKeyboardEvent,
   useEffect,
   useRef,
   useState,
@@ -22,7 +21,6 @@ import {
   Quote,
   Redo2,
   Undo2,
-  Upload,
 } from 'lucide-react';
 import type { BlogPost } from '@/types/blog';
 
@@ -42,6 +40,16 @@ type ToastMessage = {
   type: ToastType;
   message: string;
 };
+
+const MOBILE_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/heic,image/heif';
+
+function parseUploadResponse(responseText: string) {
+  try {
+    return JSON.parse(responseText || '{}') as { url?: string; error?: string };
+  } catch {
+    return { error: 'Failed to upload image.' };
+  }
+}
 
 const initialFormState: BlogFormState = {
   title: '',
@@ -91,12 +99,23 @@ export default function AddBlogPostClient() {
   const [imageUploadFile, setImageUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [historyControls, setHistoryControls] = useState({
+    canUndo: false,
+    canRedo: false,
+  });
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
 
   const inputClasses =
     'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/15';
+
+  const syncHistoryControls = () => {
+    setHistoryControls({
+      canUndo: historyIndexRef.current > 0,
+      canRedo: historyIndexRef.current < historyRef.current.length - 1,
+    });
+  };
 
   const pushHistory = (content: string) => {
     const nextHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
@@ -107,11 +126,13 @@ export default function AddBlogPostClient() {
     nextHistory.push(content);
     historyRef.current = nextHistory.slice(-150);
     historyIndexRef.current = historyRef.current.length - 1;
+    syncHistoryControls();
   };
 
   const resetHistory = (content: string) => {
     historyRef.current = [content];
     historyIndexRef.current = 0;
+    syncHistoryControls();
   };
 
   const showToast = (type: ToastType, message: string) => {
@@ -237,6 +258,7 @@ export default function AddBlogPostClient() {
     const nextContent = historyRef.current[historyIndexRef.current] ?? '';
     setForm((current) => ({ ...current, content: nextContent }));
     setMode('write');
+    syncHistoryControls();
   };
 
   const handleRedo = () => {
@@ -248,6 +270,7 @@ export default function AddBlogPostClient() {
     const nextContent = historyRef.current[historyIndexRef.current] ?? '';
     setForm((current) => ({ ...current, content: nextContent }));
     setMode('write');
+    syncHistoryControls();
   };
 
   const togglePreview = async () => {
@@ -301,10 +324,7 @@ export default function AddBlogPostClient() {
       });
 
       xhr.addEventListener('load', () => {
-        const payload = JSON.parse(xhr.responseText || '{}') as {
-          url?: string;
-          error?: string;
-        };
+        const payload = parseUploadResponse(xhr.responseText);
 
         if (xhr.status >= 200 && xhr.status < 300 && payload.url) {
           resolve(payload.url);
@@ -434,7 +454,7 @@ export default function AddBlogPostClient() {
                 <button
                   type="button"
                   onClick={handleUndo}
-                  disabled={historyIndexRef.current <= 0}
+                  disabled={!historyControls.canUndo}
                   className="rounded p-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] disabled:opacity-50"
                   title="Undo"
                 >
@@ -443,7 +463,7 @@ export default function AddBlogPostClient() {
                 <button
                   type="button"
                   onClick={handleRedo}
-                  disabled={historyIndexRef.current >= historyRef.current.length - 1}
+                  disabled={!historyControls.canRedo}
                   className="rounded p-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] disabled:opacity-50"
                   title="Redo"
                 >
@@ -547,7 +567,7 @@ export default function AddBlogPostClient() {
                 {isImagePopoverOpen && (
                   <div
                     ref={imagePopoverRef}
-                    className="absolute right-0 top-full z-10 mt-1 w-80 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] p-4 shadow-lg"
+                    className="fixed inset-x-3 top-28 z-50 max-h-[calc(100svh-8rem)] overflow-y-auto rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] p-3 shadow-lg sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-1 sm:w-80 sm:p-4"
                   >
                     <div className="flex gap-2 border-b border-[var(--color-border)] pb-2 mb-3">
                       <button
@@ -601,7 +621,7 @@ export default function AddBlogPostClient() {
                         <input
                           ref={imageUploadInputRef}
                           type="file"
-                          accept="image/*"
+                          accept={MOBILE_IMAGE_ACCEPT}
                           onChange={(e) => setImageUploadFile(e.target.files?.[0] ?? null)}
                           className="w-full text-sm text-[var(--color-text-secondary)] file:mr-4 file:rounded file:border-0 file:bg-[var(--color-accent)] file:px-3 file:py-1 file:text-sm file:text-[#0f0e0d] file:font-semibold"
                         />

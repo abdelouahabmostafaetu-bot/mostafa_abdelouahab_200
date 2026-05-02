@@ -15,12 +15,39 @@ function sanitizeFileName(value: string): string {
 
 const LOCAL_BLOG_UPLOAD_PREFIX = '/uploads/blog/';
 const LOCAL_BLOG_UPLOAD_DIRECTORY = path.join(process.cwd(), 'public', 'uploads', 'blog');
-const ALLOWED_IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg']);
+const ALLOWED_IMAGE_EXTENSIONS = new Set([
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+  '.gif',
+  '.svg',
+  '.heic',
+  '.heif',
+]);
+const IMAGE_TYPE_EXTENSION: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+  'image/svg+xml': '.svg',
+  'image/heic': '.heic',
+  'image/heif': '.heif',
+};
+
+function getImageExtension(file: File): string {
+  const fileExtension = path.extname(file.name || '').toLowerCase();
+  return fileExtension || IMAGE_TYPE_EXTENSION[file.type] || '';
+}
+
+function getImageBaseName(file: File, extension: string): string {
+  const baseName = path.basename(file.name || 'blog-image', extension);
+  return baseName && baseName !== '.' ? baseName : 'blog-image';
+}
 
 async function saveLocalBlogImage(file: File): Promise<string> {
-  const originalName = file.name || 'blog-image';
-  const extension = path.extname(originalName).toLowerCase() || '.img';
-  const baseName = path.basename(originalName, extension) || 'blog-image';
+  const extension = getImageExtension(file);
+  const baseName = getImageBaseName(file, extension);
   const storedName = `${sanitizeFileName(baseName)}-${randomUUID()}${extension}`;
   const absolutePath = path.join(LOCAL_BLOG_UPLOAD_DIRECTORY, storedName);
 
@@ -52,9 +79,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Choose an image first.' }, { status: 400 });
     }
 
-    const extension = path.extname(fileValue.name || '').toLowerCase();
+    const extension = getImageExtension(fileValue);
     if (!fileValue.type.startsWith('image/') || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
-      return NextResponse.json({ error: 'Only image files are allowed.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Only JPG, PNG, WEBP, GIF, SVG, HEIC, or HEIF images are allowed.' },
+        { status: 400 },
+      );
     }
 
     if (fileValue.size > 8 * 1024 * 1024) {
@@ -69,7 +99,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ url }, { status: 201 });
     }
 
-    const blob = await put(`blog/${Date.now()}-${sanitizeFileName(fileValue.name || 'blog-image')}`, fileValue, {
+    const baseName = getImageBaseName(fileValue, extension);
+    const blob = await put(`blog/${Date.now()}-${sanitizeFileName(baseName)}${extension}`, fileValue, {
       access: 'public',
       addRandomSuffix: true,
     });
