@@ -13,6 +13,37 @@ type RouteContext = {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function sanitizeDownloadFileName(value: string): string {
+  return value.replace(/[\r\n"\\]/g, '_').trim() || 'book.pdf';
+}
+
+async function buildDownloadResponse(request: NextRequest, fileUrl: string, fileName: string) {
+  const sourceUrl = new URL(fileUrl, request.url);
+  const sourceResponse = await fetch(sourceUrl);
+
+  if (!sourceResponse.ok || !sourceResponse.body) {
+    throw new Error('Unable to fetch the file for download.');
+  }
+
+  const safeName = sanitizeDownloadFileName(fileName);
+  const headers = new Headers();
+  headers.set('Content-Type', sourceResponse.headers.get('content-type') || 'application/octet-stream');
+  headers.set(
+    'Content-Disposition',
+    `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+  );
+
+  const contentLength = sourceResponse.headers.get('content-length');
+  if (contentLength) {
+    headers.set('Content-Length', contentLength);
+  }
+
+  return new NextResponse(sourceResponse.body, {
+    status: 200,
+    headers,
+  });
+}
+
 export async function GET(request: NextRequest, context: RouteContext) {
   const user = await currentUser();
   if (!user) {
@@ -38,13 +69,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Download file not found.' }, { status: 404 });
     }
 
-    /*
-      Vercel Blob public URLs can be opened by anyone who has the raw URL.
-      This route protects normal UI downloads by keeping that URL out of public
-      book listings; strict file secrecy requires private Blob storage or a
-      proxy/streaming strategy that never reveals the storage URL.
-    */
-    return NextResponse.redirect(new URL(fileUrl, request.url), { status: 302 });
+    return buildDownloadResponse(request, fileUrl, book?.fileName || 'book.pdf');
   } catch (error) {
     console.error('GET /api/library/books/[slug]/download failed:', error);
     return NextResponse.json({ error: 'Failed to download book.' }, { status: 500 });
