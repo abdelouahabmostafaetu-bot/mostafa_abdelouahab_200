@@ -326,20 +326,6 @@ export default function AddBlogPostClient() {
     }
   };
 
-  useEffect(() => {
-    if (mode !== 'preview' || !previewHtml) {
-      return;
-    }
-
-    const mathJax = (window as Window & {
-      MathJax?: { typesetPromise?: () => Promise<unknown> };
-    }).MathJax;
-
-    if (mathJax?.typesetPromise) {
-      void mathJax.typesetPromise();
-    }
-  }, [mode, previewHtml]);
-
   const uploadFile = (file: File) =>
     new Promise<string>((resolve, reject) => {
       const requestBody = new FormData();

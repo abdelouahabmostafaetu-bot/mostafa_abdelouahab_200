@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import { DM_Serif_Display, Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
+import 'katex/dist/katex.min.css';
 import '@/styles/globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -28,6 +28,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.mostafaabdelouahab.me'),
   title: {
     default: 'Abdelouahab Mostafa — Mathematics Researcher',
     template: '%s | Abdelouahab Mostafa',
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
     title: 'Abdelouahab Mostafa — Mathematics Researcher',
     description:
       "Personal academic website of Abdelouahab Mostafa, Master student in Fundamental Mathematics.",
-    url: 'https://your-site.vercel.app',
+    url: 'https://www.mostafaabdelouahab.me',
     siteName: 'Abdelouahab Mostafa',
     locale: 'en_US',
     type: 'website',
@@ -67,14 +68,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script id="mathjax-config" strategy="beforeInteractive">
-          {`window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], displayAlign: 'center', displayIndent: '0' }, svg: { fontCache: 'global' } };`}
-        </Script>
-        <Script
-          id="mathjax-script"
-          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
-          strategy="afterInteractive"
-        />
         {/* Favicon */}
         <link
           rel="icon"

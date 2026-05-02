@@ -404,39 +404,44 @@
   }
 }
 
-/* ===== MathJax Styles ===== */
-mjx-container[jax="SVG"] {
+/* ===== LaTeX / KaTeX Styles ===== */
+.katex {
   color: var(--color-text);
+  font-size: 1.03em;
 }
 
-mjx-container[jax="SVG"][display="true"] {
-  display: flex;
-  justify-content: center;
-  margin: 1rem 0;
+.katex-display {
+  position: relative;
+  margin: 1.45rem 0;
   overflow-x: auto;
   overflow-y: hidden;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: rgba(87, 199, 186, 0.055);
+  border: 1px solid rgba(87, 199, 186, 0.12);
   text-align: center;
 }
 
-mjx-container[jax="SVG"][display="true"] > svg {
-  margin: 0 auto;
+.katex-display > .katex {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.katex-html {
+  max-width: 100%;
 }
 
 @media (min-width: 768px) {
-  mjx-container[jax="SVG"][display="true"] {
-    margin: 1.25rem 0;
+  .katex-display {
+    margin: 1.75rem 0;
+    padding: 1rem 1.25rem;
   }
-}
-
-/* ===== Math Copy Button ===== */
-mjx-container[jax="SVG"][display="true"] {
-  position: relative;
 }
 
 .math-copy-btn {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 0.4rem;
+  right: 0.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,7 +457,7 @@ mjx-container[jax="SVG"][display="true"] {
   z-index: 10;
 }
 
-mjx-container[jax="SVG"][display="true"]:hover .math-copy-btn {
+.katex-display:hover .math-copy-btn {
   opacity: 1;
 }
 
@@ -464,6 +469,18 @@ mjx-container[jax="SVG"][display="true"]:hover .math-copy-btn {
 .math-copy-btn.copied {
   color: #22c55e;
   border-color: #22c55e;
+}
+
+@media (max-width: 640px) {
+  .katex {
+    font-size: 0.98em;
+  }
+
+  .katex-display {
+    margin: 1.1rem 0;
+    padding: 0.75rem 0.6rem;
+    border-radius: 10px;
+  }
 }
 
 /* ===== Scrollbar Styles ===== */

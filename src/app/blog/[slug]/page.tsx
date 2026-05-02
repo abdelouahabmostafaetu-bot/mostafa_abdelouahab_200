@@ -8,14 +8,36 @@ import TableOfContents from '@/components/blog/TableOfContents';
 import { TagList } from '@/components/blog/Tag';
 
 export const dynamic = 'force-dynamic';
+const SITE_URL = 'https://www.mostafaabdelouahab.me';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getBlogPost(slug);
   if (!post) return { title: 'Post Not Found' };
+  const blogUrl = `${SITE_URL}/blog/${post.slug}`;
+
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: blogUrl,
+      type: 'article',
+      publishedTime: post.publishedAt || post.createdAt,
+      modifiedTime: post.updatedAt,
+      tags: post.tags,
+      images: post.coverImageUrl ? [{ url: post.coverImageUrl, alt: post.title }] : undefined,
+    },
+    twitter: {
+      card: post.coverImageUrl ? 'summary_large_image' : 'summary',
+      title: post.title,
+      description: post.excerpt,
+      images: post.coverImageUrl ? [post.coverImageUrl] : undefined,
+    },
   };
 }
 

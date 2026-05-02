@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
-import rehypeMathjax from 'rehype-mathjax/browser';
+import rehypeKatex from 'rehype-katex';
 import rehypeSlug from 'rehype-slug';
 import { getMDXComponents } from '@/components/blog/MDXComponents';
 import { renderMarkdownPreviewToHtml } from '@/lib/mdx-preview';
@@ -15,12 +15,7 @@ export async function renderMDX(source: string) {
         mdxOptions: {
           remarkPlugins: [remarkMath, remarkGfm],
           rehypePlugins: [
-            [rehypeMathjax, {
-              tex: {
-                inlineMath: [['$', '$']],
-                displayMath: [['$$', '$$']],
-              },
-            }],
+            [rehypeKatex, { strict: false, throwOnError: false }],
             rehypeSlug,
           ],
         },
