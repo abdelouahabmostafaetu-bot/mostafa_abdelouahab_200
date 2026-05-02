@@ -36,38 +36,24 @@ export default async function BlogPostPage({
   const headings = extractHeadings(post.content);
 
   return (
-    <div className="pt-16 md:pt-28 pb-12 md:pb-20">
-      <div className="max-w-5xl mx-auto px-4 md:px-6">
+    <div className="bg-[radial-gradient(circle_at_50%_0%,rgba(20,184,166,0.10),transparent_34rem)] pb-12 pt-16 md:pb-20 md:pt-28">
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
         <Link
           href="/blog"
-          className="group mb-6 md:mb-10 inline-flex items-center gap-1.5 text-[10px] md:text-xs uppercase tracking-[0.16em] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
+          className="group mb-6 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]/70 px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-text)] md:mb-10 md:text-xs"
         >
           <ArrowLeft size={12} />
           All Posts
         </Link>
 
         <div className="flex gap-10 xl:gap-14">
-          <article className="flex-grow min-w-0">
-            <div className="md:rounded-xl border-none md:border md:border-[var(--color-border)] bg-transparent md:bg-[var(--color-surface)] py-2 md:p-10">
-              <header className="mb-8 md:mb-12 border-b border-[var(--color-border)]/60 pb-6 md:pb-8">
-                <div className="mb-4 md:mb-5 flex flex-wrap items-center gap-2.5 text-xs text-[var(--color-text-tertiary)] uppercase tracking-widest font-medium">
-                  <span>{post.category}</span>
-                </div>
-
-                <h1
-                  className="text-[clamp(1.55rem,8vw,1.95rem)] md:text-[2.8rem] font-semibold text-[var(--color-text)] leading-[1.1]"
-                  style={{ fontFamily: 'var(--font-serif)' }}
-                >
-                  {post.title}
-                </h1>
-
-                {post.excerpt && (
-                  <p className="mt-3 line-clamp-2 text-[13px] leading-5 text-[var(--color-text-secondary)] md:mt-5 md:line-clamp-none md:text-lg md:leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                )}
-
-                <div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-[var(--color-text-secondary)]">
+          <article className="min-w-0 flex-grow">
+            <div className="mx-auto max-w-[52rem] border-none bg-transparent py-2 md:rounded-2xl md:border md:border-[var(--color-border)] md:bg-[var(--color-surface)] md:p-10 md:shadow-[0_24px_80px_rgba(0,0,0,0.22)] lg:p-12">
+              <header className="mb-9 border-b border-[var(--color-border)]/70 pb-7 md:mb-12 md:pb-9">
+                <div className="mb-5 flex flex-wrap items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-tertiary)] md:text-xs">
+                  <span className="rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 px-3 py-1 text-[var(--color-accent)]">
+                    {post.category}
+                  </span>
                   <span>{formatDate(post.publishedAt || post.createdAt)}</span>
                   <span className="inline-flex items-center gap-1.5">
                     <Clock size={12} />
@@ -75,8 +61,21 @@ export default async function BlogPostPage({
                   </span>
                 </div>
 
+                <h1
+                  className="text-[clamp(2.25rem,11vw,3.35rem)] font-normal leading-[0.98] text-[var(--color-text)] md:text-[4.4rem]"
+                  style={{ fontFamily: 'var(--font-serif)' }}
+                >
+                  {post.title}
+                </h1>
+
+                {post.excerpt && (
+                  <p className="mt-5 max-w-3xl text-[14px] leading-6 text-[var(--color-text-secondary)] md:mt-6 md:text-lg md:leading-8">
+                    {post.excerpt}
+                  </p>
+                )}
+
                 {post.tags.length > 0 && (
-                  <div className="mt-5">
+                  <div className="mt-6">
                     <TagList tags={post.tags} size="md" />
                   </div>
                 )}
@@ -86,7 +85,7 @@ export default async function BlogPostPage({
                   <img
                     src={post.coverImageUrl}
                     alt={post.title}
-                    className="mt-8 w-full rounded-2xl border border-[var(--color-border)] object-cover"
+                    className="mt-8 w-full rounded-2xl border border-[var(--color-border)] object-cover shadow-[0_20px_55px_rgba(0,0,0,0.25)]"
                   />
                 ) : null}
 

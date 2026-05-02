@@ -1,22 +1,24 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { Lora, Inter } from 'next/font/google';
+import { DM_Serif_Display, Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import '@/styles/globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-const lora = Lora({
+const dmSerif = DM_Serif_Display({
   subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
   display: 'swap',
-  variable: '--font-serif',
+  variable: '--font-dm-serif',
 });
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-sans',
+  variable: '--font-inter',
 });
 
 export const viewport: Viewport = {
@@ -61,7 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${lora.variable} ${inter.variable}`}
+      className={`${dmSerif.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
       <head>
