@@ -12,13 +12,9 @@ import {
 import {
   ArrowLeft,
   Bold,
-  ChevronDown,
-  ChevronUp,
   Code2,
   Eye,
   Heading2,
-  Heading3,
-  Heading4,
   ImagePlus,
   Italic,
   Link2,
@@ -110,15 +106,6 @@ function hasDraftContent(form: BlogAdminFormState): boolean {
   );
 }
 
-function countWords(content: string): number {
-  const trimmed = content.trim();
-  if (!trimmed) {
-    return 0;
-  }
-
-  return trimmed.split(/\s+/).length;
-}
-
 async function requestPreviewHtml(content: string) {
   const response = await fetch('/api/blog-preview', {
     method: 'POST',
@@ -139,7 +126,6 @@ async function requestPreviewHtml(content: string) {
 
 export default function BlogAdminClient() {
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
-  const coverUploadInputRef = useRef<HTMLInputElement | null>(null);
   const imageUploadInputRef = useRef<HTMLInputElement | null>(null);
   const imagePopoverRef = useRef<HTMLDivElement | null>(null);
   const historyRef = useRef<string[]>([initialFormState.content]);
@@ -150,24 +136,18 @@ export default function BlogAdminClient() {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [form, setForm] = useState<BlogAdminFormState>(initialFormState);
   const [slugTouched, setSlugTouched] = useState(false);
-  const [tagInput, setTagInput] = useState('');
 
   const [mode, setMode] = useState<PreviewMode>('write');
   const [previewHtml, setPreviewHtml] = useState('');
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const [isMetadataOpen, setIsMetadataOpen] = useState(true);
-  const [arePostsOpen, setArePostsOpen] = useState(true);
-  const [postSearch, setPostSearch] = useState('');
 
   const [isImagePopoverOpen, setIsImagePopoverOpen] = useState(false);
   const [imageTab, setImageTab] = useState<ImageTab>('url');
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [imageAltInput, setImageAltInput] = useState('Describe the image');
   const [imageUploadFile, setImageUploadFile] = useState<File | null>(null);
-  const [coverUploadFile, setCoverUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -180,22 +160,7 @@ export default function BlogAdminClient() {
   const [pendingDeletePost, setPendingDeletePost] = useState<BlogPost | null>(null);
 
   const inputClasses =
-    'w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text)] outline-none transition-all duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20';
-
-  const filteredPosts = posts.filter((post) => {
-    const query = postSearch.trim().toLowerCase();
-    if (!query) {
-      return true;
-    }
-
-    return [post.title, post.slug, post.category, ...(post.tags ?? [])]
-      .join(' ')
-      .toLowerCase()
-      .includes(query);
-  });
-
-  const wordCount = countWords(form.content);
-  const characterCount = form.content.length;
+    'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/15';
 
   const pushHistory = (content: string) => {
     const nextHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
@@ -260,7 +225,6 @@ export default function BlogAdminClient() {
     setSelectedPostId(post.id);
     setForm(nextForm);
     setSlugTouched(true);
-    setTagInput('');
     setPreviewHtml('');
     setErrorMessage('');
     setMode('write');
@@ -271,19 +235,15 @@ export default function BlogAdminClient() {
     setSelectedPostId(null);
     setForm(initialFormState);
     setSlugTouched(false);
-    setTagInput('');
     setPreviewHtml('');
     setErrorMessage('');
     setMode('write');
     setImageUploadFile(null);
-    setCoverUploadFile(null);
     setIsImagePopoverOpen(false);
     resetHistory(initialFormState.content);
   };
 
   const loadPosts = async (postIdToSelect?: string) => {
-    setIsLoadingPosts(true);
-
     try {
       const response = await fetch('/api/blog-posts?admin=1', {
         cache: 'no-store',
@@ -315,8 +275,6 @@ export default function BlogAdminClient() {
       const message = error instanceof Error ? error.message : 'Failed to load posts.';
       setErrorMessage(message);
       showToast('error', message);
-    } finally {
-      setIsLoadingPosts(false);
     }
   };
 
@@ -335,16 +293,6 @@ export default function BlogAdminClient() {
       slug: slugify(current.title),
     }));
   }, [form.title, slugTouched]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    if (window.innerWidth < 768) {
-      setIsMetadataOpen(false);
-    }
-  }, []);
 
   useEffect(() => {
     try {
@@ -447,32 +395,6 @@ export default function BlogAdminClient() {
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isImagePopoverOpen, pendingDeletePost, showRestoreDraft]);
-
-  const addTag = (rawValue: string) => {
-    const nextTag = rawValue.replace(/,+$/, '').trim();
-    if (!nextTag) {
-      return;
-    }
-
-    setForm((current) => {
-      if (current.tags.some((tag) => tag.toLowerCase() === nextTag.toLowerCase())) {
-        return current;
-      }
-
-      return {
-        ...current,
-        tags: [...current.tags, nextTag],
-      };
-    });
-    setTagInput('');
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setForm((current) => ({
-      ...current,
-      tags: current.tags.filter((tag) => tag !== tagToRemove),
-    }));
-  };
 
   const insertSnippet = (before: string, after = '', fallback = '') => {
     const textarea = editorRef.current;
@@ -616,30 +538,6 @@ export default function BlogAdminClient() {
       xhr.send(requestBody);
     });
 
-  const handleCoverUpload = async (file: File) => {
-    setCoverUploadFile(file);
-    setIsUploadingImage(true);
-    setUploadProgress(0);
-    setErrorMessage('');
-
-    try {
-      const url = await uploadFile(file);
-      setForm((current) => ({ ...current, coverImageUrl: url }));
-      setCoverUploadFile(null);
-      showToast('success', 'Cover image uploaded.');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to upload cover image.';
-      setErrorMessage(message);
-      showToast('error', message);
-    } finally {
-      setIsUploadingImage(false);
-      setUploadProgress(0);
-      if (coverUploadInputRef.current) {
-        coverUploadInputRef.current.value = '';
-      }
-    }
-  };
-
   const handleInlineImageUpload = async () => {
     if (!imageUploadFile) {
       showToast('error', 'Choose an image first.');
@@ -770,7 +668,6 @@ export default function BlogAdminClient() {
     setSelectedPostId(pendingRestoreDraft.selectedPostId);
     setForm(pendingRestoreDraft.form);
     setSlugTouched(Boolean(pendingRestoreDraft.form.slug));
-    setTagInput('');
     setAutosavedAt(pendingRestoreDraft.savedAt);
     setPreviewHtml('');
     setMode('write');
@@ -801,37 +698,37 @@ export default function BlogAdminClient() {
 
     if (key === 'b') {
       event.preventDefault();
-      insertSnippet('**', '**', 'important idea');
+      insertSnippet('**', '**', 'text');
       return;
     }
 
     if (key === 'i') {
       event.preventDefault();
-      insertSnippet('*', '*', 'emphasis');
+      insertSnippet('*', '*', 'text');
       return;
     }
 
     if (key === 'k') {
       event.preventDefault();
-      insertSnippet('`', '`', 'inline code');
+      insertSnippet('`', '`', 'code');
       return;
     }
 
     if (key === 'm' && event.shiftKey) {
       event.preventDefault();
-      insertSnippet('\n$$\n', '\n$$\n', '\\int_0^1 x^2\\,dx = \\frac13');
+      insertBlock('\n$$\nA v = \\lambda v\n$$\n');
       return;
     }
 
     if (key === 'm') {
       event.preventDefault();
-      insertSnippet('$', '$', 'f(x)=x^2');
+      insertSnippet('$', '$', 'x^2 + y^2 = z^2');
       return;
     }
 
     if (key === 'l') {
       event.preventDefault();
-      insertSnippet('[', '](https://example.com)', 'link text');
+      insertSnippet('[', '](url)', 'text');
       return;
     }
 
@@ -847,64 +744,40 @@ export default function BlogAdminClient() {
     }
   };
 
-  const handleTagKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' || event.key === ',' || event.key === 'Tab') {
-      event.preventDefault();
-      addTag(tagInput);
-      return;
-    }
-
-    if (event.key === 'Backspace' && !tagInput && form.tags.length) {
-      event.preventDefault();
-      const lastTag = form.tags[form.tags.length - 1];
-      if (lastTag) {
-        removeTag(lastTag);
-      }
-    }
-  };
-
   const handleToolbarMouseDown = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
   const currentPost = posts.find((post) => post.id === selectedPostId) ?? null;
-  const slugPreview = form.slug.trim() || 'your-slug-here';
-  const autosaveLabel = autosavedAt
-    ? `Autosaved ${new Date(autosavedAt).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-      })}`
-    : 'Autosave active';
   const toolbarButtonClasses =
-    'inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-text-secondary)] transition-all duration-150 hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text)]';
+    'inline-flex h-8 items-center justify-center gap-1 rounded px-2 text-xs font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]';
   const iconSize = 15;
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto flex w-full max-w-5xl flex-col px-4 pb-20 pt-28 sm:px-6 lg:px-8">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+      <div className="mx-auto flex w-full max-w-5xl flex-col px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="mb-3 flex items-center gap-2">
+            <div className="mb-2 flex items-center gap-2">
               <SiteIcon name="notebook" alt="" className="h-4 w-4" />
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-accent)]">
                 Blog Admin
               </p>
             </div>
             <h1
-              className="text-3xl font-semibold sm:text-4xl"
+              className="text-2xl font-semibold sm:text-3xl"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
-              Stack-style writing studio
+              Write a blog post
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-text-secondary)]">
-              Write in Markdown, preview mathematics with KaTeX, upload images, and
-              manage your MongoDB posts from one clean editor.
+              A practical Markdown editor for academic notes, LaTeX, and clean post management.
             </p>
           </div>
 
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
           >
             <ArrowLeft size={14} />
             Back to blog
@@ -912,28 +785,23 @@ export default function BlogAdminClient() {
         </div>
 
         {errorMessage ? (
-          <div className="mb-6 rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mb-6 rounded-md border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {errorMessage}
           </div>
         ) : null}
 
-        <div className="space-y-8">
+        <div className="space-y-6">
             <div className="mx-auto w-full max-w-4xl">
-              <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-muted)]/90 shadow-[0_20px_80px_rgba(0,0,0,0.22)] transition-all duration-300">
-                <div className="border-b border-[var(--color-border)] px-5 py-5 sm:px-8">
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]">
+                <div className="px-4 py-4 sm:px-6">
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-                        {currentPost ? 'Editing post' : 'New post'}
-                      </p>
-                      <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-                        Keep the metadata compact, then focus on the writing area below.
-                      </p>
-                    </div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
+                      {currentPost ? 'Editing post' : 'New post'}
+                    </p>
                     <button
                       type="button"
                       onClick={resetComposer}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                      className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
                     >
                       <SiteIcon name="add" alt="" className="h-4 w-4" />
                       New post
@@ -941,227 +809,59 @@ export default function BlogAdminClient() {
                   </div>
                 </div>
 
-                <div className="border-b border-[var(--color-border)] px-5 py-5 sm:px-8">
-                  <button
-                    type="button"
-                    onClick={() => setIsMetadataOpen((current) => !current)}
-                    className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/70 px-4 py-3 text-left transition-all duration-200 hover:border-[var(--color-accent)]/60"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-[var(--color-text)]">
-                        Post details
-                      </p>
-                      <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                        Title, slug, tags, cover image, and publication status.
-                      </p>
+                <div className="border-t border-[var(--color-border)] px-4 py-5 sm:px-6">
+                  <div className="space-y-4">
+                    <div className="border-b border-[var(--color-border)] pb-3">
+                      <input
+                        value={form.title}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            title: event.target.value,
+                          }))
+                        }
+                        placeholder="Title"
+                        className="w-full border-0 bg-transparent px-0 py-1 text-2xl font-semibold text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-tertiary)] sm:text-3xl"
+                        style={{ fontFamily: 'var(--font-serif)' }}
+                      />
                     </div>
-                    {isMetadataOpen ? (
-                      <ChevronUp size={16} className="text-[var(--color-text-secondary)]" />
-                    ) : (
-                      <ChevronDown size={16} className="text-[var(--color-text-secondary)]" />
-                    )}
-                  </button>
 
-                  <div
-                    className={`grid overflow-hidden transition-all duration-300 ${
-                      isMetadataOpen ? 'mt-5 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                    }`}
-                  >
-                    <div className="min-h-0">
-                      <div className="space-y-5 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-bg)]/60 p-4 sm:p-5">
-                        <div className="space-y-3">
-                          <input
-                            value={form.title}
-                            onChange={(event) =>
-                              setForm((current) => ({
-                                ...current,
-                                title: event.target.value,
-                              }))
-                            }
-                            placeholder="Post title..."
-                            className="w-full border-0 bg-transparent px-0 py-0 text-3xl font-semibold text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-tertiary)] sm:text-4xl"
-                            style={{ fontFamily: 'var(--font-serif)' }}
-                          />
-                          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/70 px-4 py-3">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-                              Slug preview
-                            </p>
-                            <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-                              <p className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-secondary)]">
-                                mostafaabdelouahab.me/blog/{slugPreview}
-                              </p>
-                              <input
-                                value={form.slug}
-                                onChange={(event) => {
-                                  setSlugTouched(true);
-                                  setForm((current) => ({
-                                    ...current,
-                                    slug: slugify(event.target.value),
-                                  }));
-                                }}
-                                placeholder="your-slug-here"
-                                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm outline-none transition-all focus:border-[var(--color-accent)] sm:max-w-xs"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-4 lg:grid-cols-2">
-                          <div className="space-y-2">
-                            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-                              Category
-                            </label>
-                            <input
-                              value={form.category}
-                              onChange={(event) =>
-                                setForm((current) => ({
-                                  ...current,
-                                  category: event.target.value,
-                                }))
-                              }
-                              placeholder="Mathematics"
-                              className={inputClasses}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-                              Tags
-                            </label>
-                            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-3">
-                              <div className="mb-3 flex flex-wrap gap-2">
-                                {form.tags.map((tag) => (
-                                  <span
-                                    key={tag}
-                                    className="inline-flex items-center gap-2 rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 px-3 py-1 text-xs font-medium text-[var(--color-accent)]"
-                                  >
-                                    {tag}
-                                    <button
-                                      type="button"
-                                      onClick={() => removeTag(tag)}
-                                      className="text-[var(--color-accent)]/80 transition hover:text-[var(--color-accent)]"
-                                      aria-label={`Remove ${tag}`}
-                                    >
-                                      <X size={12} />
-                                    </button>
-                                  </span>
-                                ))}
-                              </div>
-                              <input
-                                value={tagInput}
-                                onChange={(event) => setTagInput(event.target.value)}
-                                onKeyDown={handleTagKeyDown}
-                                onBlur={() => addTag(tagInput)}
-                                placeholder="Type a tag and press Enter"
-                                className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-[var(--color-text-tertiary)]"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-2 lg:col-span-2">
-                            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-                              Excerpt
-                            </label>
-                            <textarea
-                              value={form.excerpt}
-                              onChange={(event) =>
-                                setForm((current) => ({
-                                  ...current,
-                                  excerpt: event.target.value,
-                                }))
-                              }
-                              rows={2}
-                              placeholder="Short summary for the blog listing."
-                              className={`${inputClasses} resize-none`}
-                            />
-                          </div>
-
-                          <div className="space-y-2 lg:col-span-2">
-                            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-                              Cover image
-                            </label>
-                            <div className="flex flex-col gap-3 sm:flex-row">
-                              <input
-                                value={form.coverImageUrl}
-                                onChange={(event) =>
-                                  setForm((current) => ({
-                                    ...current,
-                                    coverImageUrl: event.target.value,
-                                  }))
-                                }
-                                placeholder="https://..."
-                                className={inputClasses}
-                              />
-                              <input
-                                ref={coverUploadInputRef}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(event) => {
-                                  const file = event.target.files?.[0];
-                                  if (file) {
-                                    void handleCoverUpload(file);
-                                  }
-                                }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => coverUploadInputRef.current?.click()}
-                                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                              >
-                                <Upload size={14} />
-                                Upload cover
-                              </button>
-                            </div>
-                            {coverUploadFile ? (
-                              <p className="text-xs text-[var(--color-text-secondary)]">
-                                Uploading {coverUploadFile.name}...
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/70 px-4 py-4">
-                          <div>
-                            <p className="text-sm font-medium text-[var(--color-text)]">
-                              Published status
-                            </p>
-                            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                              Toggle the default status for this post while editing.
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setForm((current) => ({
-                                ...current,
-                                isPublished: !current.isPublished,
-                              }))
-                            }
-                            className={`relative inline-flex h-8 w-16 items-center rounded-full border transition-all duration-200 ${
-                              form.isPublished
-                                ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/20'
-                                : 'border-[var(--color-border)] bg-[var(--color-bg)]'
-                            }`}
-                            aria-pressed={form.isPublished}
-                          >
-                            <span
-                              className={`absolute top-1 h-6 w-6 rounded-full bg-[var(--color-accent)] transition-all duration-200 ${
-                                form.isPublished ? 'left-9' : 'left-1 bg-[var(--color-text-secondary)]'
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      </div>
+                    <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
+                      <p className="text-[var(--color-text-secondary)]">
+                        {form.isPublished ? 'Ready to publish' : 'Saving as draft'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((current) => ({
+                            ...current,
+                            isPublished: !current.isPublished,
+                          }))
+                        }
+                        className={`relative inline-flex h-8 w-16 items-center rounded-full border transition-all duration-200 ${
+                          form.isPublished
+                            ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/20'
+                            : 'border-[var(--color-border)] bg-[var(--color-bg)]'
+                        }`}
+                        aria-pressed={form.isPublished}
+                      >
+                        <span
+                          className={`absolute top-1 h-6 w-6 rounded-full bg-[var(--color-accent)] transition-all duration-200 ${
+                            form.isPublished
+                              ? 'left-9'
+                              : 'left-1 bg-[var(--color-text-secondary)]'
+                          }`}
+                        />
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                <div className="px-5 py-5 sm:px-8 sm:py-6">
-                  <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] shadow-[0_0_0_1px_rgba(255,255,255,0.02)] transition-all duration-200 focus-within:border-[var(--color-accent)] focus-within:shadow-[0_0_0_4px_rgba(79,152,163,0.10)]">
-                    <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-3">
+                <div className="px-4 pb-5 sm:px-6">
+                  <div className="overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] transition-all duration-200 focus-within:border-[var(--color-accent)]">
+                    <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-muted)]/60 px-2 py-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]/70 p-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
@@ -1174,25 +874,7 @@ export default function BlogAdminClient() {
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => insertHeading(3)}
-                            className={toolbarButtonClasses}
-                            title="Heading 3"
-                          >
-                            <Heading3 size={iconSize} />
-                          </button>
-                          <button
-                            type="button"
-                            onMouseDown={handleToolbarMouseDown}
-                            onClick={() => insertHeading(4)}
-                            className={toolbarButtonClasses}
-                            title="Heading 4"
-                          >
-                            <Heading4 size={iconSize} />
-                          </button>
-                          <button
-                            type="button"
-                            onMouseDown={handleToolbarMouseDown}
-                            onClick={() => insertSnippet('**', '**', 'important idea')}
+                            onClick={() => insertSnippet('**', '**', 'text')}
                             className={toolbarButtonClasses}
                             title="Bold (Ctrl+B)"
                           >
@@ -1201,7 +883,7 @@ export default function BlogAdminClient() {
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => insertSnippet('*', '*', 'emphasis')}
+                            onClick={() => insertSnippet('*', '*', 'text')}
                             className={toolbarButtonClasses}
                             title="Italic (Ctrl+I)"
                           >
@@ -1209,11 +891,11 @@ export default function BlogAdminClient() {
                           </button>
                         </div>
 
-                        <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]/70 p-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => insertSnippet('`', '`', 'inline code')}
+                            onClick={() => insertSnippet('`', '`', 'code')}
                             className={toolbarButtonClasses}
                             title="Inline code (Ctrl+K)"
                           >
@@ -1222,7 +904,7 @@ export default function BlogAdminClient() {
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => insertSnippet('$', '$', 'f(x)=x^2')}
+                            onClick={() => insertSnippet('$', '$', 'x^2 + y^2 = z^2')}
                             className={toolbarButtonClasses}
                             title="Inline math (Ctrl+M)"
                           >
@@ -1231,28 +913,24 @@ export default function BlogAdminClient() {
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() =>
-                              insertSnippet('\n$$\n', '\n$$\n', '\\int_0^1 x^2\\,dx = \\frac13')
-                            }
+                            onClick={() => insertBlock('\n$$\nA v = \\lambda v\n$$\n')}
                             className={toolbarButtonClasses}
-                            title="Block math (Ctrl+Shift+M)"
+                            title="LaTeX block (Ctrl+Shift+M)"
                           >
-                            <div className="flex items-center gap-0.5 text-[11px] font-semibold">
-                              <Sigma size={12} />
-                              <span>□</span>
-                            </div>
+                            <Sigma size={iconSize} />
                           </button>
                         </div>
 
-                        <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]/70 p-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => insertSnippet('[', '](https://example.com)', 'link text')}
+                            onClick={() => insertSnippet('[', '](url)', 'text')}
                             className={toolbarButtonClasses}
                             title="Insert link (Ctrl+L)"
                           >
                             <Link2 size={iconSize} />
+                            Link
                           </button>
                           <div className="relative">
                             <button
@@ -1263,14 +941,15 @@ export default function BlogAdminClient() {
                               title="Insert image"
                             >
                               <ImagePlus size={iconSize} />
+                              Image
                             </button>
 
                             {isImagePopoverOpen ? (
                               <div
                                 ref={imagePopoverRef}
-                                className="absolute left-0 top-10 z-20 w-[min(92vw,20rem)] rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)]"
+                                className="absolute left-0 top-10 z-20 w-[min(92vw,20rem)] rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.28)]"
                               >
-                                <div className="mb-3 flex rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-1">
+                                <div className="mb-3 flex rounded-md border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-1">
                                   <button
                                     type="button"
                                     onClick={() => setImageTab('url')}
@@ -1314,7 +993,7 @@ export default function BlogAdminClient() {
                                       <button
                                         type="button"
                                         onClick={() => insertImageMarkdown(imageUrlInput, imageAltInput)}
-                                        className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[#0f0e0d]"
+                                        className="inline-flex w-full items-center justify-center rounded-md bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[#0f0e0d]"
                                       >
                                         Insert image
                                       </button>
@@ -1346,7 +1025,7 @@ export default function BlogAdminClient() {
                                             setImageUploadFile(file);
                                           }
                                         }}
-                                        className={`flex w-full flex-col items-center justify-center rounded-2xl border border-dashed px-4 py-6 text-center text-sm transition-all ${
+                                        className={`flex w-full flex-col items-center justify-center rounded-md border border-dashed px-4 py-6 text-center text-sm transition-all ${
                                           isDraggingImage
                                             ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]'
                                             : 'border-[var(--color-border)] text-[var(--color-text-secondary)]'
@@ -1372,7 +1051,7 @@ export default function BlogAdminClient() {
                                         type="button"
                                         onClick={() => void handleInlineImageUpload()}
                                         disabled={isUploadingImage}
-                                        className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[#0f0e0d] disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="inline-flex w-full items-center justify-center rounded-md bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[#0f0e0d] disabled:cursor-not-allowed disabled:opacity-60"
                                       >
                                         {isUploadingImage ? 'Uploading...' : 'Upload and insert'}
                                       </button>
@@ -1393,38 +1072,41 @@ export default function BlogAdminClient() {
                           </button>
                         </div>
 
-                        <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]/70 p-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => prefixSelectedLines('1. ', 'List item')}
+                            onClick={() => prefixSelectedLines('1. ', 'item')}
                             className={toolbarButtonClasses}
                             title="Ordered list"
                           >
                             <ListOrdered size={iconSize} />
+                            Numbered list
                           </button>
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => prefixSelectedLines('- ', 'List item')}
+                            onClick={() => prefixSelectedLines('- ', 'item')}
                             className={toolbarButtonClasses}
                             title="Unordered list"
                           >
                             <List size={iconSize} />
+                            Bulleted list
                           </button>
                           <button
                             type="button"
                             onMouseDown={handleToolbarMouseDown}
-                            onClick={() => prefixSelectedLines('> ', 'Quoted text')}
+                            onClick={() => prefixSelectedLines('> ', 'quote')}
                             className={toolbarButtonClasses}
                             title="Blockquote"
                           >
                             <Quote size={iconSize} />
+                            Quote
                           </button>
                         </div>
 
                         <div className="ml-auto flex items-center gap-2">
-                          <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]/70 p-1">
+                          <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onMouseDown={handleToolbarMouseDown}
@@ -1445,11 +1127,11 @@ export default function BlogAdminClient() {
                             </button>
                           </div>
 
-                          <div className="flex rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1">
+                          <div className="flex rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] p-1">
                             <button
                               type="button"
                               onClick={() => setMode('write')}
-                              className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                              className={`rounded px-3 py-1.5 text-xs font-semibold transition-all ${
                                 mode === 'write'
                                   ? 'bg-[var(--color-accent)] text-[#0f0e0d]'
                                   : 'text-[var(--color-text-secondary)]'
@@ -1460,7 +1142,7 @@ export default function BlogAdminClient() {
                             <button
                               type="button"
                               onClick={() => setMode('preview')}
-                              className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                              className={`rounded px-3 py-1.5 text-xs font-semibold transition-all ${
                                 mode === 'preview'
                                   ? 'bg-[var(--color-accent)] text-[#0f0e0d]'
                                   : 'text-[var(--color-text-secondary)]'
@@ -1473,7 +1155,7 @@ export default function BlogAdminClient() {
                       </div>
                     </div>
 
-                    <div className="relative min-h-[540px]">
+                    <div className="relative min-h-[350px]">
                       {mode === 'write' ? (
                         <textarea
                           ref={editorRef}
@@ -1481,16 +1163,16 @@ export default function BlogAdminClient() {
                           onChange={handleEditorChange}
                           onKeyDown={handleEditorKeyDown}
                           placeholder="Write your post in Markdown. Use $...$ for inline math and $$...$$ for display math."
-                          className="min-h-[540px] w-full resize-y border-0 bg-transparent px-5 py-5 font-mono text-sm leading-7 text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-tertiary)] sm:px-6 sm:py-6"
+                          className="min-h-[350px] w-full resize-y border-0 bg-transparent px-4 py-4 font-mono text-sm leading-7 text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-tertiary)] sm:px-5"
                           style={{
                             fontFamily:
                               '"JetBrains Mono", "Fira Code", Consolas, monospace',
                           }}
                         />
                       ) : (
-                        <div className="min-h-[540px] px-5 py-5 sm:px-6 sm:py-6">
+                        <div className="min-h-[350px] px-4 py-4 sm:px-5">
                           {isPreviewLoading ? (
-                            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/70 px-4 py-6 text-sm text-[var(--color-text-secondary)]">
+                            <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-4 py-6 text-sm text-[var(--color-text-secondary)]">
                               Rendering preview...
                             </div>
                           ) : (
@@ -1504,17 +1186,12 @@ export default function BlogAdminClient() {
                       )}
                     </div>
 
-                    <div className="sticky bottom-0 flex flex-col gap-4 border-t border-[var(--color-border)] bg-[var(--color-bg-muted)]/95 px-5 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                      <div className="text-xs text-[var(--color-text-secondary)]">
-                        {wordCount} words · {characterCount} characters · {autosaveLabel}
-                      </div>
-
-                      <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="flex flex-col gap-2 border-t border-[var(--color-border)] bg-[var(--color-bg-muted)]/95 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-5">
                         <button
                           type="button"
                           onClick={() => void persistPost(false)}
                           disabled={isSaving}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <SiteIcon name="document" alt="" className="h-4 w-4" />
                           Save draft
@@ -1523,16 +1200,16 @@ export default function BlogAdminClient() {
                           type="button"
                           onClick={() => void persistPost(true)}
                           disabled={isSaving}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[#0f0e0d] transition-all duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[#0f0e0d] transition-all duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <SiteIcon name="document" alt="" className="h-4 w-4" />
-                          {isSaving ? 'Saving...' : 'Publish post'}
+                          {isSaving ? 'Saving...' : currentPost ? 'Update post' : 'Publish post'}
                         </button>
                         {currentPost ? (
                           <button
                             type="button"
                             onClick={() => setPendingDeletePost(currentPost)}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/30 px-4 py-3 text-sm font-medium text-red-300 transition-all duration-150 hover:border-red-400/60 hover:bg-red-500/10"
+                            className="inline-flex items-center justify-center gap-2 rounded-md border border-red-500/30 px-4 py-2.5 text-sm font-medium text-red-300 transition-all duration-150 hover:border-red-400/60 hover:bg-red-500/10"
                           >
                             <SiteIcon name="delete" alt="" className="h-4 w-4" />
                             Delete
@@ -1543,128 +1220,7 @@ export default function BlogAdminClient() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mx-auto w-full max-w-4xl rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-muted)]/90 shadow-[0_20px_80px_rgba(0,0,0,0.18)]">
-              <div className="border-b border-[var(--color-border)] px-5 py-5 sm:px-8">
-                <button
-                  type="button"
-                  onClick={() => setArePostsOpen((current) => !current)}
-                  className="flex w-full items-center justify-between gap-4 text-left"
-                >
-                  <div>
-                    <h2
-                      className="text-2xl font-semibold"
-                      style={{ fontFamily: 'var(--font-serif)' }}
-                    >
-                      Existing Posts ({posts.length})
-                    </h2>
-                    <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-                      Search, reopen, and manage your published posts and drafts.
-                    </p>
-                  </div>
-                  {arePostsOpen ? (
-                    <ChevronUp size={18} className="text-[var(--color-text-secondary)]" />
-                  ) : (
-                    <ChevronDown size={18} className="text-[var(--color-text-secondary)]" />
-                  )}
-                </button>
-              </div>
-
-              <div
-                className={`grid overflow-hidden transition-all duration-300 ${
-                  arePostsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                }`}
-              >
-                <div className="min-h-0">
-                  <div className="space-y-5 px-5 py-5 sm:px-8 sm:py-6">
-                    <div className="relative">
-                      <SiteIcon
-                        name="search"
-                        alt=""
-                        className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-                      />
-                      <input
-                        value={postSearch}
-                        onChange={(event) => setPostSearch(event.target.value)}
-                        placeholder="Search posts, categories, or tags"
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] py-3 pl-11 pr-4 text-sm outline-none transition-all focus:border-[var(--color-accent)]"
-                      />
-                    </div>
-
-                    {isLoadingPosts ? (
-                      <div className="space-y-3">
-                        {Array.from({ length: 3 }).map((_, index) => (
-                          <div
-                            key={index}
-                            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 animate-pulse"
-                          >
-                            <div className="mb-3 h-4 w-2/3 rounded bg-[var(--color-bg-elevated)]" />
-                            <div className="h-3 w-1/2 rounded bg-[var(--color-bg-elevated)]" />
-                          </div>
-                        ))}
-                      </div>
-                    ) : filteredPosts.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-10 text-center text-sm text-[var(--color-text-secondary)]">
-                        No posts matched your search.
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {filteredPosts.map((post) => (
-                          <div
-                            key={post.id}
-                            className={`rounded-2xl border px-4 py-4 transition-all duration-150 ${
-                              selectedPostId === post.id
-                                ? 'border-[var(--color-accent)] bg-[var(--color-bg)] shadow-[0_0_0_3px_rgba(79,152,163,0.10)]'
-                                : 'border-[var(--color-border)] bg-[var(--color-bg)] hover:border-[var(--color-accent)]/50'
-                            }`}
-                          >
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                              <button
-                                type="button"
-                                onClick={() => applySelectedPost(post)}
-                                className="min-w-0 flex-1 text-left"
-                              >
-                                <SiteIcon name="edit" alt="" className="float-left mr-3 mt-1 h-4 w-4" />
-                                <p className="truncate text-lg font-semibold text-[var(--color-text)]">
-                                  {post.title}
-                                </p>
-                                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                                  <span
-                                    className={`rounded-full px-2.5 py-1 font-medium ${
-                                      post.isPublished
-                                        ? 'bg-emerald-500/15 text-emerald-300'
-                                        : 'bg-amber-500/15 text-amber-300'
-                                    }`}
-                                  >
-                                    {post.isPublished ? 'Published' : 'Draft'}
-                                  </span>
-                                  <span className="rounded-full bg-[var(--color-bg-elevated)] px-2.5 py-1 text-[var(--color-text-secondary)]">
-                                    {post.category}
-                                  </span>
-                                  <span className="text-[var(--color-text-tertiary)]">
-                                    {formatDate(post.updatedAt || post.createdAt)}
-                                  </span>
-                                </div>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => setPendingDeletePost(post)}
-                                className="inline-flex items-center justify-center rounded-xl border border-red-500/30 p-3 text-red-300 transition-all duration-150 hover:border-red-400/60 hover:bg-red-500/10"
-                                title="Delete post"
-                              >
-                                <SiteIcon name="delete" alt="" className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
         {showRestoreDraft && pendingRestoreDraft ? (
@@ -1773,3 +1329,4 @@ export default function BlogAdminClient() {
     </section>
   );
 }
+
