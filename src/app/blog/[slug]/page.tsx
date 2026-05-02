@@ -6,7 +6,6 @@ import { renderMDX, extractHeadings } from '@/lib/mdx';
 import { formatDate } from '@/lib/utils';
 import TableOfContents from '@/components/blog/TableOfContents';
 import { TagList } from '@/components/blog/Tag';
-import PdfDownloadButton from '@/components/blog/PdfDownloadButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,8 +87,6 @@ export default async function BlogPostPage({
                     className="mt-8 w-full rounded-2xl border border-[var(--color-border)] object-cover shadow-[0_20px_55px_rgba(0,0,0,0.25)]"
                   />
                 ) : null}
-
-                <PdfDownloadButton title={post.title} coverImageUrl={post.coverImageUrl} />
               </header>
 
               <div className="blog-content prose-academic">
