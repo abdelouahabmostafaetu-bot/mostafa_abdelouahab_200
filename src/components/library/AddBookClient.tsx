@@ -30,22 +30,8 @@ const initialFormState: AdminFormState = {
 const PDF_ACCEPT = '.pdf,application/pdf';
 const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
 
-async function uploadBlobFile(endpoint: string, file: File): Promise<UploadedBlob> {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    body: formData,
-  });
-
-  const payload = (await response.json().catch(() => null)) as
-    | (Partial<UploadedBlob> & { error?: string })
-    | null;
-
-  if (!response.ok) {
-    throw new Error(payload?.error ?? 'Upload failed.');
-  }
+function parseUploadedBlobPayload(value: unknown): UploadedBlob {
+  const payload = value as Partial<UploadedBlob> | null;
 
   if (
     !payload?.url ||
@@ -66,12 +52,56 @@ async function uploadBlobFile(endpoint: string, file: File): Promise<UploadedBlo
   };
 }
 
+function uploadBlobFile(
+  endpoint: string,
+  file: File,
+  onProgress: (percent: number) => void,
+): Promise<UploadedBlob> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const request = new XMLHttpRequest();
+    request.open('POST', endpoint);
+
+    request.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
+    };
+
+    request.onload = () => {
+      try {
+        const payload = JSON.parse(request.responseText || 'null') as
+          | (Partial<UploadedBlob> & { error?: string })
+          | null;
+
+        if (request.status < 200 || request.status >= 300) {
+          reject(new Error(payload?.error ?? 'Upload failed.'));
+          return;
+        }
+
+        onProgress(100);
+        resolve(parseUploadedBlobPayload(payload));
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error('Upload failed.'));
+      }
+    };
+
+    request.onerror = () => reject(new Error('Upload failed. Check your connection.'));
+    request.onabort = () => reject(new Error('Upload was cancelled.'));
+
+    onProgress(0);
+    request.send(formData);
+  });
+}
+
 export default function AddBookClient() {
   const [form, setForm] = useState<AdminFormState>(initialFormState);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedCover, setSelectedCover] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadStage, setUploadStage] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -82,6 +112,7 @@ export default function AddBookClient() {
     setErrorMessage('');
     setStatusMessage('');
     setUploadStage('');
+    setUploadProgress(0);
 
     try {
       if (!selectedFile) {
@@ -89,15 +120,25 @@ export default function AddBookClient() {
       }
 
       setUploadStage('Uploading PDF...');
-      const uploadedFile = await uploadBlobFile('/api/library/upload-book-file', selectedFile);
+      const uploadedFile = await uploadBlobFile(
+        '/api/library/upload-book-file',
+        selectedFile,
+        setUploadProgress,
+      );
 
       let uploadedCover: UploadedBlob | null = null;
       if (selectedCover) {
         setUploadStage('Uploading cover...');
-        uploadedCover = await uploadBlobFile('/api/library/upload-cover', selectedCover);
+        setUploadProgress(0);
+        uploadedCover = await uploadBlobFile(
+          '/api/library/upload-cover',
+          selectedCover,
+          setUploadProgress,
+        );
       }
 
       setUploadStage('Saving metadata...');
+      setUploadProgress(100);
       const response = await fetch('/api/library/books', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -120,6 +161,8 @@ export default function AddBookClient() {
         throw new Error(payload?.error ?? 'Failed to save book metadata.');
       }
 
+      setUploadStage('Finished');
+      setUploadProgress(100);
       setStatusMessage('Book added successfully.');
       setForm(initialFormState);
       setSelectedFile(null);
@@ -132,7 +175,6 @@ export default function AddBookClient() {
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
-      setUploadStage('');
       setIsSubmitting(false);
     }
   };
@@ -261,6 +303,29 @@ export default function AddBookClient() {
           >
             {isSubmitting ? uploadStage || 'Saving...' : 'Save Book'}
           </button>
+
+          {(isSubmitting || uploadStage === 'Finished') ? (
+            <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3">
+              <div className="mb-2 flex items-center justify-between gap-3 text-xs text-[var(--color-text-secondary)]">
+                <span>{uploadStage || 'Preparing upload...'}</span>
+                <span className="font-mono text-[var(--color-accent)]">
+                  {uploadProgress}%{uploadStage === 'Finished' ? ' finish' : ''}
+                </span>
+              </div>
+              <div
+                className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-bg-muted)]"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={uploadProgress}
+              >
+                <div
+                  className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-200"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          ) : null}
         </form>
 
         {statusMessage ? (

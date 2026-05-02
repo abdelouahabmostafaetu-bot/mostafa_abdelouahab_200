@@ -227,6 +227,26 @@
     object-fit: contain;
   }
 
+  .problem-content {
+    line-height: 1.75;
+  }
+
+  .problem-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.25rem auto;
+    border-radius: 14px;
+    object-fit: contain;
+  }
+
+  .problem-content mjx-container,
+  .problem-content .katex-display {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
   .prose-academic hr {
     @apply my-10 md:my-12;
     border: 0;
@@ -318,6 +338,11 @@
   }
 
   .blog-content img {
+    margin: 1rem auto;
+    border-radius: 10px;
+  }
+
+  .problem-content img {
     margin: 1rem auto;
     border-radius: 10px;
   }

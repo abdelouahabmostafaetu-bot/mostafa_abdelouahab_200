@@ -15,6 +15,7 @@ import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
 const navLinks = [
   { href: '/', label: 'About', icon: 'home' },
   { href: '/blog', label: 'Blog', icon: 'blog' },
+  { href: '/problems-with-coffee', label: 'Problems', icon: 'equation' },
   { href: '/search', label: 'Search', icon: 'search' },
   { href: '/library', label: 'My Library', icon: 'library' },
 ] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
