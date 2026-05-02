@@ -822,7 +822,6 @@ function renderTextResults(items, quota, stats) {
   DOM.results.appendChild(frag);
 
   renderPagination(searchText);
-  if (stats) renderTextAnalytics(stats);
 
   // ← أضف هذا فقط
   requestAnimationFrame(() => {

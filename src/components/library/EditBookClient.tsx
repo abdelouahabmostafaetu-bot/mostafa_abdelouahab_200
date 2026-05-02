@@ -12,69 +12,47 @@ type AdminFormState = {
   fileUrl: string;
 };
 
-const initialFormState: AdminFormState = {
-   title: '',
-   author: '',
-   description: '',
-   coverUrl: '',
-   fileUrl: '',
-};
-
-const LIBRARY_FILE_ACCEPT = '.pdf,.epub,.djvu,.mobi,.azw,.azw3,.txt,.doc,.docx';
-
-function parseBooks(payload: unknown): LibraryBook[] {
-  if (
-    payload &&
-    typeof payload === 'object' &&
-    !Array.isArray(payload) &&
-    Array.isArray((payload as { books?: unknown }).books)
-  ) {
-    return (payload as { books: LibraryBook[] }).books.filter(Boolean);
-  }
-
-  if (!Array.isArray(payload)) return [];
-  return payload.filter(Boolean) as LibraryBook[];
-}
-
-function formatFileSize(bytes: number): string {
-  if (!bytes) return '0 B';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-export default function LibraryAdminClient() {
-  const [form, setForm] = useState<AdminFormState>(initialFormState);
+export default function EditBookClient({ bookId }: { bookId: string }) {
+  const [form, setForm] = useState<AdminFormState>({
+    title: '',
+    author: '',
+    description: '',
+    coverUrl: '',
+    fileUrl: '',
+  });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [editingBook, setEditingBook] = useState<LibraryBook | null>(null);
-
-  const [books, setBooks] = useState<LibraryBook[]>([]);
-  const [isLoadingBooks, setIsLoadingBooks] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [book, setBook] = useState<LibraryBook | null>(null);
 
-  const loadBooks = async () => {
-    setIsLoadingBooks(true);
+  const loadBook = async () => {
     try {
-      const response = await fetch('/api/books?pageSize=50', { cache: 'no-store' });
-      if (!response.ok) throw new Error('Failed to load books.');
-      const payload = (await response.json()) as unknown;
-      setBooks(parseBooks(payload));
+      const response = await fetch(`/api/books/${bookId}`);
+      if (!response.ok) throw new Error('Failed to load book.');
+      const bookData = (await response.json()) as LibraryBook;
+      setBook(bookData);
+      setForm({
+        title: bookData.title,
+        author: bookData.author,
+        description: bookData.description,
+        coverUrl: bookData.coverUrl,
+        fileUrl: bookData.filePath.startsWith('http') ? bookData.filePath : '',
+      });
     } catch (error) {
+      setErrorMessage('Failed to load book for editing.');
       console.error(error);
-      setErrorMessage('Unable to load books from API.');
     } finally {
-      setIsLoadingBooks(false);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    void loadBooks();
-  }, []);
+    void loadBook();
+  }, [bookId]);
 
-  const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
+  const handleUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setIsSubmitting(true);
@@ -93,11 +71,8 @@ export default function LibraryAdminClient() {
         formData.append('file', selectedFile);
       }
 
-      const url = editingBook ? `/api/books/${editingBook.id}` : '/api/books';
-      const method = editingBook ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch(`/api/books/${bookId}`, {
+        method: 'PUT',
         body: formData,
       });
 
@@ -106,110 +81,81 @@ export default function LibraryAdminClient() {
       } | null;
 
       if (!response.ok) {
-        throw new Error(payload?.error ?? `Failed to ${editingBook ? 'update' : 'add'} book.`);
+        throw new Error(payload?.error ?? 'Failed to update book.');
       }
 
-      setStatusMessage(`Book ${editingBook ? 'updated' : 'added'} successfully.`);
-      setForm(initialFormState);
+      setStatusMessage('Book updated successfully.');
       setSelectedFile(null);
-      setEditingBook(null);
 
       const fileInput = document.getElementById('library-admin-file') as HTMLInputElement | null;
       if (fileInput) fileInput.value = '';
 
-      await loadBooks();
+      // Reload the book data
+      await loadBook();
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleDelete = async (book: LibraryBook) => {
-    const confirmed = window.confirm(`Delete "${book.title}"?`);
-    if (!confirmed) return;
-
-    setIsSubmitting(true);
-    setErrorMessage('');
-    setStatusMessage('');
-
-    try {
-      const response = await fetch(`/api/books/${book.id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      const payload = (await response.json().catch(() => null)) as {
-        error?: string;
-      } | null;
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? 'Failed to delete book.');
-      }
-
-      setStatusMessage(`Deleted: ${book.title}`);
-      await loadBooks();
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleEdit = (book: LibraryBook) => {
-    setForm({
-      title: book.title,
-      author: book.author,
-      description: book.description,
-      coverUrl: book.coverUrl,
-      fileUrl: book.filePath.startsWith('http') ? book.filePath : '',
-    });
-    setSelectedFile(null);
-    setEditingBook(book);
-  };
-
-  const handleCancelEdit = () => {
-    setForm(initialFormState);
-    setSelectedFile(null);
-    setEditingBook(null);
   };
 
   const inputClasses =
     'w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/30';
 
+  if (isLoading) {
+    return (
+      <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+        <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+          <div className="mb-8 border-b border-[var(--color-border)] pb-6">
+            <h1 className="text-3xl font-semibold text-[var(--color-text)]">Edit Book</h1>
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+              Loading book information...
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!book) {
+    return (
+      <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+        <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+          <div className="mb-8 border-b border-[var(--color-border)] pb-6">
+            <h1 className="text-3xl font-semibold text-[var(--color-text)]">Edit Book</h1>
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+              Book not found.
+            </p>
+            <Link
+              href="/library/admin/edit"
+              className="mt-4 inline-block text-sm text-[var(--color-accent)] hover:underline"
+            >
+              Back to edit books
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
         <div className="mb-8 border-b border-[var(--color-border)] pb-6">
-          <h1 className="text-3xl font-semibold text-[var(--color-text)]">Library Admin</h1>
+          <h1 className="text-3xl font-semibold text-[var(--color-text)]">Edit Book</h1>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            Simple controls to add books and manage library entries.
+            Edit information for "{book.title}"
           </p>
           <Link
-            href="/library"
+            href="/library/admin/edit"
             className="mt-4 inline-block text-sm text-[var(--color-accent)] hover:underline"
           >
-            Back to library
+            Back to edit books
           </Link>
         </div>
 
-        <form onSubmit={handleCreate} className="space-y-6">
+        <form onSubmit={handleUpdate} className="space-y-6">
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-[var(--color-text)]">
-                {editingBook ? 'Edit Book' : 'Add New Book'}
-              </h2>
-              {editingBook && (
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm text-[var(--color-text-secondary)]">
                 <span className="mb-1 block uppercase tracking-wide text-[var(--color-text-secondary)]">Title</span>
@@ -265,7 +211,7 @@ export default function LibraryAdminClient() {
               <input
                 id="library-admin-file"
                 type="file"
-                accept={LIBRARY_FILE_ACCEPT}
+                accept=".pdf,.epub,.djvu,.mobi,.azw,.azw3,.txt,.doc,.docx"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                 className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-text)]"
               />
@@ -273,7 +219,15 @@ export default function LibraryAdminClient() {
                 <div className="mt-2 max-w-full overflow-x-auto px-3 py-2 text-xs text-[var(--color-text-secondary)]">
                   {selectedFile.name}
                 </div>
-              ) : null}
+              ) : book.fileName ? (
+                <div className="mt-2 px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                  Current file: {book.fileName}
+                </div>
+              ) : (
+                <div className="mt-2 px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                  No file chosen
+                </div>
+              )}
             </label>
 
             <label className="block text-sm text-[var(--color-text-secondary)]">
@@ -293,61 +247,10 @@ export default function LibraryAdminClient() {
               disabled={isSubmitting}
               className="w-full rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[#0f0e0d] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isSubmitting ? 'Saving...' : editingBook ? 'Update Book' : 'Add Book'}
+              {isSubmitting ? 'Saving...' : 'Update Book'}
             </button>
           </div>
         </form>
-
-        <div className="mt-8">
-          <h2 className="mb-4 text-xl font-semibold text-[var(--color-text)]">Books</h2>
-          {isLoadingBooks ? (
-            <p className="text-sm text-[var(--color-text-secondary)]">Loading books…</p>
-          ) : books.length === 0 ? null : (
-            <div className="space-y-3">
-              {books.map((book) => (
-                <div key={book.id} className="py-3 border-b border-[var(--color-border)] last:border-b-0">
-                  <div className="flex flex-col gap-1">
-                    <div className="font-medium text-sm text-[var(--color-text)]">{book.title}</div>
-                    <div className="text-xs text-[var(--color-text-secondary)]">{book.author}</div>
-                    <div className="text-xs text-[var(--color-text-tertiary)]">
-                      {book.fileName || (book.filePath ? 'Download ready' : 'No file')}
-                      {book.filePath ? ` · ${book.fileSize ? formatFileSize(book.fileSize) : 'Size unknown'}` : ''}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => void handleEdit(book)}
-                      disabled={isSubmitting}
-                      className="rounded-md border border-blue-500/30 px-3 py-1 text-blue-400 transition hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Edit
-                    </button>
-                    {book.filePath ? (
-                      <a
-                        href={`/api/books/${book.id}/download`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[var(--color-accent)] hover:underline"
-                      >
-                        Open download
-                      </a>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => void handleDelete(book)}
-                      disabled={isSubmitting}
-                      className="rounded-md border border-red-500/30 px-3 py-1 text-red-400 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
         {statusMessage ? (
           <div className="mt-6 border-l-4 border-emerald-500/60 bg-[var(--color-bg)]/90 px-4 py-3 text-sm text-emerald-300">
@@ -364,4 +267,3 @@ export default function LibraryAdminClient() {
     </section>
   );
 }
-

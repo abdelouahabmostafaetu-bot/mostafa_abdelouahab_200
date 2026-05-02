@@ -71,20 +71,33 @@ function showError(msg) {
 
 /* ── Render pagination buttons ── */
 function renderPagination(searchFn) {
+  if (!DOM.pagination) return; // Guard against missing pagination element
+  
   DOM.pagination.innerHTML = `
-    <button id="prevBtn" ${State.currentPage <= 1 ? 'disabled' : ''}>&larr; Previous</button>
-    <button id="nextBtn" ${!State.hasMore ? 'disabled' : ''}>Next &rarr;</button>`;
+    <button id="prevBtn" type="button" ${State.currentPage <= 1 ? 'disabled' : ''}>&larr; Previous</button>
+    <button id="nextBtn" type="button" ${!State.hasMore ? 'disabled' : ''}>Next &rarr;</button>`;
 
-  document.getElementById('prevBtn').addEventListener('click', () => {
-    State.currentPage--;
-    searchFn();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  document.getElementById('nextBtn').addEventListener('click', () => {
-    State.currentPage++;
-    searchFn();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  // Add event listeners to newly created buttons
+  if (prevBtn && !prevBtn.disabled) {
+    prevBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      State.currentPage--;
+      searchFn();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  if (nextBtn && !nextBtn.disabled) {
+    nextBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      State.currentPage++;
+      searchFn();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 }
 
 /* ── Re-typeset MathJax in results ── */function typesetResults() {
@@ -114,6 +127,8 @@ function initSearchHistory() {
 
 function refreshHistoryUI() {
   const history = SearchCache.getHistory();
+  if (!DOM.historyBar) return; // Element removed
+  
   if (!history.length) {
     DOM.historyBar.classList.remove('visible');
     return;

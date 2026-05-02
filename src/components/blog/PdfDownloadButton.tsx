@@ -149,7 +149,16 @@ export default function PdfDownloadButton({
                   page-break-inside: avoid !important;
                 }
 
-                .katex { color: #000 !important; }
+                mjx-container { color: #000 !important; }
+                mjx-container[jax="SVG"][display="true"] {
+                  display: flex !important;
+                  justify-content: center !important;
+                  margin: 0.9em 0 !important;
+                  text-align: center !important;
+                }
+                mjx-container[jax="SVG"][display="true"] > svg {
+                  margin: 0 auto !important;
+                }
                 .pdf-title-block {
                   border-bottom: 2px solid #0f766e;
                   margin-bottom: 18pt;

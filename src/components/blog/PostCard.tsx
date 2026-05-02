@@ -53,7 +53,7 @@ export default function PostCard({
           {title}
         </h3>
 
-        <p className="mt-2 text-[12px] md:text-sm text-[var(--color-text-secondary)] leading-6 md:leading-7 line-clamp-3">
+        <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-3 md:text-sm md:leading-7">
           {excerpt}
         </p>
       </Link>

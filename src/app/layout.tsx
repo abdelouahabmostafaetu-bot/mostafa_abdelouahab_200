@@ -1,21 +1,22 @@
 import type { Metadata, Viewport } from 'next';
-import { Manrope, Newsreader } from 'next/font/google';
+import Script from 'next/script';
+import { Lora, Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import '@/styles/globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-const manrope = Manrope({
+const lora = Lora({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-manrope',
+  variable: '--font-serif',
 });
 
-const newsreader = Newsreader({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-newsreader',
+  variable: '--font-sans',
 });
 
 export const viewport: Viewport = {
@@ -60,10 +61,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${newsreader.variable}`}
+      className={`${lora.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
       <head>
+        <Script id="mathjax-config" strategy="beforeInteractive">
+          {`window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], displayAlign: 'center', displayIndent: '0' }, svg: { fontCache: 'global' } };`}
+        </Script>
+        <Script
+          id="mathjax-script"
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+          strategy="afterInteractive"
+        />
         {/* Favicon */}
         <link
           rel="icon"
@@ -71,10 +80,10 @@ export default function RootLayout({
           type="image/svg+xml"
         />
       </head>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-svh overflow-x-hidden flex flex-col">
         <ClerkProvider>
           <Navbar />
-          <main className="flex-grow">{children}</main>
+          <main className="flex-1">{children}</main>
           <Footer />
           <SpeedInsights />
         </ClerkProvider>

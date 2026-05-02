@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,85 +112,8 @@
     </select>
   </div>
 
-  <!-- ==================== SORT TOOLBAR (appears after search) ==================== -->
-  <div id="sortToolbarContainer"></div>
-
   <!-- ==================== AI PANELS (injected dynamically) ==================== -->
   <div id="aiPanelContainer"></div>
-
-  <!-- ==================== SEARCH TIPS / ADVICE ==================== -->
-  <div class="search-tips" id="searchTips">
-    <div class="search-tips-card">
-      <div class="search-tips-header" id="tipsToggle">
-        <span class="search-tips-icon">&#128161;</span>
-        <span>Search Tips &amp; Math Equivalences</span>
-        <span class="search-tips-toggle">&#9660;</span>
-      </div>
-      <div class="search-tips-body">
-        <div class="search-tips-content">
-
-          <div class="tips-section-title">&#128208; LaTeX &#8596; Text Equivalences</div>
-          <p style="margin:0 0 6px;color:var(--text-3);font-size:.8rem;">
-            These are treated as equivalent — use either form in your search:
-          </p>
-          <table class="equiv-table">
-            <thead>
-              <tr><th>You type</th><th></th><th>Also matches</th><th>Meaning</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><span class="equiv-code">log</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\ln</span> <span class="equiv-code">\log</span></td><td>Logarithm</td></tr>
-              <tr><td><span class="equiv-code">sin</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\sin</span></td><td>Sine function</td></tr>
-              <tr><td><span class="equiv-code">cos</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\cos</span></td><td>Cosine function</td></tr>
-              <tr><td><span class="equiv-code">tan</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\tan</span></td><td>Tangent function</td></tr>
-              <tr><td><span class="equiv-code">lim</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\lim</span> <span class="equiv-code">\to</span></td><td>Limit</td></tr>
-              <tr><td><span class="equiv-code">sum</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\sum</span> <span class="equiv-code">\Sigma</span></td><td>Summation</td></tr>
-              <tr><td><span class="equiv-code">integral</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\int</span> <span class="equiv-code">\oint</span></td><td>Integration</td></tr>
-              <tr><td><span class="equiv-code">infinity</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\infty</span></td><td>Infinity symbol</td></tr>
-              <tr><td><span class="equiv-code">sqrt</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\sqrt</span></td><td>Square root</td></tr>
-              <tr><td><span class="equiv-code">pi</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\pi</span></td><td>Pi constant</td></tr>
-              <tr><td><span class="equiv-code">theta</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\theta</span></td><td>Theta variable</td></tr>
-              <tr><td><span class="equiv-code">alpha</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\alpha</span></td><td>Alpha variable</td></tr>
-              <tr><td><span class="equiv-code">derivative</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\frac{d}{dx}</span> <span class="equiv-code">\partial</span></td><td>Differentiation</td></tr>
-              <tr><td><span class="equiv-code">matrix</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\begin{pmatrix}</span></td><td>Matrix / determinant</td></tr>
-              <tr><td><span class="equiv-code">&gt;=</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\geq</span></td><td>Greater or equal</td></tr>
-              <tr><td><span class="equiv-code">&lt;=</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\leq</span></td><td>Less or equal</td></tr>
-              <tr><td><span class="equiv-code">!=</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\neq</span></td><td>Not equal</td></tr>
-              <tr><td><span class="equiv-code">forall</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\forall</span></td><td>Universal quantifier</td></tr>
-              <tr><td><span class="equiv-code">exists</span></td><td class="equiv-arrow">&#10231;</td><td><span class="equiv-code">\exists</span></td><td>Existential quantifier</td></tr>
-            </tbody>
-          </table>
-
-          <div class="tips-section-title">&#128270; Search Strategies</div>
-          <ul class="tips-list">
-            <li><strong>Text mode:</strong> use natural language — "eigenvalue of symmetric matrix"</li>
-            <li><strong>LaTeX mode:</strong> type exact formulas like <code>\int_0^1 x^2 dx</code></li>
-            <li><strong>Keywords:</strong> add keywords in LaTeX mode to narrow results</li>
-            <li><strong>Mixed math:</strong> use $ signs in text search for inline LaTeX, e.g. "solve $x^2+1=0$"</li>
-            <li><strong>Operators:</strong> try "derivative" instead of "differentiation" — both work</li>
-          </ul>
-
-          <div class="tips-section-title">&#9889; Pro Tips</div>
-          <ul class="tips-list">
-            <li>Multi-engine: results combine StackExchange, Approach Zero, Google &amp; MathOverflow</li>
-            <li>BM25 ranking: results are scored by relevance, votes, and formula similarity</li>
-            <li>12 sorting modes: relevance, votes, hot score, quality, formula density, and more</li>
-            <li>Autocorrect: typos like "eigenvlaue" are automatically fixed to "eigenvalue"</li>
-            <li>Structural matching: <code>\frac{a}{b}</code> matches <code>\frac{x}{y}</code> by tree structure</li>
-          </ul>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== SEARCH HISTORY ==================== -->
-  <div class="history-bar" id="historyBar">
-    <div class="history-header">
-      <span>&#128337; Recent Searches</span>
-      <button class="history-clear" id="historyClear" title="Clear history">&times;</button>
-    </div>
-    <div class="history-chips" id="historyChips"></div>
-  </div>
 
   <!-- ==================== RESULTS AREA ==================== -->
   <div id="status" class="status"></div>
@@ -226,27 +149,21 @@
   <script src="js/ai-ui.js"></script>
 
   <script>
-    /* ── Dark Mode Toggle ── */
+    /* ── Site palette ── */
     (function () {
       const t = document.querySelector('[data-theme-toggle]');
       const r = document.documentElement;
-      let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      let d = 'site';
       r.setAttribute('data-theme', d);
       if (t) {
         t.addEventListener('click', () => {
-          d = d === 'dark' ? 'light' : 'dark';
+          d = 'site';
           r.setAttribute('data-theme', d);
-          t.setAttribute('aria-label', 'Switch to ' + (d === 'dark' ? 'light' : 'dark') + ' mode');
-          t.innerHTML = d === 'dark'
-            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
-            : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
         });
       }
     })();
 
     /* ── Global state for AI results ── */
-    document.documentElement.setAttribute('data-theme', 'dark');
-
     let _lastSearchResults = [];
     let _lastSearchQuery = '';
     let _currentSortKey = 'relevance';

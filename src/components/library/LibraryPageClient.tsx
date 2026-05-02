@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -127,52 +127,11 @@ export default function LibraryPageClient({
   showAdminLink?: boolean;
 }) {
   const [books, setBooks] = useState<LibraryBook[]>([]);
-  const [categories, setCategories] = useState<string[]>(['All']);
-  const [searchInput, setSearchInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('All');
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalBooks, setTotalBooks] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-
-  const activeFilters = useMemo(
-    () => Boolean(searchQuery.trim() || (category && category !== 'All')),
-    [category, searchQuery],
-  );
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setSearchQuery(searchInput.trim());
-      setPage(1);
-    }, 250);
-
-    return () => window.clearTimeout(timeout);
-  }, [searchInput]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    const loadCategories = async () => {
-      try {
-        const response = await fetch('/api/categories', { cache: 'no-store' });
-        if (!response.ok) return;
-        const payload = (await response.json().catch(() => null)) as unknown;
-        if (!ignore && Array.isArray(payload)) {
-          setCategories(['All', ...payload.filter((item) => item && item !== 'All')]);
-        }
-      } catch {
-        // Categories are helpful, but the library can still work without them.
-      }
-    };
-
-    void loadCategories();
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  const pageSize = 10;
 
   useEffect(() => {
     let ignore = false;
@@ -186,8 +145,6 @@ export default function LibraryPageClient({
           page: String(page),
           pageSize: String(pageSize),
         });
-        if (searchQuery) params.set('search', searchQuery);
-        if (category && category !== 'All') params.set('category', category);
 
         const response = await fetch(`/api/books?${params.toString()}`, { cache: 'no-store' });
         const payload = (await response.json().catch(() => null)) as unknown;
@@ -207,7 +164,6 @@ export default function LibraryPageClient({
         if (!ignore) {
           setBooks(parsed.books);
           setTotalPages(parsed.pagination?.totalPages ?? 1);
-          setTotalBooks(parsed.pagination?.total ?? parsed.books.length);
         }
       } catch (error) {
         if (!ignore) {
@@ -227,7 +183,7 @@ export default function LibraryPageClient({
     return () => {
       ignore = true;
     };
-  }, [category, page, pageSize, searchQuery]);
+  }, [page]);
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -246,10 +202,6 @@ export default function LibraryPageClient({
             >
               Personal Library
             </h1>
-            <p className="mt-1 text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm">
-              {totalBooks} book{totalBooks === 1 ? '' : 's'}
-              {activeFilters ? ' matched your filters' : ' in the collection'}.
-            </p>
           </div>
 
           {showAdminLink ? (
@@ -263,49 +215,6 @@ export default function LibraryPageClient({
           ) : null}
         </div>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_180px_110px]">
-          <div className="relative">
-            <SiteIcon
-              name="search"
-              alt=""
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-            />
-            <input
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search title, author, subject..."
-              className="h-10 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] pl-9 pr-3 text-sm text-[var(--color-text)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)]"
-            />
-          </div>
-
-          <select
-            value={category}
-            onChange={(event) => {
-              setCategory(event.target.value);
-              setPage(1);
-            }}
-            className="h-10 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
-          >
-            {categories.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={pageSize}
-            onChange={(event) => {
-              setPageSize(Number(event.target.value));
-              setPage(1);
-            }}
-            className="h-10 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-xs text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
-          >
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-          </select>
-        </div>
-
         {errorMessage ? (
           <div className="mt-5 rounded-md border border-red-500/30 bg-red-950/20 px-4 py-3 text-xs text-red-300">
             {errorMessage}
@@ -314,7 +223,7 @@ export default function LibraryPageClient({
 
         {isLoading ? (
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {Array.from({ length: pageSize === 10 ? 10 : 15 }).map((_, index) => (
+            {Array.from({ length: pageSize }).map((_, index) => (
               <div
                 key={index}
                 className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-2.5"
@@ -329,10 +238,10 @@ export default function LibraryPageClient({
           <div className="mt-12 rounded-lg border border-dashed border-[var(--color-border)] px-4 py-12 text-center">
             <SiteIcon name="book" alt="" className="mx-auto mb-3 h-8 w-8 opacity-65" />
             <p className="text-sm font-medium text-[var(--color-text)]">
-              {activeFilters ? 'No books matched your filters.' : 'No books yet.'}
+              No books yet.
             </p>
             <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              {activeFilters ? 'Try another title, author, or subject.' : 'Add books from the admin panel.'}
+              Add books from the admin panel.
             </p>
           </div>
         ) : (

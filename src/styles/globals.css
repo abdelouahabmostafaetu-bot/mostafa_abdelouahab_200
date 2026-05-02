@@ -1,52 +1,60 @@
-/* ===== KaTeX Styles ===== */
-@import 'katex/dist/katex.min.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Base Styles — Dark Mode Only ===== */
+/* ===== Base Styles ===== */
 @layer base {
   :root {
-    --font-sans: var(--font-manrope), system-ui, sans-serif;
-    --font-serif: var(--font-newsreader), 'Georgia', serif;
+    --font-sans: var(--font-sans), system-ui, sans-serif;
+    --font-serif: var(--font-serif), 'Georgia', serif;
 
-    /* Dark palette — always active */
-    --color-primary: #e8e4de;
-    --color-accent: #4f98a3;
-    --color-accent-hover: #227f8b;
-    --color-accent-light: #6db8c4;
-    --color-surface: #141312;
-    --color-bg: #0f0e0d;
-    --color-bg-muted: #1a1918;
-    --color-bg-elevated: #1f1e1c;
-    --color-text: #cdccca;
-    --color-text-secondary: #908f8d;
-    --color-text-tertiary: #5a5957;
-    --color-border: #2a2928;
-    --color-border-light: #1f1e1d;
-    --color-hover: #1c1b19;
-    --color-gold: #c9a84c;
-    --color-gold-muted: #9f8a58;
+    /* Site palette */
+    --bg-main: #202124;
+    --bg-card: #27272B;
+    --border: #333338;
+    --text-main: #F4F4F5;
+    --text-muted: #B8B8BC;
+    --accent-orange: #F36B16;
+
+    --color-primary: var(--text-main);
+    --color-accent: var(--accent-orange);
+    --color-accent-hover: #ff7a2b;
+    --color-accent-light: #ff995f;
+    --color-surface: var(--bg-card);
+    --color-bg: var(--bg-main);
+    --color-bg-muted: #242529;
+    --color-bg-elevated: var(--bg-card);
+    --color-text: var(--text-main);
+    --color-text-secondary: var(--text-muted);
+    --color-text-tertiary: #8d8d94;
+    --color-border: var(--border);
+    --color-border-light: #2d2d32;
+    --color-hover: #2b2b30;
+    --color-gold: var(--accent-orange);
+    --color-gold-muted: #c95a12;
     --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.5);
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
 
-    --tag-bg: #1a1918;
-    --tag-border: #2a2928;
-    --tag-text: #908f8d;
-    --tag-bg-hover: #242321;
-    --tag-border-hover: #3a3938;
-    --tag-text-hover: #cdccca;
-    --tag-bg-active: #1d4a50;
-    --tag-border-active: #4f98a3;
-    --tag-text-active: #e8e4de;
+    --tag-bg: var(--bg-card);
+    --tag-border: var(--border);
+    --tag-text: var(--text-muted);
+    --tag-bg-hover: #2d2d32;
+    --tag-border-hover: #44444a;
+    --tag-text-hover: var(--text-main);
+    --tag-bg-active: rgba(243, 107, 22, 0.14);
+    --tag-border-active: var(--accent-orange);
+    --tag-text-active: var(--text-main);
   }
 
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    color-scheme: normal;
+    min-height: 100%;
+    overflow-x: hidden;
   }
 
   body {
@@ -55,10 +63,12 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     letter-spacing: 0;
     line-height: 1.6;
+    min-height: 100svh;
+    overflow-x: hidden;
   }
 
   ::selection {
-    background-color: rgba(79, 152, 163, 0.28);
+    background-color: rgba(243, 107, 22, 0.32);
   }
 
   /* Elegant scrollbar */
@@ -185,6 +195,80 @@
   }
 }
 
+@media (max-width: 640px) {
+  body {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 13px;
+  }
+
+  p,
+  li,
+  label {
+    font-size: min(1em, 13px);
+  }
+
+  a,
+  button {
+    line-height: 1.35;
+  }
+
+  svg,
+  img[src*="/icons/"] {
+    max-width: 17px;
+    max-height: 17px;
+  }
+
+  .prose-academic {
+    font-size: 13px;
+    line-height: 1.72;
+  }
+
+  .prose-academic h1 {
+    font-size: clamp(1.25rem, 6vw, 1.625rem);
+    margin-top: 2rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .prose-academic h2 {
+    font-size: clamp(1.05rem, 5vw, 1.25rem);
+    margin-top: 1.6rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .prose-academic h3 {
+    font-size: clamp(0.95rem, 4.4vw, 1.1rem);
+    margin-top: 1.35rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .prose-academic p,
+  .prose-academic li {
+    line-height: 1.7;
+  }
+
+  .prose-academic pre {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 0.75rem;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 12px;
+  }
+
+  .prose-academic code {
+    border: 0;
+    box-shadow: none;
+  }
+}
+
 @media (min-width: 768px) {
   .prose-academic {
     font-size: 1.0625rem;
@@ -266,23 +350,32 @@
   }
 }
 
-/* ===== KaTeX Overrides ===== */
-.katex-display {
-  @apply my-6 overflow-x-auto;
+/* ===== MathJax Styles ===== */
+mjx-container[jax="SVG"] {
+  color: var(--color-text);
 }
 
-.katex {
-  font-size: 1em;
+mjx-container[jax="SVG"][display="true"] {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+}
+
+mjx-container[jax="SVG"][display="true"] > svg {
+  margin: 0 auto;
 }
 
 @media (min-width: 768px) {
-  .katex {
-    font-size: 1.1em;
+  mjx-container[jax="SVG"][display="true"] {
+    margin: 1.25rem 0;
   }
 }
 
 /* ===== Math Copy Button ===== */
-.katex-display {
+mjx-container[jax="SVG"][display="true"] {
   position: relative;
 }
 
@@ -305,7 +398,7 @@
   z-index: 10;
 }
 
-.katex-display:hover .math-copy-btn {
+mjx-container[jax="SVG"][display="true"]:hover .math-copy-btn {
   opacity: 1;
 }
 

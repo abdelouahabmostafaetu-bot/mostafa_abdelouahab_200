@@ -1711,8 +1711,6 @@ async function searchLatex(forceOriginal) {
     _lastSearchStats = stats;
 
     renderLatexResults(allItems, quota);
-    renderSearchAnalytics(stats);
-    refreshHistoryUI();
     lazyTypeset();
   }
 

@@ -1,7 +1,7 @@
 import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
-import rehypeKatex from 'rehype-katex';
+import rehypeMathjax from 'rehype-mathjax/browser';
 import rehypeSlug from 'rehype-slug';
 import { getMDXComponents } from '@/components/blog/MDXComponents';
 
@@ -11,7 +11,15 @@ export async function renderMDX(source: string) {
     options: {
       mdxOptions: {
         remarkPlugins: [remarkMath, remarkGfm],
-        rehypePlugins: [rehypeKatex, rehypeSlug],
+        rehypePlugins: [
+          [rehypeMathjax, {
+            tex: {
+              inlineMath: [['$', '$']],
+              displayMath: [['$$', '$$']],
+            },
+          }],
+          rehypeSlug,
+        ],
       },
     },
     components: getMDXComponents({}),

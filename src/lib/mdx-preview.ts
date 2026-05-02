@@ -3,7 +3,7 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
-import rehypeKatex from 'rehype-katex';
+import rehypeMathjax from 'rehype-mathjax/browser';
 import rehypeSlug from 'rehype-slug';
 import rehypeStringify from 'rehype-stringify';
 
@@ -13,7 +13,12 @@ export async function renderMarkdownPreviewToHtml(source: string) {
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype)
-    .use(rehypeKatex)
+    .use(rehypeMathjax, {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']],
+      },
+    })
     .use(rehypeSlug)
     .use(rehypeStringify)
     .process(source);

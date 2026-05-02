@@ -28,10 +28,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     : '/search-app/index.html';
 
   return (
-    <div className="w-full h-screen pt-16 flex flex-col">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-40 bg-[var(--color-bg)] md:top-16">
       <iframe
         src={iframeSrc}
-        className="w-full flex-grow border-none"
+        className="h-full w-full border-none"
         title="Search"
       />
     </div>

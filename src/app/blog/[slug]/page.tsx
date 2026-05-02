@@ -6,7 +6,6 @@ import { renderMDX, extractHeadings } from '@/lib/mdx';
 import { formatDate } from '@/lib/utils';
 import TableOfContents from '@/components/blog/TableOfContents';
 import { TagList } from '@/components/blog/Tag';
-import MathCopyButton from '@/components/blog/MathCopyButton';
 import PdfDownloadButton from '@/components/blog/PdfDownloadButton';
 
 export const dynamic = 'force-dynamic';
@@ -56,14 +55,14 @@ export default async function BlogPostPage({
                 </div>
 
                 <h1
-                  className="text-[1.95rem] md:text-[2.8rem] font-semibold text-[var(--color-text)] leading-[1.1]"
+                  className="text-[clamp(1.55rem,8vw,1.95rem)] md:text-[2.8rem] font-semibold text-[var(--color-text)] leading-[1.1]"
                   style={{ fontFamily: 'var(--font-serif)' }}
                 >
                   {post.title}
                 </h1>
 
                 {post.excerpt && (
-                  <p className="mt-4 md:mt-5 text-base md:text-lg text-[var(--color-text-secondary)] leading-7 md:leading-relaxed">
+                  <p className="mt-3 line-clamp-2 text-[13px] leading-5 text-[var(--color-text-secondary)] md:mt-5 md:line-clamp-none md:text-lg md:leading-relaxed">
                     {post.excerpt}
                   </p>
                 )}
@@ -95,7 +94,6 @@ export default async function BlogPostPage({
               </header>
 
               <div className="prose-academic">
-                <MathCopyButton />
                 {content}
               </div>
 
