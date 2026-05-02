@@ -34,6 +34,16 @@ const IMAGE_TYPE_EXTENSION: Record<string, string> = {
   'image/heic': '.heic',
   'image/heif': '.heif',
 };
+const EXTENSION_IMAGE_TYPE: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+};
 
 function getImageExtension(file: File): string {
   const fileExtension = path.extname(file.name || '').toLowerCase();
@@ -55,6 +65,43 @@ async function saveLocalBlogImage(file: File): Promise<string> {
   await writeFile(absolutePath, Buffer.from(await file.arrayBuffer()));
 
   return `${LOCAL_BLOG_UPLOAD_PREFIX}${storedName}`;
+}
+
+async function fileToDataUrl(file: File, extension: string): Promise<string> {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const mediaType = file.type.startsWith('image/')
+    ? file.type
+    : EXTENSION_IMAGE_TYPE[extension] ?? 'image/*';
+  return `data:${mediaType};base64,${buffer.toString('base64')}`;
+}
+
+async function saveBlogImage(file: File, extension: string): Promise<string> {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      const baseName = getImageBaseName(file, extension);
+      const blob = await put(
+        `blog/${Date.now()}-${sanitizeFileName(baseName)}${extension}`,
+        file,
+        {
+          access: 'public',
+          addRandomSuffix: true,
+        },
+      );
+      return blob.url;
+    } catch (error) {
+      console.error('Vercel Blob blog image upload failed:', error);
+    }
+  }
+
+  if (!process.env.VERCEL) {
+    try {
+      return await saveLocalBlogImage(file);
+    } catch (error) {
+      console.error('Local blog image upload failed:', error);
+    }
+  }
+
+  return fileToDataUrl(file, extension);
 }
 
 export async function POST(request: NextRequest) {
@@ -80,7 +127,13 @@ export async function POST(request: NextRequest) {
     }
 
     const extension = getImageExtension(fileValue);
-    if (!fileValue.type.startsWith('image/') || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
+    const hasValidImageExtension = ALLOWED_IMAGE_EXTENSIONS.has(extension);
+    const hasValidImageType =
+      fileValue.type === '' ||
+      fileValue.type === 'application/octet-stream' ||
+      fileValue.type.startsWith('image/');
+
+    if (!hasValidImageExtension || !hasValidImageType) {
       return NextResponse.json(
         { error: 'Only JPG, PNG, WEBP, GIF, SVG, HEIC, or HEIF images are allowed.' },
         { status: 400 },
@@ -94,19 +147,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      const url = await saveLocalBlogImage(fileValue);
-      return NextResponse.json({ url }, { status: 201 });
-    }
-
-    const baseName = getImageBaseName(fileValue, extension);
-    const blob = await put(`blog/${Date.now()}-${sanitizeFileName(baseName)}${extension}`, fileValue, {
-      access: 'public',
-      addRandomSuffix: true,
-    });
-    return NextResponse.json({ url: blob.url }, { status: 201 });
+    const url = await saveBlogImage(fileValue, extension);
+    return NextResponse.json({ url }, { status: 201 });
   } catch (error) {
     console.error('POST /api/blog-assets failed:', error);
-    return NextResponse.json({ error: 'Failed to upload image.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to upload image. Try a smaller JPG, PNG, WEBP, HEIC, or HEIF image.' },
+      { status: 500 },
+    );
   }
 }

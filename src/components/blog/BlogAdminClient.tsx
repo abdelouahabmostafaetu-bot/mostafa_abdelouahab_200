@@ -61,6 +61,7 @@ type AutosavedDraft = {
 };
 
 const AUTOSAVE_KEY = 'blog-admin-autosave-v2';
+const MOBILE_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/heic,image/heif';
 
 const initialFormState: BlogAdminFormState = {
   title: '',
@@ -104,6 +105,14 @@ function hasDraftContent(form: BlogAdminFormState): boolean {
       form.coverImageUrl.trim() ||
       form.content.trim(),
   );
+}
+
+function parseUploadResponse(responseText: string) {
+  try {
+    return JSON.parse(responseText || '{}') as { url?: string; error?: string };
+  } catch {
+    return { error: 'Failed to upload image.' };
+  }
 }
 
 async function requestPreviewHtml(content: string) {
@@ -518,10 +527,7 @@ export default function BlogAdminClient() {
       });
 
       xhr.addEventListener('load', () => {
-        const payload = JSON.parse(xhr.responseText || '{}') as {
-          url?: string;
-          error?: string;
-        };
+        const payload = parseUploadResponse(xhr.responseText);
 
         if (xhr.status >= 200 && xhr.status < 300 && payload.url) {
           resolve(payload.url);
@@ -1003,7 +1009,7 @@ export default function BlogAdminClient() {
                                       <input
                                         ref={imageUploadInputRef}
                                         type="file"
-                                        accept="image/*"
+                                        accept={MOBILE_IMAGE_ACCEPT}
                                         className="hidden"
                                         onChange={(event) =>
                                           setImageUploadFile(event.target.files?.[0] ?? null)
