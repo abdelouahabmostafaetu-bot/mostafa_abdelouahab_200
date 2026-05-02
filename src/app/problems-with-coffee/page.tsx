@@ -199,40 +199,6 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
           </p>
         </header>
 
-        <form
-          action="/problems-with-coffee"
-          className="mt-6 grid gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3 sm:grid-cols-[1fr_160px_160px_auto]"
-        >
-          <input
-            name="search"
-            defaultValue={search}
-            placeholder="Search by idea, title, or tag"
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent)]"
-          />
-          <select
-            name="level"
-            defaultValue={level}
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent)]"
-          >
-            <option value="">All levels</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
-          </select>
-          <input
-            name="tag"
-            defaultValue={tag}
-            placeholder="Tag"
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent)]"
-          />
-          <button
-            type="submit"
-            className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[#0f0e0d] hover:opacity-90"
-          >
-            Filter
-          </button>
-        </form>
-
         {warning ? (
           <div className="mt-5 rounded-md border border-amber-500/30 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
             {warning}

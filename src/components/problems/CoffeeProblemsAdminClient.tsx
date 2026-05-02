@@ -91,16 +91,16 @@ export default function CoffeeProblemsAdminClient() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="text-2xl font-semibold sm:text-3xl">
-                Problems with Coffee
+                Manage Problems
               </h1>
               <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
                 Manage published problems and drafts.
               </p>
               <Link
-                href="/problems-with-coffee"
+                href="/admin/problems-with-coffee"
                 className="mt-4 inline-block text-sm text-[var(--color-accent)] hover:underline"
               >
-                View public page
+                Back to Problems with Coffee admin
               </Link>
             </div>
             <Link
