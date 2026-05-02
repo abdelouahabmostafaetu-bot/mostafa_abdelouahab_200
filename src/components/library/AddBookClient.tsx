@@ -31,7 +31,7 @@ const initialFormState: AdminFormState = {
 };
 
 const PDF_ACCEPT = '.pdf,application/pdf';
-const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
+const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg';
 
 function uploadBlobFile(
   file: File,
@@ -245,7 +245,7 @@ export default function AddBookClient() {
                 className={fileInputClasses}
               />
               <span className="mt-2 block max-w-full break-words text-xs text-[var(--color-text-tertiary)]">
-                {selectedCover ? selectedCover.name : 'Optional PNG, JPG, or WEBP up to 4 MB.'}
+                {selectedCover ? selectedCover.name : 'Optional PNG or JPG up to 4 MB.'}
               </span>
             </label>
           </div>

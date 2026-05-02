@@ -41,9 +41,9 @@ type ToastMessage = {
   message: string;
 };
 
-const BLOG_IMAGE_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
+const BLOG_IMAGE_ACCEPT = 'image/png,image/jpeg,image/jpg';
 const BLOG_IMAGE_MAX_SIZE = 4 * 1024 * 1024;
-const BLOG_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
+const BLOG_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg']);
 
 function parseUploadResponse(responseText: string) {
   try {
@@ -59,7 +59,7 @@ function parseUploadResponse(responseText: string) {
 
 function validateBlogImageFile(file: File): string | null {
   if (!BLOG_IMAGE_TYPES.has(file.type)) {
-    return 'Only PNG, JPG, JPEG, and WEBP images are allowed.';
+    return 'Only PNG, JPG, and JPEG images are allowed.';
   }
 
   if (file.size > BLOG_IMAGE_MAX_SIZE) {

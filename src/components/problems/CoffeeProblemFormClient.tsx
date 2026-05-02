@@ -386,7 +386,7 @@ export default function CoffeeProblemFormClient({
               <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                   type="file"
-                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  accept="image/png,image/jpeg,image/jpg"
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setImageFile(event.target.files?.[0] ?? null)
                   }

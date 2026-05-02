@@ -8,8 +8,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
-const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg']);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg']);
 
 function sanitizeFileName(value: string): string {
   const parsed = path.parse(value || 'blog-image');
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     const extension = path.extname(fileValue.name || '').toLowerCase();
     if (!ALLOWED_IMAGE_TYPES.has(fileValue.type) || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
       return NextResponse.json(
-        { error: 'Only PNG, JPG, JPEG, and WEBP images are allowed.' },
+        { error: 'Only PNG, JPG, and JPEG images are allowed.' },
         { status: 400 },
       );
     }

@@ -10,13 +10,11 @@ export const ALLOWED_COVER_IMAGE_TYPES = new Set([
   'image/png',
   'image/jpeg',
   'image/jpg',
-  'image/webp',
 ]);
 export const ALLOWED_COVER_IMAGE_EXTENSIONS = new Set([
   '.png',
   '.jpg',
   '.jpeg',
-  '.webp',
 ]);
 
 export function sanitizeUploadFileName(value: string, fallback: string): string {
@@ -48,7 +46,7 @@ export function validateCoverUploadFile(file: File): string | null {
   const extension = path.extname(file.name || '').toLowerCase();
 
   if (!ALLOWED_COVER_IMAGE_TYPES.has(file.type) || !ALLOWED_COVER_IMAGE_EXTENSIONS.has(extension)) {
-    return 'Only PNG, JPG, JPEG, and WEBP cover images are allowed.';
+    return 'Only PNG, JPG, and JPEG cover images are allowed.';
   }
 
   if (file.size > MAX_COVER_IMAGE_BYTES) {

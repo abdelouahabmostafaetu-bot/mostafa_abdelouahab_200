@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       onBeforeGenerateToken: async (pathname) => {
         const cleanName = pathname.replace(/[^a-zA-Z0-9.-_]/g, '_');
         return {
-          allowedContentTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+          allowedContentTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'],
           maximumSizeInBytes: 31457280, // Allow up to 30 MB
           validUntil: Date.now() + 1000 * 60 * 5, // 5 mins
           addRandomSuffix: true,

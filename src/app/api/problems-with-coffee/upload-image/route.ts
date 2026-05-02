@@ -12,9 +12,8 @@ const ALLOWED_IMAGE_TYPES = new Set([
   'image/png',
   'image/jpeg',
   'image/jpg',
-  'image/webp',
 ]);
-const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg']);
 
 function sanitizeFileName(value: string): string {
   const parsed = path.parse(value || 'problem-image');
@@ -28,7 +27,7 @@ function validateImageFile(file: File): string | null {
   const extension = path.extname(file.name || '').toLowerCase();
 
   if (!ALLOWED_IMAGE_TYPES.has(file.type) || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
-    return 'Only PNG, JPG, JPEG, and WEBP images are allowed.';
+    return 'Only PNG, JPG, and JPEG images are allowed.';
   }
 
   if (file.size > MAX_IMAGE_SIZE) {
