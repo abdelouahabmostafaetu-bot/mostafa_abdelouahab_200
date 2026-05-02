@@ -32,94 +32,88 @@ const initialFormState: AdminFormState = {
 const PDF_ACCEPT = '.pdf,application/pdf';
 const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
 
-function parseUploadedBlobPayload(value: unknown): UploadedBlob {
-  const payload = value as Partial<UploadedBlob> | null;
+async function getSignedUploadUrl(
+  filename: string,
+  contentType: string,
+): Promise<{ uploadUrl: string; blobUrl: string }> {
+  const response = await fetch('/api/library/get-upload-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename, filetype: contentType }),
+  });
 
-  if (
-    !payload?.url ||
-    !payload.pathname ||
-    !payload.filename ||
-    typeof payload.size !== 'number' ||
-    !payload.contentType
-  ) {
-    throw new Error('Upload response was incomplete.');
+  if (!response.ok) {
+    const data = (await response.json()) as { error?: string };
+    throw new Error(data?.error ?? 'Failed to get signed upload URL.');
   }
 
-  return {
-    url: payload.url,
-    pathname: payload.pathname,
-    filename: payload.filename,
-    size: payload.size,
-    contentType: payload.contentType,
+  const data = (await response.json()) as {
+    uploadUrl?: string;
+    url?: string;
+    pathname?: string;
   };
-}
 
-function getUploadErrorMessage(responseText: string, status: number): string {
-  const trimmedText = responseText.trim();
-
-  if (!trimmedText) {
-    return status === 413
-      ? 'The file is too large. Try a smaller PDF (30 MB or less).'
-      : 'Upload failed.';
+  if (!data.uploadUrl || !data.url) {
+    throw new Error('Invalid upload URL response.');
   }
 
-  if (/^request entity too large/i.test(trimmedText) || status === 413) {
-    return 'The file is too large. Try a smaller PDF (30 MB or less).';
-  }
-
-  if (trimmedText.startsWith('<!DOCTYPE') || trimmedText.startsWith('<html')) {
-    return 'Upload failed because the server returned an HTML error page. Check the route, auth, or file size.';
-  }
-
-  return trimmedText;
+  return { uploadUrl: data.uploadUrl, blobUrl: data.url };
 }
 
 function uploadBlobFile(
-  endpoint: string,
   file: File,
   onProgress: (percent: number) => void,
 ): Promise<UploadedBlob> {
   return new Promise((resolve, reject) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const request = new XMLHttpRequest();
-    request.open('POST', endpoint);
-
-    request.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
-    };
-
-    request.onload = () => {
+    const performUpload = async () => {
       try {
-        const responseText = request.responseText || '';
-        const contentType = request.getResponseHeader('content-type') || '';
-        const isJsonResponse = contentType.includes('application/json') || responseText.trim().startsWith('{');
+        const { uploadUrl, blobUrl } = await getSignedUploadUrl(
+          file.name,
+          file.type || 'application/pdf',
+        );
 
-        let payload: (Partial<UploadedBlob> & { error?: string }) | null = null;
-        if (isJsonResponse) {
-          payload = JSON.parse(responseText || 'null') as (Partial<UploadedBlob> & { error?: string }) | null;
-        }
+        const request = new XMLHttpRequest();
+        request.open('PUT', uploadUrl);
+        request.setRequestHeader('Content-Type', file.type || 'application/pdf');
 
-        if (request.status < 200 || request.status >= 300) {
-          reject(new Error(payload?.error ?? getUploadErrorMessage(responseText, request.status)));
-          return;
-        }
+        request.upload.onprogress = (event) => {
+          if (!event.lengthComputable) return;
+          onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
+        };
 
-        onProgress(100);
-        resolve(parseUploadedBlobPayload(payload));
+        request.onload = () => {
+          if (request.status < 200 || request.status >= 300) {
+            reject(
+              new Error(
+                request.status === 413
+                  ? 'The file is too large. Try a smaller PDF.'
+                  : 'Upload to storage failed.',
+              ),
+            );
+            return;
+          }
+
+          onProgress(100);
+          resolve({
+            url: blobUrl,
+            pathname: blobUrl,
+            filename: file.name,
+            size: file.size,
+            contentType: file.type || 'application/pdf',
+          });
+        };
+
+        request.onerror = () => reject(new Error('Upload failed. Check your connection.'));
+        request.onabort = () => reject(new Error('Upload was cancelled.'));
+
+        onProgress(5);
+        request.send(file);
       } catch (error) {
-        const responseText = request.responseText || '';
-        reject(new Error(getUploadErrorMessage(responseText, request.status)));
+        reject(error instanceof Error ? error : new Error('Upload failed.'));
       }
     };
 
-    request.onerror = () => reject(new Error('Upload failed. Check your connection.'));
-    request.onabort = () => reject(new Error('Upload was cancelled.'));
-
-    onProgress(0);
-    request.send(formData);
+    void performUpload();
   });
 }
 
@@ -152,21 +146,13 @@ export default function AddBookClient() {
       }
 
       setUploadStage('Uploading PDF...');
-      const uploadedFile = await uploadBlobFile(
-        '/api/library/upload-book-file',
-        selectedFile,
-        setUploadProgress,
-      );
+      const uploadedFile = await uploadBlobFile(selectedFile, setUploadProgress);
 
       let uploadedCover: UploadedBlob | null = null;
       if (selectedCover) {
         setUploadStage('Uploading cover...');
         setUploadProgress(0);
-        uploadedCover = await uploadBlobFile(
-          '/api/library/upload-cover',
-          selectedCover,
-          setUploadProgress,
-        );
+        uploadedCover = await uploadBlobFile(selectedCover, setUploadProgress);
       }
 
       setUploadStage('Saving metadata...');
