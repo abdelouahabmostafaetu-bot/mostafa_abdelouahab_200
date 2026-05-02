@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
-  ensureSampleCoffeeProblem,
   mapCoffeeProblemSummary,
 } from '@/lib/coffee-problems';
 import { connectToDatabase } from '@/lib/mongodb';
@@ -108,7 +107,6 @@ async function loadProblems({
   tag: string;
 }) {
   await connectToDatabase();
-  await ensureSampleCoffeeProblem();
 
   const query: Record<string, unknown> = { published: true };
 

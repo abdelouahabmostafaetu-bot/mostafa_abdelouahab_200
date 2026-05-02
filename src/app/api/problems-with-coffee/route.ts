@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import {
-  ensureSampleCoffeeProblem,
   mapCoffeeProblemSummary,
   normalizeCoffeeLevel,
   normalizeCoffeeSlug,
@@ -70,7 +69,6 @@ export async function GET(request: NextRequest) {
 
   try {
     await connectToDatabase();
-    await ensureSampleCoffeeProblem();
 
     const query: Record<string, unknown> = adminMode ? {} : { published: true };
 

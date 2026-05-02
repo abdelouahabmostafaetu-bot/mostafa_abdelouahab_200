@@ -2,10 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import CoffeeProblemDetailClient from '@/components/problems/CoffeeProblemDetailClient';
-import {
-  ensureSampleCoffeeProblem,
-  mapCoffeeProblem,
-} from '@/lib/coffee-problems';
+import { mapCoffeeProblem } from '@/lib/coffee-problems';
 import { renderMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
@@ -24,7 +21,6 @@ async function markdownToHtml(value: string) {
 
 async function loadProblem(slug: string): Promise<CoffeeProblem | null> {
   await connectToDatabase();
-  await ensureSampleCoffeeProblem();
 
   const problem = await CoffeeProblemModel.findOne({ slug, published: true }).lean();
   return problem

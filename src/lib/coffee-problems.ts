@@ -3,81 +3,9 @@ import type {
   CoffeeProblemLevel,
   CoffeeProblemSummary,
 } from '@/types/coffee-problem';
-import CoffeeProblemModel, {
-  type CoffeeProblemDocument,
-} from '@/lib/models/coffee-problem';
+import { type CoffeeProblemDocument } from '@/lib/models/coffee-problem';
 
 export const COFFEE_PROBLEM_LEVELS = ['beginner', 'intermediate', 'advanced'] as const;
-
-export const SAMPLE_COFFEE_PROBLEM = {
-  title: 'The Circle and the Extra Meter',
-  slug: 'circle-extra-meter',
-  shortDescription:
-    'A surprising problem about a rope around a circle and why the answer does not depend on the circle’s size.',
-  level: 'beginner' as CoffeeProblemLevel,
-  estimatedTime: '10 min',
-  tags: ['pi', 'circle', 'geometry', 'radius'],
-  problemStatement: `A rope is placed exactly around a circular garden of radius $r$.
-
-The circumference is:
-
-$$
-C = 2\\pi r
-$$
-
-Then the rope is made 1 meter longer and lifted equally around the circle.
-
-If the new radius is $r+h$, find the height $h$.`,
-  hint1: 'Write the new circumference in two different ways.',
-  hint2: `The new circumference is:
-
-$$
-2\\pi(r+h)
-$$
-
-But it is also:
-
-$$
-2\\pi r + 1
-$$`,
-  keyIdea:
-    'Compare the old and new circumference formulas. The original radius cancels out completely.',
-  solution: `We have:
-
-$$
-2\\pi(r+h) = 2\\pi r + 1
-$$
-
-Expand:
-
-$$
-2\\pi r + 2\\pi h = 2\\pi r + 1
-$$
-
-Subtract $2\\pi r$ from both sides:
-
-$$
-2\\pi h = 1
-$$
-
-Therefore:
-
-$$
-h = \\frac{1}{2\\pi}
-$$
-
-So:
-
-$$
-h \\approx 0.159
-$$
-
-The height is about 15.9 cm.`,
-  lesson: `The surprising part is that the answer does not depend on $r$.
-This shows how a simple formula can reveal a beautiful mathematical idea.`,
-  coverImage: '',
-  published: true,
-};
 
 function getDateString(value: unknown): string {
   if (value instanceof Date) return value.toISOString();
@@ -152,11 +80,4 @@ export function mapCoffeeProblem(
     lesson: String(payload.lesson ?? ''),
     published: Boolean(payload.published),
   };
-}
-
-export async function ensureSampleCoffeeProblem() {
-  const existing = await CoffeeProblemModel.exists({ slug: SAMPLE_COFFEE_PROBLEM.slug });
-  if (existing) return;
-
-  await CoffeeProblemModel.create(SAMPLE_COFFEE_PROBLEM);
 }
