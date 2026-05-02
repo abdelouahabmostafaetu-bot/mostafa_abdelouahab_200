@@ -58,7 +58,7 @@ export default function LibraryAdminClient() {
   const loadBooks = async () => {
     setIsLoadingBooks(true);
     try {
-      const response = await fetch('/api/books?pageSize=50', { cache: 'no-store' });
+      const response = await fetch('/api/books?pageSize=50&admin=1', { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to load books.');
       const payload = (await response.json()) as unknown;
       setBooks(parseBooks(payload));

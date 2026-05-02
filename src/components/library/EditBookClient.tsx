@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import type { LibraryBook } from '@/types/library';
 
 type AdminFormState = {
@@ -27,7 +27,7 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [book, setBook] = useState<LibraryBook | null>(null);
 
-  const loadBook = async () => {
+  const loadBook = useCallback(async () => {
     try {
       const response = await fetch(`/api/books/${bookId}`);
       if (!response.ok) throw new Error('Failed to load book.');
@@ -46,11 +46,11 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [bookId]);
 
   useEffect(() => {
     void loadBook();
-  }, [bookId]);
+  }, [loadBook]);
 
   const handleUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -144,7 +144,7 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
         <div className="mb-8 border-b border-[var(--color-border)] pb-6">
           <h1 className="text-3xl font-semibold text-[var(--color-text)]">Edit Book</h1>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            Edit information for "{book.title}"
+            Edit information for {book.title}
           </p>
           <Link
             href="/library/admin/edit"

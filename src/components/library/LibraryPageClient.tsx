@@ -50,7 +50,7 @@ function parseBooksPayload(payload: unknown): BooksPayload {
   return { books: [] };
 }
 
-function BookCard({ book }: { book: LibraryBook }) {
+function BookCard({ book, isSignedIn }: { book: LibraryBook; isSignedIn: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const shouldClamp = book.description && book.description.length > 120;
 
@@ -98,13 +98,17 @@ function BookCard({ book }: { book: LibraryBook }) {
           ) : null}
 
           <div className="mt-2">
-            {book.filePath ? (
+            {book.hasFile ? (
               <a
-                href={`/api/books/${book.id}/download`}
+                href={
+                  isSignedIn
+                    ? book.filePath || `/api/library/books/${book.slug}/download`
+                    : '/sign-in'
+                }
                 className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-[var(--color-accent)] px-2 text-[11px] font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
               >
                 <SiteIcon name="download" alt="" className="h-3.5 w-3.5" />
-                Download
+                {isSignedIn ? 'Download' : 'Sign in to download'}
                 {book.fileSize ? (
                   <span className="font-medium opacity-70">({formatFileSize(book.fileSize)})</span>
                 ) : null}
@@ -123,8 +127,10 @@ function BookCard({ book }: { book: LibraryBook }) {
 
 export default function LibraryPageClient({
   showAdminLink = false,
+  isSignedIn = false,
 }: {
   showAdminLink?: boolean;
+  isSignedIn?: boolean;
 }) {
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [page, setPage] = useState(1);
@@ -146,7 +152,7 @@ export default function LibraryPageClient({
           pageSize: String(pageSize),
         });
 
-        const response = await fetch(`/api/books?${params.toString()}`, { cache: 'no-store' });
+        const response = await fetch(`/api/library/books?${params.toString()}`, { cache: 'no-store' });
         const payload = (await response.json().catch(() => null)) as unknown;
 
         if (!response.ok) {
@@ -248,7 +254,7 @@ export default function LibraryPageClient({
           <>
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {books.map((book) => (
-                <BookCard key={book.id} book={book} />
+                <BookCard key={book.id} book={book} isSignedIn={isSignedIn} />
               ))}
             </div>
 
