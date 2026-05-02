@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { checkRateLimit } from '@/lib/security';
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,54 +13,34 @@ export async function POST(request: NextRequest) {
   await requireAdmin();
 
   try {
-    const body = (await request.json()) as {
-      filename?: string;
-      filetype?: string;
-    };
-    const filename = String(body.filename ?? 'book').replace(/[^a-zA-Z0-9._-]/g, '_');
-    const filetype = String(body.filetype ?? 'application/pdf');
-
-    const { BlobAccessError } = await import('@vercel/blob');
-    const response = await fetch('https://blob.vercel-storage.com/api/upload', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-        'Content-Type': 'application/json',
+    const body = (await request.json()) as HandleUploadBody;
+    
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async (pathname) => {
+        const cleanName = pathname.replace(/[^a-zA-Z0-9.-_]/g, '_');
+        return {
+          allowedContentTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+          maximumSizeInBytes: 31457280, // Allow up to 30 MB
+          validUntil: Date.now() + 1000 * 60 * 5, // 5 mins
+          addRandomSuffix: true,
+          pathname: `library/books/${Date.now()}-${cleanName}`,
+        };
       },
-      body: JSON.stringify({
-        type: 'resumable',
-        pathname: `library/books/${Date.now()}-${filename}`,
-        contentType: filetype,
-        access: 'public',
-        addRandomSuffix: true,
-      }),
+      onUploadCompleted: async () => {
+        // Blob saved. Database save handles record creation.
+      },
     });
 
-    if (!response.ok) {
-      const error = await response.json() as { error?: string };
-      throw new Error(error?.error ?? `Blob API returned ${response.status}`);
-    }
-
-    const data = (await response.json()) as {
-      uploadUrl?: string;
-      url?: string;
-      pathname?: string;
-    };
-    return NextResponse.json(
-      {
-        uploadUrl: data.uploadUrl,
-        url: data.url,
-        pathname: data.pathname,
-      },
-      { status: 200 },
-    );
+    return NextResponse.json(jsonResponse);
   } catch (error) {
     console.error('GET /api/library/get-upload-url failed:', error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error && error.message.includes('BLOB_READ_WRITE_TOKEN')
-            ? 'File storage is not configured.'
+          error instanceof Error && error.message.includes('Token')
+            ? 'File storage is not configured properly.'
             : 'Failed to get upload URL.',
       },
       { status: 500 },

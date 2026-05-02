@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { type FormEvent, useState } from 'react';
+import { upload } from '@vercel/blob/client';
 
 type AdminFormState = {
   title: string;
@@ -32,89 +33,24 @@ const initialFormState: AdminFormState = {
 const PDF_ACCEPT = '.pdf,application/pdf';
 const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
 
-async function getSignedUploadUrl(
-  filename: string,
-  contentType: string,
-): Promise<{ uploadUrl: string; blobUrl: string }> {
-  const response = await fetch('/api/library/get-upload-url', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename, filetype: contentType }),
-  });
-
-  if (!response.ok) {
-    const data = (await response.json()) as { error?: string };
-    throw new Error(data?.error ?? 'Failed to get signed upload URL.');
-  }
-
-  const data = (await response.json()) as {
-    uploadUrl?: string;
-    url?: string;
-    pathname?: string;
-  };
-
-  if (!data.uploadUrl || !data.url) {
-    throw new Error('Invalid upload URL response.');
-  }
-
-  return { uploadUrl: data.uploadUrl, blobUrl: data.url };
-}
-
 function uploadBlobFile(
   file: File,
   onProgress: (percent: number) => void,
 ): Promise<UploadedBlob> {
-  return new Promise((resolve, reject) => {
-    const performUpload = async () => {
-      try {
-        const { uploadUrl, blobUrl } = await getSignedUploadUrl(
-          file.name,
-          file.type || 'application/pdf',
-        );
-
-        const request = new XMLHttpRequest();
-        request.open('PUT', uploadUrl);
-        request.setRequestHeader('Content-Type', file.type || 'application/pdf');
-
-        request.upload.onprogress = (event) => {
-          if (!event.lengthComputable) return;
-          onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
-        };
-
-        request.onload = () => {
-          if (request.status < 200 || request.status >= 300) {
-            reject(
-              new Error(
-                request.status === 413
-                  ? 'The file is too large. Try a smaller PDF.'
-                  : 'Upload to storage failed.',
-              ),
-            );
-            return;
-          }
-
-          onProgress(100);
-          resolve({
-            url: blobUrl,
-            pathname: blobUrl,
-            filename: file.name,
-            size: file.size,
-            contentType: file.type || 'application/pdf',
-          });
-        };
-
-        request.onerror = () => reject(new Error('Upload failed. Check your connection.'));
-        request.onabort = () => reject(new Error('Upload was cancelled.'));
-
-        onProgress(5);
-        request.send(file);
-      } catch (error) {
-        reject(error instanceof Error ? error : new Error('Upload failed.'));
-      }
-    };
-
-    void performUpload();
-  });
+  return upload(file.name, file, {
+    access: 'public',
+    handleUploadUrl: '/api/library/get-upload-url',
+    multipart: true,
+    onUploadProgress: (progressEvent) => {
+      onProgress(progressEvent.percentage);
+    },
+  }).then((blob) => ({
+    url: blob.url,
+    pathname: blob.pathname,
+    filename: blob.pathname,
+    size: file.size,
+    contentType: blob.contentType,
+  }));
 }
 
 export default function AddBookClient() {
