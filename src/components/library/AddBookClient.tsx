@@ -19,6 +19,8 @@ type UploadedBlob = {
   contentType: string;
 };
 
+const MAX_BOOK_FILE_BYTES = 30 * 1024 * 1024;
+
 const initialFormState: AdminFormState = {
   title: '',
   author: '',
@@ -52,6 +54,26 @@ function parseUploadedBlobPayload(value: unknown): UploadedBlob {
   };
 }
 
+function getUploadErrorMessage(responseText: string, status: number): string {
+  const trimmedText = responseText.trim();
+
+  if (!trimmedText) {
+    return status === 413
+      ? 'The file is too large. Try a smaller PDF (30 MB or less).'
+      : 'Upload failed.';
+  }
+
+  if (/^request entity too large/i.test(trimmedText) || status === 413) {
+    return 'The file is too large. Try a smaller PDF (30 MB or less).';
+  }
+
+  if (trimmedText.startsWith('<!DOCTYPE') || trimmedText.startsWith('<html')) {
+    return 'Upload failed because the server returned an HTML error page. Check the route, auth, or file size.';
+  }
+
+  return trimmedText;
+}
+
 function uploadBlobFile(
   endpoint: string,
   file: File,
@@ -71,19 +93,25 @@ function uploadBlobFile(
 
     request.onload = () => {
       try {
-        const payload = JSON.parse(request.responseText || 'null') as
-          | (Partial<UploadedBlob> & { error?: string })
-          | null;
+        const responseText = request.responseText || '';
+        const contentType = request.getResponseHeader('content-type') || '';
+        const isJsonResponse = contentType.includes('application/json') || responseText.trim().startsWith('{');
+
+        let payload: (Partial<UploadedBlob> & { error?: string }) | null = null;
+        if (isJsonResponse) {
+          payload = JSON.parse(responseText || 'null') as (Partial<UploadedBlob> & { error?: string }) | null;
+        }
 
         if (request.status < 200 || request.status >= 300) {
-          reject(new Error(payload?.error ?? 'Upload failed.'));
+          reject(new Error(payload?.error ?? getUploadErrorMessage(responseText, request.status)));
           return;
         }
 
         onProgress(100);
         resolve(parseUploadedBlobPayload(payload));
       } catch (error) {
-        reject(error instanceof Error ? error : new Error('Upload failed.'));
+        const responseText = request.responseText || '';
+        reject(new Error(getUploadErrorMessage(responseText, request.status)));
       }
     };
 
@@ -117,6 +145,10 @@ export default function AddBookClient() {
     try {
       if (!selectedFile) {
         throw new Error('Choose a PDF file before saving.');
+      }
+
+      if (selectedFile.size > MAX_BOOK_FILE_BYTES) {
+        throw new Error('The PDF is too large. Please use a file of 30 MB or less.');
       }
 
       setUploadStage('Uploading PDF...');
