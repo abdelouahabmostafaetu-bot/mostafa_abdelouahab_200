@@ -155,7 +155,11 @@ async function requestPreviewHtml(content: string) {
   return payload?.html ?? '';
 }
 
-export default function BlogAdminClient() {
+type BlogAdminClientProps = {
+  initialPostId?: string;
+};
+
+export default function BlogAdminClient({ initialPostId = '' }: BlogAdminClientProps) {
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
   const imageUploadInputRef = useRef<HTMLInputElement | null>(null);
   const imagePopoverRef = useRef<HTMLDivElement | null>(null);
@@ -300,6 +304,8 @@ export default function BlogAdminClient() {
         const match = nextPosts.find((post) => post.id === postIdToSelect);
         if (match) {
           applySelectedPost(match);
+        } else {
+          setErrorMessage('Post not found for editing.');
         }
       }
     } catch (error) {
@@ -310,9 +316,9 @@ export default function BlogAdminClient() {
   };
 
   useEffect(() => {
-    void loadPosts();
+    void loadPosts(initialPostId || undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialPostId]);
 
   useEffect(() => {
     if (slugTouched) {
@@ -326,6 +332,10 @@ export default function BlogAdminClient() {
   }, [form.title, slugTouched]);
 
   useEffect(() => {
+    if (initialPostId) {
+      return;
+    }
+
     try {
       const raw = window.localStorage.getItem(AUTOSAVE_KEY);
       if (!raw) {
@@ -346,7 +356,7 @@ export default function BlogAdminClient() {
     } catch {
       window.localStorage.removeItem(AUTOSAVE_KEY);
     }
-  }, []);
+  }, [initialPostId]);
 
   useEffect(() => {
     if (mode !== 'preview') {

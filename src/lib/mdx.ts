@@ -1,31 +1,43 @@
+import { createElement } from 'react';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeMathjax from 'rehype-mathjax/browser';
 import rehypeSlug from 'rehype-slug';
 import { getMDXComponents } from '@/components/blog/MDXComponents';
+import { renderMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 
 export async function renderMDX(source: string) {
-  const { content } = await compileMDX({
-    source,
-    options: {
-      mdxOptions: {
-        remarkPlugins: [remarkMath, remarkGfm],
-        rehypePlugins: [
-          [rehypeMathjax, {
-            tex: {
-              inlineMath: [['$', '$']],
-              displayMath: [['$$', '$$']],
-            },
-          }],
-          rehypeSlug,
-        ],
+  try {
+    const { content } = await compileMDX({
+      source,
+      options: {
+        mdxOptions: {
+          remarkPlugins: [remarkMath, remarkGfm],
+          rehypePlugins: [
+            [rehypeMathjax, {
+              tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+              },
+            }],
+            rehypeSlug,
+          ],
+        },
       },
-    },
-    components: getMDXComponents({}),
-  });
+      components: getMDXComponents({}),
+    });
 
-  return content;
+    return content;
+  } catch (error) {
+    console.error('MDX render failed; falling back to Markdown renderer:', error);
+    const html = await renderMarkdownPreviewToHtml(source);
+
+    return createElement('div', {
+      className: 'blog-content-fallback',
+      dangerouslySetInnerHTML: { __html: html },
+    });
+  }
 }
 
 export function extractHeadings(content: string) {

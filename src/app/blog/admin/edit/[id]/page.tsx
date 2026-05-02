@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { requireAdmin } from '@/lib/admin';
-import EditBlogPostClient from '@/components/blog/EditBlogPostClient';
+import BlogAdminClient from '@/components/blog/BlogAdminClient';
 
 type PageProps = {
   params: Promise<{
@@ -18,5 +17,5 @@ export default async function EditBlogPostPage({ params }: PageProps) {
   await requireAdmin();
   const { id } = await params;
 
-  return <EditBlogPostClient postId={id} />;
+  return <BlogAdminClient initialPostId={id} />;
 }
