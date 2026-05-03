@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Coffee } from 'lucide-react';
 import { getCurrentAdminUser } from '@/lib/admin';
+import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import {
   buildPublishedProblemQuery,
   mapProblemSummary,
@@ -16,6 +17,11 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 50;
+
+type ProblemSummaryWithHtml = ProblemSummary & {
+  titleHtml: string;
+  shortDescriptionHtml: string;
+};
 
 type PageProps = {
   searchParams: Promise<{
@@ -54,7 +60,7 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
   );
 }
 
-function ProblemCard({ problem }: { problem: ProblemSummary }) {
+function ProblemCard({ problem }: { problem: ProblemSummaryWithHtml }) {
   return (
     <article className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-colors hover:border-[var(--color-accent)]/50 sm:p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -63,12 +69,14 @@ function ProblemCard({ problem }: { problem: ProblemSummary }) {
           {problem.estimatedTime}
         </span>
       </div>
-      <h2 className="mt-3 text-base font-semibold leading-snug text-[var(--color-text)]">
-        {problem.title}
-      </h2>
-      <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-        {problem.shortDescription}
-      </p>
+      <h2
+        className="mt-3 text-base font-semibold leading-snug text-[var(--color-text)]"
+        dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
+      />
+      <p
+        className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--color-text-secondary)]"
+        dangerouslySetInnerHTML={{ __html: problem.shortDescriptionHtml }}
+      />
       <div className="mt-3 flex flex-wrap gap-1.5">
         {problem.tags.map((tag) => (
           <span
@@ -141,8 +149,22 @@ async function loadProblems({
 
   const totalPages = Math.max(1, Math.ceil(totalProblems / PAGE_SIZE));
 
+  const problems = await Promise.all(
+    docs.map(async (doc) => {
+      const problem = mapProblemSummary(doc);
+
+      return {
+        ...problem,
+        titleHtml: await renderInlineMarkdownPreviewToHtml(problem.title),
+        shortDescriptionHtml: await renderInlineMarkdownPreviewToHtml(
+          problem.shortDescription,
+        ),
+      };
+    }),
+  );
+
   return {
-    problems: docs.map((doc) => mapProblemSummary(doc)),
+    problems,
     pagination: {
       page,
       totalProblems,

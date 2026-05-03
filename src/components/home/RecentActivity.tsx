@@ -2,6 +2,7 @@ import Link from 'next/link';
 import SiteIcon from '@/components/ui/SiteIcon';
 import { getCurrentAdminUser } from '@/lib/admin';
 import { getBlogPosts } from '@/lib/content';
+import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import { getLatestPublishedProblem } from '@/lib/problems';
 
 export default async function RecentActivity() {
@@ -10,6 +11,14 @@ export default async function RecentActivity() {
     getLatestPublishedProblem(),
   ]);
   const adminUser = await getCurrentAdminUser();
+  const latestProblemHtml = latestProblem
+    ? {
+        title: await renderInlineMarkdownPreviewToHtml(latestProblem.title),
+        shortDescription: await renderInlineMarkdownPreviewToHtml(
+          latestProblem.shortDescription,
+        ),
+      }
+    : null;
 
   return (
     <section className="py-10 md:py-16">
@@ -77,13 +86,15 @@ export default async function RecentActivity() {
                   <h3
                     className="mb-2 text-lg font-semibold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-2xl"
                     style={{ fontFamily: 'var(--font-serif)' }}
-                  >
-                    {latestProblem.title}
-                  </h3>
+                    dangerouslySetInnerHTML={{ __html: latestProblemHtml?.title ?? '' }}
+                  />
                 </header>
-                <p className="line-clamp-2 max-w-3xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-relaxed">
-                  {latestProblem.shortDescription}
-                </p>
+                <p
+                  className="line-clamp-2 max-w-3xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: latestProblemHtml?.shortDescription ?? '',
+                  }}
+                />
               </Link>
             </article>
           </div>

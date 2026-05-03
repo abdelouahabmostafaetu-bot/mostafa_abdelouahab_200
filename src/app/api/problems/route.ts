@@ -163,13 +163,25 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase();
 
-    const existingProblemSlugs = await CoffeeProblemModel.find(
-      { slug: /^problem-\d+$/i },
-      { slug: 1, _id: 0 },
-    ).lean();
-    const slug = getNextProblemSlugFromSlugs(
-      existingProblemSlugs.map((problem) => String(problem.slug ?? '')),
-    );
+    const hasRequestedSlug = typeof body?.slug === 'string' && body.slug.trim().length > 0;
+    const slug = hasRequestedSlug
+      ? problemInput.slug
+      : getNextProblemSlugFromSlugs(
+          (
+            await CoffeeProblemModel.find(
+              { slug: /^problem-\d+$/i },
+              { slug: 1, _id: 0 },
+            ).lean()
+          ).map((problem) => String(problem.slug ?? '')),
+        );
+
+    const existingProblem = await CoffeeProblemModel.findOne({ slug }).lean();
+    if (existingProblem) {
+      return NextResponse.json(
+        { error: 'Another problem already uses this slug.' },
+        { status: 409 },
+      );
+    }
 
     const problem = await CoffeeProblemModel.create({
       ...problemInput,

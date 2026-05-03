@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { buildPublishedProblemQuery, mapProblem } from '@/lib/problems';
-import { renderMarkdownPreviewToHtml } from '@/lib/mdx-preview';
+import {
+  renderInlineMarkdownPreviewToHtml,
+  renderMarkdownPreviewToHtml,
+} from '@/lib/mdx-preview';
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
 import type { Problem } from '@/types/problem';
@@ -104,6 +107,10 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
     markdownToHtml(problem.fullProblemContent),
     markdownToHtml(problem.solutionContent),
   ]);
+  const [titleHtml, shortDescriptionHtml] = await Promise.all([
+    renderInlineMarkdownPreviewToHtml(problem.title),
+    renderInlineMarkdownPreviewToHtml(problem.shortDescription),
+  ]);
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -116,12 +123,12 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
             <h1
               className="text-3xl font-semibold leading-tight sm:text-5xl"
               style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              {problem.title}
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-              {problem.shortDescription}
-            </p>
+              dangerouslySetInnerHTML={{ __html: titleHtml }}
+            />
+            <p
+              className="mt-4 max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base"
+              dangerouslySetInnerHTML={{ __html: shortDescriptionHtml }}
+            />
             <div className="mt-5 flex flex-wrap gap-2">
               <Badge>{problem.difficulty}</Badge>
               <Badge>{problem.estimatedTime}</Badge>

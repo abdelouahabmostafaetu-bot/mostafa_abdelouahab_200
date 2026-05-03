@@ -3,6 +3,7 @@
 import {
   type ChangeEvent,
   type KeyboardEvent,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -153,7 +154,7 @@ export default function AdminMarkdownEditor({
     });
   }, [value]);
 
-  const showToast = (type: ToastType, message: string) => {
+  const showToast = useCallback((type: ToastType, message: string) => {
     const id = toastIdRef.current + 1;
     toastIdRef.current = id;
     setToasts((current) => [...current, { id, type, message }]);
@@ -161,7 +162,7 @@ export default function AdminMarkdownEditor({
     window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
     }, 4000);
-  };
+  }, []);
 
   const pushHistory = (content: string) => {
     const nextHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
@@ -334,6 +335,27 @@ export default function AdminMarkdownEditor({
     }
   };
 
+  useEffect(() => {
+    if (mode !== 'preview') {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsPreviewLoading(true);
+      requestPreviewHtml(value)
+        .then((html) => setPreviewHtml(html))
+        .catch((error) =>
+          showToast(
+            'error',
+            error instanceof Error ? error.message : 'Failed to render preview.',
+          ),
+        )
+        .finally(() => setIsPreviewLoading(false));
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [mode, showToast, value]);
+
   const uploadFile = (file: File) =>
     new Promise<string>((resolve, reject) => {
       if (!uploadEndpoint) {
@@ -438,6 +460,33 @@ export default function AdminMarkdownEditor({
           {label}
         </span>
         <div className="flex items-center gap-2">
+          <div className="flex overflow-hidden rounded-md border border-[var(--color-border)] text-xs">
+            <button
+              type="button"
+              onClick={() => setMode('write')}
+              className={`px-3 py-1.5 ${
+                mode === 'write'
+                  ? 'bg-[var(--color-accent)] text-[#0f0e0d]'
+                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+              }`}
+            >
+              Write
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (mode !== 'preview') void togglePreview();
+              }}
+              disabled={isPreviewLoading}
+              className={`px-3 py-1.5 ${
+                mode === 'preview'
+                  ? 'bg-[var(--color-accent)] text-[#0f0e0d]'
+                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+              } disabled:opacity-50`}
+            >
+              Preview
+            </button>
+          </div>
           <button
             type="button"
             onClick={handleUndo}
@@ -500,6 +549,22 @@ export default function AdminMarkdownEditor({
           title="Inline Code"
         >
           <Code2 size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => insertSnippet('$', '$', 'x^2+1')}
+          className="rounded px-1.5 py-1 font-mono text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg)]"
+          title="Inline Math"
+        >
+          $
+        </button>
+        <button
+          type="button"
+          onClick={() => insertSnippet('$$\n', '\n$$', '\\int_0^1 f(x)\\,dx')}
+          className="rounded px-1.5 py-1 font-mono text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg)]"
+          title="Display Math"
+        >
+          $$
         </button>
         <div className="mx-1 h-4 w-px bg-[var(--color-border)]" />
         <button

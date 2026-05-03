@@ -20,3 +20,10 @@ export async function renderMarkdownPreviewToHtml(source: string) {
 
   return String(file);
 }
+
+export async function renderInlineMarkdownPreviewToHtml(source: string) {
+  const html = await renderMarkdownPreviewToHtml(source.replace(/\s+/g, ' ').trim());
+  const paragraphMatch = html.match(/^<p>([\s\S]*)<\/p>$/);
+
+  return paragraphMatch ? paragraphMatch[1] ?? '' : html;
+}
