@@ -58,10 +58,11 @@ export function mapCoffeeProblemSummary(
     slug: String(payload.slug ?? ''),
     shortDescription: String(payload.shortDescription ?? ''),
     level: normalizeCoffeeLevel(payload.level),
+    difficulty: String(payload.difficulty ?? ''),
     estimatedTime: String(payload.estimatedTime ?? ''),
     tags: Array.isArray(payload.tags) ? payload.tags.map(String).filter(Boolean) : [],
     coverImage: String(payload.coverImage ?? ''),
-    ...(includeAdminFields ? { published: Boolean(payload.published) } : {}),
+    ...(includeAdminFields ? { published: Boolean(payload.published), isPublished: Boolean(payload.isPublished) } : {}),
     createdAt: getDateString(payload.createdAt),
     updatedAt: getDateString(payload.updatedAt),
   };
@@ -78,6 +79,9 @@ export function mapCoffeeProblem(
     keyIdea: String(payload.keyIdea ?? ''),
     solution: String(payload.solution ?? ''),
     lesson: String(payload.lesson ?? ''),
+    fullProblemContent: String(payload.fullProblemContent ?? ''),
+    solutionContent: String(payload.solutionContent ?? ''),
     published: Boolean(payload.published),
+    isPublished: Boolean(payload.isPublished),
   };
 }

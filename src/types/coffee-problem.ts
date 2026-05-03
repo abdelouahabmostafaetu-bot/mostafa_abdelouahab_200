@@ -5,10 +5,12 @@ export type CoffeeProblemSummary = {
   slug: string;
   shortDescription: string;
   level: CoffeeProblemLevel;
+  difficulty: string;
   estimatedTime: string;
   tags: string[];
   coverImage: string;
   published?: boolean;
+  isPublished?: boolean;
   createdAt: string;
   updatedAt?: string;
 };
@@ -20,7 +22,10 @@ export type CoffeeProblem = CoffeeProblemSummary & {
   keyIdea: string;
   solution: string;
   lesson: string;
+  fullProblemContent: string;
+  solutionContent: string;
   published: boolean;
+  isPublished: boolean;
 };
 
 export type CoffeeProblemsResponse = {
