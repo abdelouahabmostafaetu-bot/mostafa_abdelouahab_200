@@ -96,9 +96,17 @@ function mapBook(payload: Record<string, unknown>, includeRawFileUrl = false) {
   const id = String(payload._id ?? payload.id ?? '');
   const title = String(payload.title ?? '');
   const slug = String(payload.slug ?? '') || id;
-  const fileUrl = String(
+  const pdfUrl = String(
     payload.pdfUrl ??
       payload.fileUrl ??
+      payload.pdf_url ??
+      payload.downloadUrl ??
+      payload.filePath ??
+      '',
+  );
+  const fileUrl = String(
+    payload.fileUrl ??
+      payload.pdfUrl ??
       payload.pdf_url ??
       payload.downloadUrl ??
       payload.filePath ??
@@ -129,7 +137,7 @@ function mapBook(payload: Record<string, unknown>, includeRawFileUrl = false) {
     cover_url: String(payload.cover_url ?? ''),
     thumbnailUrl: String(payload.thumbnailUrl ?? ''),
     coverPathname: String(payload.coverPathname ?? ''),
-    pdfUrl: String(payload.pdfUrl ?? ''),
+    pdfUrl,
     fileUrl,
     pdf_url: String(payload.pdf_url ?? ''),
     downloadUrl: String(payload.downloadUrl ?? ''),
@@ -300,6 +308,7 @@ async function readJsonBookPayload(request: NextRequest) {
       category,
       description,
       tags,
+      pdfUrl: file.url,
       fileUrl: file.url,
       filePathname: file.pathname,
       fileName: file.filename,
@@ -348,6 +357,7 @@ async function readMultipartBookPayload(request: NextRequest) {
         category,
         description,
         tags,
+        pdfUrl: blob.url,
         fileUrl: blob.url,
         filePathname: blob.pathname,
         fileName: filename,
@@ -379,6 +389,7 @@ async function readMultipartBookPayload(request: NextRequest) {
       category,
       description,
       tags,
+      pdfUrl: fileUrl,
       fileUrl,
       filePathname: '',
       fileName: '',
@@ -416,7 +427,7 @@ export async function POST(request: NextRequest) {
     const book = await BookModel.create({
       ...parsed.data,
       slug,
-      filePath: parsed.data.fileUrl,
+      filePath: parsed.data.pdfUrl,
       addedAt: now.toISOString(),
     });
 

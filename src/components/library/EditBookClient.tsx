@@ -12,6 +12,53 @@ type AdminFormState = {
   fileUrl: string;
 };
 
+type UploadedCover = {
+  url: string;
+  pathname: string;
+  filename: string;
+  size: number;
+  contentType: string;
+};
+
+const PDF_ACCEPT = '.pdf,application/pdf';
+const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
+
+async function uploadCoverFile(file: File): Promise<UploadedCover> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/library/upload-cover', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | (Partial<UploadedCover> & { error?: string })
+    | null;
+
+  if (!response.ok) {
+    throw new Error(payload?.error ?? 'Failed to upload cover image.');
+  }
+
+  if (
+    !payload?.url ||
+    !payload.pathname ||
+    !payload.filename ||
+    typeof payload.size !== 'number' ||
+    !payload.contentType
+  ) {
+    throw new Error('Cover upload response was incomplete.');
+  }
+
+  return {
+    url: payload.url,
+    pathname: payload.pathname,
+    filename: payload.filename,
+    size: payload.size,
+    contentType: payload.contentType,
+  };
+}
+
 export default function EditBookClient({ bookId }: { bookId: string }) {
   const [form, setForm] = useState<AdminFormState>({
     title: '',
@@ -21,6 +68,7 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
     fileUrl: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedCover, setSelectedCover] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
@@ -37,8 +85,19 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
         title: bookData.title,
         author: bookData.author,
         description: bookData.description,
-        coverUrl: bookData.coverUrl,
-        fileUrl: bookData.filePath.startsWith('http') ? bookData.filePath : '',
+        coverUrl:
+          bookData.coverUrl ||
+          bookData.imageUrl ||
+          bookData.cover_url ||
+          bookData.thumbnailUrl ||
+          bookData.cover ||
+          '',
+        fileUrl:
+          bookData.pdfUrl ||
+          bookData.fileUrl ||
+          bookData.pdf_url ||
+          bookData.downloadUrl ||
+          (bookData.filePath.startsWith('http') ? bookData.filePath : ''),
       });
     } catch (error) {
       setErrorMessage('Failed to load book for editing.');
@@ -60,11 +119,15 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
     setStatusMessage('');
 
     try {
+      const uploadedCover = selectedCover ? await uploadCoverFile(selectedCover) : null;
+      const coverUrl = uploadedCover?.url ?? form.coverUrl;
+
       const formData = new FormData();
       formData.append('title', form.title);
       formData.append('author', form.author);
       formData.append('description', form.description);
-      formData.append('coverUrl', form.coverUrl);
+      formData.append('coverUrl', coverUrl);
+      formData.append('coverPathname', uploadedCover?.pathname ?? '');
       formData.append('fileUrl', form.fileUrl);
 
       if (selectedFile) {
@@ -86,9 +149,12 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
 
       setStatusMessage('Book updated successfully.');
       setSelectedFile(null);
+      setSelectedCover(null);
 
       const fileInput = document.getElementById('library-admin-file') as HTMLInputElement | null;
+      const coverInput = document.getElementById('library-admin-cover-file') as HTMLInputElement | null;
       if (fileInput) fileInput.value = '';
+      if (coverInput) coverInput.value = '';
 
       // Reload the book data
       await loadBook();
@@ -207,11 +273,35 @@ export default function EditBookClient({ bookId }: { bookId: string }) {
             </label>
 
             <label className="block text-sm text-[var(--color-text-secondary)]">
+              <span className="mb-1 block uppercase tracking-wide text-[var(--color-text-secondary)]">Cover Image File</span>
+              <input
+                id="library-admin-cover-file"
+                type="file"
+                accept={COVER_ACCEPT}
+                onChange={(e) => setSelectedCover(e.target.files?.[0] ?? null)}
+                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-text)]"
+              />
+              {selectedCover ? (
+                <div className="mt-2 max-w-full overflow-x-auto px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                  {selectedCover.name}
+                </div>
+              ) : form.coverUrl ? (
+                <div className="mt-2 break-all px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                  Current cover: {form.coverUrl}
+                </div>
+              ) : (
+                <div className="mt-2 px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                  No cover file chosen
+                </div>
+              )}
+            </label>
+
+            <label className="block text-sm text-[var(--color-text-secondary)]">
               <span className="mb-1 block uppercase tracking-wide text-[var(--color-text-secondary)]">Book File</span>
               <input
                 id="library-admin-file"
                 type="file"
-                accept=".pdf,.epub,.djvu,.mobi,.azw,.azw3,.txt,.doc,.docx"
+                accept={PDF_ACCEPT}
                 onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                 className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-text)]"
               />

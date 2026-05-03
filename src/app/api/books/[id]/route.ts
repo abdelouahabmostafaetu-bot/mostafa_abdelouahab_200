@@ -26,7 +26,15 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function mapBook(payload: Record<string, unknown>) {
-  const fileUrl = String(payload.fileUrl ?? payload.filePath ?? '');
+  const pdfUrl = String(
+    payload.pdfUrl ??
+      payload.fileUrl ??
+      payload.pdf_url ??
+      payload.downloadUrl ??
+      payload.filePath ??
+      '',
+  );
+  const fileUrl = String(payload.fileUrl ?? payload.pdfUrl ?? payload.filePath ?? '');
   const createdAt =
     payload.createdAt instanceof Date
       ? payload.createdAt.toISOString()
@@ -42,15 +50,23 @@ function mapBook(payload: Record<string, unknown>) {
     category: String(payload.category ?? ''),
     description: String(payload.description ?? ''),
     tags: Array.isArray(payload.tags) ? payload.tags.map(String).filter(Boolean) : [],
-    coverUrl: String(payload.coverUrl ?? ''),
+    coverUrl: String(
+      payload.coverUrl ??
+        payload.imageUrl ??
+        payload.cover_url ??
+        payload.thumbnailUrl ??
+        payload.cover ??
+        '',
+    ),
     coverPathname: String(payload.coverPathname ?? ''),
+    pdfUrl,
     fileUrl,
     filePathname: String(payload.filePathname ?? ''),
     fileName: String(payload.fileName ?? ''),
     fileSize: Number(payload.fileSize ?? 0),
     fileType: String(payload.fileType ?? ''),
     filePath: fileUrl,
-    hasFile: Boolean(fileUrl),
+    hasFile: Boolean(pdfUrl || fileUrl),
     addedAt: String(payload.addedAt ?? createdAt),
     createdAt,
     updatedAt,
@@ -122,6 +138,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     const formData = await request.formData();
+    const previousCoverUrl = book.coverUrl || '';
+    const previousCoverPathname = book.coverPathname || '';
     const title = String(formData.get('title') ?? '').trim();
     const author = String(formData.get('author') ?? '').trim();
     const categoryInput = String(formData.get('category') ?? '').trim();
@@ -139,7 +157,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     if (categoryInput) book.category = normalizeCategory(categoryInput);
     book.description = description;
     book.coverUrl = coverUrl;
-    book.coverPathname = coverPathname;
+    book.coverPathname =
+      coverPathname || (coverUrl && coverUrl === previousCoverUrl ? previousCoverPathname : '');
     if (tags) book.tags = tags;
 
     const fileValue = formData.get('file');
@@ -156,6 +175,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       });
 
       book.fileUrl = blob.url;
+      book.pdfUrl = blob.url;
       book.filePathname = blob.pathname;
       book.fileName = filename;
       book.fileSize = fileValue.size;
@@ -178,6 +198,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         }
 
         book.fileUrl = fileUrl;
+        book.pdfUrl = fileUrl;
         book.filePathname = '';
         book.fileName = getFileNameFromUrl(fileUrl);
         book.filePath = fileUrl;

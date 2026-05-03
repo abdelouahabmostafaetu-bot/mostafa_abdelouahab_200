@@ -7,6 +7,7 @@ export type BookDocument = {
   description?: string;
   tags: string[];
   category?: string;
+  pdfUrl: string;
   fileUrl: string;
   filePathname: string;
   fileName: string;
@@ -29,6 +30,7 @@ const bookSchema = new mongoose.Schema<BookDocument>(
     tags: { type: [String], default: [] },
     category: { type: String, default: 'Other', trim: true },
 
+    pdfUrl: { type: String, default: '' },
     fileUrl: { type: String, default: '' },
     filePathname: { type: String, default: '' },
     fileName: { type: String, default: '' },

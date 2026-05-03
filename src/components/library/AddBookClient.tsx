@@ -10,6 +10,7 @@ type AdminFormState = {
   description: string;
   tags: string;
   category: string;
+  coverUrl: string;
 };
 
 type UploadedBlob = {
@@ -28,10 +29,11 @@ const initialFormState: AdminFormState = {
   description: '',
   tags: '',
   category: '',
+  coverUrl: '',
 };
 
 const PDF_ACCEPT = '.pdf,application/pdf';
-const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg';
+const COVER_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
 
 function uploadBlobFile(
   file: File,
@@ -51,6 +53,42 @@ function uploadBlobFile(
     size: file.size,
     contentType: blob.contentType,
   }));
+}
+
+async function uploadCoverFile(file: File): Promise<UploadedBlob> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/library/upload-cover', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | (Partial<UploadedBlob> & { error?: string })
+    | null;
+
+  if (!response.ok) {
+    throw new Error(payload?.error ?? 'Failed to upload cover image.');
+  }
+
+  if (
+    !payload?.url ||
+    !payload.pathname ||
+    !payload.filename ||
+    typeof payload.size !== 'number' ||
+    !payload.contentType
+  ) {
+    throw new Error('Cover upload response was incomplete.');
+  }
+
+  return {
+    url: payload.url,
+    pathname: payload.pathname,
+    filename: payload.filename,
+    size: payload.size,
+    contentType: payload.contentType,
+  };
 }
 
 export default function AddBookClient() {
@@ -88,8 +126,11 @@ export default function AddBookClient() {
       if (selectedCover) {
         setUploadStage('Uploading cover...');
         setUploadProgress(0);
-        uploadedCover = await uploadBlobFile(selectedCover, setUploadProgress);
+        uploadedCover = await uploadCoverFile(selectedCover);
+        setUploadProgress(100);
       }
+
+      const coverUrl = uploadedCover?.url ?? form.coverUrl.trim();
 
       setUploadStage('Saving metadata...');
       setUploadProgress(100);
@@ -103,7 +144,17 @@ export default function AddBookClient() {
           tags: form.tags,
           category: form.category,
           file: uploadedFile,
-          cover: uploadedCover,
+          cover: uploadedCover
+            ? uploadedCover
+            : coverUrl
+              ? {
+                  url: coverUrl,
+                  pathname: '',
+                  filename: '',
+                  size: 0,
+                  contentType: '',
+                }
+              : null,
         }),
       });
 
@@ -219,6 +270,18 @@ export default function AddBookClient() {
             </label>
           </div>
 
+          <label className="block text-sm text-[var(--color-text-secondary)]">
+            <span className="mb-1 block uppercase tracking-wide">Cover Image URL</span>
+            <input
+              id="library-admin-cover-url"
+              type="url"
+              value={form.coverUrl}
+              onChange={(e) => setForm((prev) => ({ ...prev, coverUrl: e.target.value }))}
+              placeholder="https://..."
+              className={inputClasses}
+            />
+          </label>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block min-w-0 text-sm text-[var(--color-text-secondary)]">
               <span className="mb-1 block uppercase tracking-wide">PDF File</span>
@@ -236,7 +299,7 @@ export default function AddBookClient() {
             </label>
 
             <label className="block min-w-0 text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block uppercase tracking-wide">Cover Image</span>
+              <span className="mb-1 block uppercase tracking-wide">Cover Image File</span>
               <input
                 id="library-admin-cover"
                 type="file"
@@ -245,7 +308,7 @@ export default function AddBookClient() {
                 className={fileInputClasses}
               />
               <span className="mt-2 block max-w-full break-words text-xs text-[var(--color-text-tertiary)]">
-                {selectedCover ? selectedCover.name : 'Optional PNG or JPG up to 4 MB.'}
+                {selectedCover ? selectedCover.name : 'Optional PNG, JPG, or WEBP up to 4 MB.'}
               </span>
             </label>
           </div>
