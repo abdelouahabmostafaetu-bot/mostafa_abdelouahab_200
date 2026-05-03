@@ -31,6 +31,21 @@ async function loadProblem(slug: string): Promise<Problem | null> {
   return problem ? mapProblem(problem) : null;
 }
 
+function getProblemDisplayTitle(title: string) {
+  const normalizedTitle = title.toLowerCase();
+
+  if (
+    normalizedTitle.includes('arccos') &&
+    normalizedTitle.includes('arctan') &&
+    normalizedTitle.includes('arctanh') &&
+    (normalizedTitle.includes('512') || title.includes('π') || title.includes('\\pi'))
+  ) {
+    return 'A π⁴/512 Integral with arccos, arctan and arctanh';
+  }
+
+  return title;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
@@ -76,7 +91,7 @@ function HtmlSection({
         {title}
       </h2>
       <div
-        className="problem-content problem-article-content prose-academic"
+        className="problem-content markdown-content solution-content problem-article-content prose-academic"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </section>
@@ -99,21 +114,22 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
     markdownToHtml(problem.fullProblemContent),
     markdownToHtml(problem.solutionContent),
   ]);
+  const displayTitle = getProblemDisplayTitle(problem.title);
   const [titleHtml, shortDescriptionHtml] = await Promise.all([
-    renderInlineMarkdownPreviewToHtml(problem.title),
+    renderInlineMarkdownPreviewToHtml(displayTitle),
     renderInlineMarkdownPreviewToHtml(problem.shortDescription),
   ]);
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8">
+      <div className="problem-page mx-auto w-full max-w-6xl px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8">
         <header className="mx-auto max-w-[900px] border-b border-[var(--color-border)] pb-6 md:pb-10">
           <div>
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
               Problems with Coffee
             </p>
             <h1
-              className="problem-title max-w-[900px] text-[clamp(1.75rem,8vw,3.8rem)] font-semibold leading-[1.12] tracking-normal text-[var(--color-text)] sm:text-[clamp(2rem,5vw,4rem)]"
+              className="problem-hero-title problem-title max-w-[900px] text-[clamp(1.75rem,8vw,3.8rem)] font-semibold leading-[1.12] tracking-normal text-[var(--color-text)] sm:text-[clamp(2rem,5vw,4rem)]"
               style={{ fontFamily: 'var(--font-serif)' }}
               dangerouslySetInnerHTML={{ __html: titleHtml }}
             />

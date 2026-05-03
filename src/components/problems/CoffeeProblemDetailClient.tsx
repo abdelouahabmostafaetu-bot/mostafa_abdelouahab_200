@@ -10,7 +10,7 @@ type HtmlSection = {
 function HtmlBlock({ html }: { html: string }) {
   return (
     <div
-      className="problem-content prose-academic"
+      className="problem-content solution-content markdown-content prose-academic"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

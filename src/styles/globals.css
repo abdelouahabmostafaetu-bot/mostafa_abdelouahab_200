@@ -228,13 +228,22 @@
   }
 
   .problem-content {
+    max-width: 100%;
     font-size: 16px;
     line-height: 1.75;
     overflow-wrap: break-word;
   }
 
   .problem-title {
+    max-width: 100%;
     overflow-wrap: anywhere;
+  }
+
+  .problem-hero-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .problem-title .katex {
@@ -243,10 +252,12 @@
 
   .problem-title .katex-display {
     display: inline;
+    max-width: 100%;
     margin: 0;
     padding: 0;
     border: 0;
     background: transparent;
+    overflow: hidden;
   }
 
   .problem-article-content {
@@ -357,25 +368,49 @@
   }
 
   .problem-content mjx-container,
-  .problem-content .katex-display {
+  .problem-content .katex-display,
+  .solution-content .katex-display,
+  .markdown-content .katex-display {
     display: block;
+    width: 100%;
     max-width: 100%;
     margin: 1rem 0;
-    padding: 0.5rem 0;
+    padding: 0.6rem 0;
     overflow-x: auto;
     overflow-y: hidden;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    text-align: center;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-align: left;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .problem-content .katex-display::-webkit-scrollbar {
+  .problem-content .katex-display::-webkit-scrollbar,
+  .solution-content .katex-display::-webkit-scrollbar,
+  .markdown-content .katex-display::-webkit-scrollbar {
     height: 4px;
   }
 
-  .problem-content .katex {
+  .problem-content .katex,
+  .solution-content .katex,
+  .markdown-content .katex {
     max-width: 100%;
+  }
+
+  .problem-content .katex-display > .katex,
+  .solution-content .katex-display > .katex,
+  .markdown-content .katex-display > .katex {
+    display: inline-block;
+    max-width: none;
+    white-space: nowrap;
+  }
+
+  .solution-content,
+  .markdown-content {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    line-height: 1.75;
   }
 
   .prose-academic hr {
@@ -479,14 +514,31 @@
   }
 
   .problem-content {
+    max-width: 100%;
     font-size: 16px;
     line-height: 1.75;
+  }
+
+  .problem-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .problem-hero-title {
+    font-size: 2rem;
+    line-height: 1.15;
   }
 
   .problem-content p,
   .problem-content li {
     font-size: 1rem;
     line-height: 1.75;
+  }
+
+  .problem-content .katex-display,
+  .solution-content .katex-display,
+  .markdown-content .katex-display {
+    font-size: 0.95rem;
   }
 
   .problem-article-content p {
