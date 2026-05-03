@@ -17,31 +17,27 @@ function sanitizeDownloadFileName(value: string): string {
   return value.replace(/[\r\n"\\]/g, '_').trim() || 'book.pdf';
 }
 
-async function buildDownloadResponse(request: NextRequest, fileUrl: string, fileName: string) {
-  const sourceUrl = new URL(fileUrl, request.url);
-  const sourceResponse = await fetch(sourceUrl);
+function buildDownloadRedirect(request: NextRequest, fileUrl: string, fileName: string) {
+  let sourceUrl: URL;
 
-  if (!sourceResponse.ok || !sourceResponse.body) {
-    throw new Error('Unable to fetch the file for download.');
+  try {
+    sourceUrl = new URL(fileUrl, request.url);
+  } catch {
+    return NextResponse.json({ error: 'Download file URL is invalid.' }, { status: 400 });
   }
 
-  const safeName = sanitizeDownloadFileName(fileName);
-  const headers = new Headers();
-  headers.set('Content-Type', sourceResponse.headers.get('content-type') || 'application/octet-stream');
-  headers.set(
-    'Content-Disposition',
-    `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
-  );
-
-  const contentLength = sourceResponse.headers.get('content-length');
-  if (contentLength) {
-    headers.set('Content-Length', contentLength);
+  if (!['http:', 'https:'].includes(sourceUrl.protocol)) {
+    return NextResponse.json({ error: 'Download file URL is invalid.' }, { status: 400 });
   }
 
-  return new NextResponse(sourceResponse.body, {
-    status: 200,
-    headers,
-  });
+  /*
+    Public Vercel Blob URLs can be opened by anyone who has the raw URL.
+    This route protects normal UI access by checking sign-in before revealing
+    the URL. Strict secrecy requires private storage or a streaming proxy.
+  */
+  const response = NextResponse.redirect(sourceUrl, { status: 302 });
+  response.headers.set('Content-Disposition', `attachment; filename="${sanitizeDownloadFileName(fileName)}"`);
+  return response;
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -69,7 +65,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Download file not found.' }, { status: 404 });
     }
 
-    return buildDownloadResponse(request, fileUrl, book?.fileName || 'book.pdf');
+    return buildDownloadRedirect(request, fileUrl, book?.fileName || 'book.pdf');
   } catch (error) {
     console.error('GET /api/library/books/[slug]/download failed:', error);
     return NextResponse.json({ error: 'Failed to download book.' }, { status: 500 });
