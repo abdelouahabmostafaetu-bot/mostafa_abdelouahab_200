@@ -1,0 +1,12 @@
+[search-ai] INFO:     Started server process [17580]
+[search-ai] INFO:     Waiting for application startup.
+[search-ai] INFO:     Application startup complete.
+[search-ai] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[site] MongoDB SRV lookup failed with preferred DNS servers. Retrying with system DNS settings.
+[site] GET /api/problems failed: Error: querySrv ECONNREFUSED _mongodb._tcp.cluster0.hctfsxk.mongodb.net
+[site]     at ignore-listed frames {
+[site]   errno: undefined,
+[site]   code: 'ECONNREFUSED',
+[site]   syscall: 'querySrv',
+[site]   hostname: '_mongodb._tcp.cluster0.hctfsxk.mongodb.net'
+[site] }

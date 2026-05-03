@@ -1,0 +1,26 @@
+
+> my-academic-site@1.0.0 dev
+> node scripts/dev-with-search.mjs
+
+[site] 
+[site] > my-academic-site@1.0.0 dev:site
+[site] > next dev
+[site] 
+[site] ▲ Next.js 16.2.4 (Turbopack)
+[site] - Local:         http://localhost:3000
+[site] - Network:       http://192.168.43.143:3000
+[site] - Environments: .env.local
+[site] ✓ Ready in 759ms
+[site] Creating turbopack project {
+[site]   dir: 'C:\\Users\\Mostafa\\OneDrive\\Desktop\\mostafa_abdelouahab_200',
+[site]   testMode: true
+[site] }
+[site] 
+[site] 
+[site] [35m
+[site] [Clerk]:[0m You are running in keyless mode.
+[site] You can [35mclaim your keys[0m by visiting https://dashboard.clerk.com/apps/claim?framework=nextjs&token=aww5pg0afdawhnnlzcql8kavpyxorrmuviulf485&return_url=http%3A%2F%2Flocalhost%3A3000%2F
+[site] 
+[site]  GET /admin/problems 307 in 2.1s (next.js: 1609ms, proxy.ts: 244ms, application-code: 201ms)
+[site]  GET /api/problems?page=1&limit=50 500 in 2.1s (next.js: 1573ms, proxy.ts: 245ms, application-code: 256ms)
+[site]  GET /problems-with-coffee 200 in 2.1s (next.js: 263ms, proxy.ts: 246ms, application-code: 1620ms)

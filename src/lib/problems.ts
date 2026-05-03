@@ -1,0 +1,118 @@
+import mongoose from 'mongoose';
+import { normalizeCoffeeLevel, normalizeCoffeeSlug, normalizeCoffeeTags } from '@/lib/coffee-problems';
+import type { CoffeeProblemDocument } from '@/lib/models/coffee-problem';
+import type { CoffeeProblemLevel } from '@/types/coffee-problem';
+import type { Problem, ProblemSummary } from '@/types/problem';
+
+type ProblemPayload = Partial<CoffeeProblemDocument> & Record<string, unknown>;
+
+export type ProblemInput = {
+  title?: string;
+  slug?: string;
+  shortDescription?: string;
+  fullProblemContent?: string;
+  solutionContent?: string;
+  difficulty?: string;
+  estimatedTime?: string;
+  tags?: string[] | string;
+  isPublished?: boolean;
+};
+
+function getDateString(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string') return value;
+  return '';
+}
+
+function getId(value: ProblemPayload): string {
+  const rawId = value._id ?? value.id;
+  if (rawId instanceof mongoose.Types.ObjectId) return rawId.toString();
+  return rawId ? String(rawId) : '';
+}
+
+export function normalizeProblemDifficulty(value: unknown): CoffeeProblemLevel {
+  return normalizeCoffeeLevel(value);
+}
+
+export function normalizeProblemSlug(title: string, slug: string): string {
+  return normalizeCoffeeSlug(title, slug);
+}
+
+export function normalizeProblemTags(value: unknown): string[] {
+  return normalizeCoffeeTags(value);
+}
+
+export function buildPublishedProblemQuery() {
+  return {
+    $or: [{ isPublished: true }, { published: true }],
+  };
+}
+
+export function findProblemByIdOrSlug(id: string) {
+  if (mongoose.isValidObjectId(id)) {
+    return { _id: id };
+  }
+
+  return { slug: id };
+}
+
+export function mapProblemSummary(
+  payload: ProblemPayload,
+  includeAdminFields = false,
+): ProblemSummary {
+  const difficulty = String(payload.difficulty ?? payload.level ?? 'beginner');
+
+  return {
+    id: getId(payload),
+    title: String(payload.title ?? ''),
+    slug: String(payload.slug ?? ''),
+    shortDescription: String(payload.shortDescription ?? ''),
+    difficulty: normalizeProblemDifficulty(difficulty),
+    estimatedTime: String(payload.estimatedTime ?? ''),
+    tags: Array.isArray(payload.tags) ? payload.tags.map(String).filter(Boolean) : [],
+    ...(includeAdminFields
+      ? { isPublished: Boolean(payload.isPublished ?? payload.published) }
+      : {}),
+    createdAt: getDateString(payload.createdAt),
+    updatedAt: getDateString(payload.updatedAt),
+  };
+}
+
+export function mapProblem(payload: ProblemPayload): Problem {
+  return {
+    ...mapProblemSummary(payload, true),
+    fullProblemContent: String(
+      payload.fullProblemContent ?? payload.problemStatement ?? '',
+    ),
+    solutionContent: String(payload.solutionContent ?? payload.solution ?? ''),
+    isPublished: Boolean(payload.isPublished ?? payload.published),
+  };
+}
+
+export function normalizeProblemInput(body: ProblemInput | null) {
+  const title = String(body?.title ?? '').trim();
+  const slug = normalizeProblemSlug(title, String(body?.slug ?? ''));
+  const shortDescription = String(body?.shortDescription ?? '').trim();
+  const fullProblemContent = String(body?.fullProblemContent ?? '').trim();
+  const solutionContent = String(body?.solutionContent ?? '').trim();
+  const difficulty = normalizeProblemDifficulty(body?.difficulty);
+  const estimatedTime = String(body?.estimatedTime ?? '').trim();
+  const tags = normalizeProblemTags(body?.tags ?? []);
+  const isPublished = Boolean(body?.isPublished);
+
+  return {
+    title,
+    slug,
+    shortDescription,
+    fullProblemContent,
+    solutionContent,
+    difficulty,
+    estimatedTime,
+    tags,
+    isPublished,
+    level: difficulty,
+    problemStatement: fullProblemContent,
+    solution: solutionContent,
+    published: isPublished,
+  };
+}

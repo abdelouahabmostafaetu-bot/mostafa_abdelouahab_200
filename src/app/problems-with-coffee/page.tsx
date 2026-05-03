@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Coffee } from 'lucide-react';
+import { getCurrentAdminUser } from '@/lib/admin';
 import {
-  mapCoffeeProblemSummary,
-} from '@/lib/coffee-problems';
+  buildPublishedProblemQuery,
+  mapProblemSummary,
+} from '@/lib/problems';
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
-import type { CoffeeProblemSummary } from '@/types/coffee-problem';
+import type { ProblemSummary } from '@/types/problem';
 
 export const metadata: Metadata = {
   title: 'Problems with Coffee | Abdelouahab Mostafa',
@@ -43,28 +46,19 @@ function buildPageHref(
   return `/problems-with-coffee?${query.toString()}`;
 }
 
-function LevelBadge({ level }: { level: string }) {
+function DifficultyBadge({ difficulty }: { difficulty: string }) {
   return (
     <span className="rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[var(--color-accent)]">
-      {level}
+      {difficulty}
     </span>
   );
 }
 
-function ProblemCard({ problem }: { problem: CoffeeProblemSummary }) {
+function ProblemCard({ problem }: { problem: ProblemSummary }) {
   return (
     <article className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-colors hover:border-[var(--color-accent)]/50 sm:p-4">
-      {problem.coverImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={problem.coverImage}
-          alt=""
-          className="mb-4 aspect-[16/9] w-full rounded-md object-cover"
-          loading="lazy"
-        />
-      ) : null}
       <div className="flex flex-wrap items-center gap-2">
-        <LevelBadge level={problem.level} />
+        <DifficultyBadge difficulty={problem.difficulty} />
         <span className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
           {problem.estimatedTime}
         </span>
@@ -108,20 +102,28 @@ async function loadProblems({
 }) {
   await connectToDatabase();
 
-  const query: Record<string, unknown> = { published: true };
+  const query: Record<string, unknown> = buildPublishedProblemQuery();
 
   if (search) {
     const regex = new RegExp(escapeRegex(search), 'i');
-    query.$or = [
-      { title: regex },
-      { slug: regex },
-      { shortDescription: regex },
-      { tags: regex },
+    query.$and = [
+      ...(Array.isArray(query.$and) ? query.$and : []),
+      {
+        $or: [
+          { title: regex },
+          { slug: regex },
+          { shortDescription: regex },
+          { tags: regex },
+        ],
+      },
     ];
   }
 
   if (['beginner', 'intermediate', 'advanced'].includes(level)) {
-    query.level = level;
+    query.$and = [
+      ...(Array.isArray(query.$and) ? query.$and : []),
+      { $or: [{ level }, { difficulty: level }] },
+    ];
   }
 
   if (tag) {
@@ -140,9 +142,7 @@ async function loadProblems({
   const totalPages = Math.max(1, Math.ceil(totalProblems / PAGE_SIZE));
 
   return {
-    problems: docs.map((doc) =>
-      mapCoffeeProblemSummary(doc as Parameters<typeof mapCoffeeProblemSummary>[0]),
-    ),
+    problems: docs.map((doc) => mapProblemSummary(doc)),
     pagination: {
       page,
       totalProblems,
@@ -159,6 +159,7 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
   const search = String(params.search ?? '').trim();
   const level = String(params.level ?? '').trim().toLowerCase();
   const tag = String(params.tag ?? '').trim();
+  const adminUser = await getCurrentAdminUser();
 
   let data: Awaited<ReturnType<typeof loadProblems>>;
   let warning = '';
@@ -183,18 +184,26 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
         <header className="border-b border-[var(--color-border)] pb-8">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
-            One coffee. One problem. One idea.
-          </p>
-          <h1
-            className="text-3xl font-semibold leading-tight sm:text-5xl"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
-            Problems with Coffee
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
-            A calm place for mathematical problems, slow thinking, and clear solutions.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h1
+              className="flex items-center gap-3 text-3xl font-semibold leading-tight sm:text-5xl"
+              style={{ fontFamily: 'var(--font-serif)' }}
+            >
+              <Coffee
+                aria-hidden="true"
+                className="h-8 w-8 shrink-0 text-[var(--color-accent)] sm:h-10 sm:w-10"
+              />
+              <span>Problems with Coffee</span>
+            </h1>
+            {adminUser ? (
+              <Link
+                href="/admin/problems"
+                className="inline-flex w-fit items-center justify-center rounded-md border border-[var(--color-accent)]/40 px-4 py-2 text-sm font-semibold text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10"
+              >
+                Admin
+              </Link>
+            ) : null}
+          </div>
         </header>
 
         {warning ? (
