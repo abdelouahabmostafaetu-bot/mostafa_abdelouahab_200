@@ -100,16 +100,24 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       problem.slug = problemInput.slug;
     }
     problem.shortDescription = problemInput.shortDescription;
-    problem.difficulty = problemInput.difficulty;
-    problem.level = problemInput.level;
-    problem.estimatedTime = problemInput.estimatedTime;
-    problem.tags = problemInput.tags;
+    if (typeof body?.difficulty === 'string') {
+      problem.difficulty = problemInput.difficulty;
+      problem.level = problemInput.level;
+    }
+    if (typeof body?.estimatedTime === 'string') {
+      problem.estimatedTime = problemInput.estimatedTime;
+    }
+    if (Array.isArray(body?.tags) || typeof body?.tags === 'string') {
+      problem.tags = problemInput.tags;
+    }
     problem.fullProblemContent = problemInput.fullProblemContent;
     problem.problemStatement = problemInput.problemStatement;
     problem.solutionContent = problemInput.solutionContent;
     problem.solution = problemInput.solution;
-    problem.isPublished = problemInput.isPublished;
-    problem.published = problemInput.published;
+    if (typeof body?.isPublished === 'boolean') {
+      problem.isPublished = problemInput.isPublished;
+      problem.published = problemInput.published;
+    }
 
     await problem.save();
 

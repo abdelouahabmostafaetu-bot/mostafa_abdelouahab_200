@@ -4,6 +4,7 @@ import type { CoffeeProblemLevel } from '@/types/coffee-problem';
 export type CoffeeProblemDocument = {
   title: string;
   slug: string;
+  problemNumber?: number;
   shortDescription: string;
   level: CoffeeProblemLevel;
   difficulty: string;
@@ -28,6 +29,7 @@ const coffeeProblemSchema = new mongoose.Schema<CoffeeProblemDocument>(
   {
     title: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, trim: true },
+    problemNumber: { type: Number, min: 1 },
     shortDescription: { type: String, required: true, trim: true },
     level: {
       type: String,
@@ -57,6 +59,7 @@ const coffeeProblemSchema = new mongoose.Schema<CoffeeProblemDocument>(
 
 coffeeProblemSchema.index({ published: 1, createdAt: -1, _id: -1 });
 coffeeProblemSchema.index({ isPublished: 1, createdAt: -1, _id: -1 });
+coffeeProblemSchema.index({ problemNumber: 1 });
 coffeeProblemSchema.index({ level: 1, published: 1, createdAt: -1 });
 coffeeProblemSchema.index({ tags: 1, published: 1 });
 coffeeProblemSchema.index({

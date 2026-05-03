@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import {
   buildPublishedProblemQuery,
-  getNextProblemSlugFromSlugs,
   mapProblem,
   mapProblemSummary,
   normalizeProblemInput,
@@ -50,6 +49,29 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string) {
     status: 500,
     message: fallbackMessage,
   };
+}
+
+async function getNextNumberedProblemSlug() {
+  const [largestNumberedProblem, totalProblemCount] = await Promise.all([
+    CoffeeProblemModel.findOne(
+      { problemNumber: { $gt: 0 } },
+      { problemNumber: 1, _id: 0 },
+    )
+      .sort({ problemNumber: -1 })
+      .lean<{ problemNumber?: number }>(),
+    CoffeeProblemModel.countDocuments({}),
+  ]);
+
+  let nextNumber =
+    Math.max(Number(largestNumberedProblem?.problemNumber ?? 0), totalProblemCount) + 1;
+  let slug = `problem-${nextNumber}`;
+
+  while (await CoffeeProblemModel.exists({ slug })) {
+    nextNumber += 1;
+    slug = `problem-${nextNumber}`;
+  }
+
+  return { problemNumber: nextNumber, slug };
 }
 
 export async function GET(request: NextRequest) {
@@ -163,17 +185,7 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase();
 
-    const hasRequestedSlug = typeof body?.slug === 'string' && body.slug.trim().length > 0;
-    const slug = hasRequestedSlug
-      ? problemInput.slug
-      : getNextProblemSlugFromSlugs(
-          (
-            await CoffeeProblemModel.find(
-              { slug: /^problem-\d+$/i },
-              { slug: 1, _id: 0 },
-            ).lean()
-          ).map((problem) => String(problem.slug ?? '')),
-        );
+    const { problemNumber, slug } = await getNextNumberedProblemSlug();
 
     const existingProblem = await CoffeeProblemModel.findOne({ slug }).lean();
     if (existingProblem) {
@@ -186,6 +198,7 @@ export async function POST(request: NextRequest) {
     const problem = await CoffeeProblemModel.create({
       ...problemInput,
       slug,
+      problemNumber,
       hint1: '',
       hint2: '',
       keyIdea: '',
