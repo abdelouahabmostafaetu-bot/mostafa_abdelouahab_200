@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import AdminMarkdownEditor from '@/components/admin/AdminMarkdownEditor';
 import { slugify } from '@/lib/utils';
 import type { Problem } from '@/types/problem';
 
@@ -91,13 +92,13 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
   }, [form.title, slugTouched]);
 
   const inputClasses =
-    'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]/30';
+    'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/15';
 
   const updateField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const saveProblem = async () => {
+  const saveProblem = async (nextPublished = form.isPublished) => {
     setIsSaving(true);
     setErrorMessage('');
     setStatusMessage('');
@@ -107,7 +108,7 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
       const response = await fetch(endpoint, {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, isPublished: nextPublished }),
       });
 
       const payload = (await response.json().catch(() => null)) as
@@ -125,6 +126,8 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
       if (!isEditing) {
         setForm(emptyForm);
         setSlugTouched(false);
+      } else {
+        updateField('isPublished', nextPublished);
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to save problem.');
@@ -136,16 +139,16 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
   if (isLoading) {
     return (
       <section className="min-h-screen bg-[var(--color-bg)] px-4 pt-24 text-sm text-[var(--color-text-secondary)]">
-        <div className="mx-auto max-w-5xl">Loading problem...</div>
+        <div className="mx-auto max-w-4xl">Loading problem...</div>
       </section>
     );
   }
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
         <header className="mb-8 border-b border-[var(--color-border)] pb-6">
-          <h1 className="text-2xl font-semibold sm:text-3xl">
+          <h1 className="text-3xl font-semibold text-[var(--color-text)]">
             {isEditing ? 'Edit Problem' : 'Add Problem'}
           </h1>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
@@ -159,26 +162,28 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
           </Link>
         </header>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block uppercase tracking-wide">Title</span>
+              <span className="mb-1 block">Title</span>
               <input
                 value={form.title}
                 onChange={(event) => updateField('title', event.target.value)}
+                placeholder="Problem title"
                 className={inputClasses}
                 required
               />
             </label>
 
             <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block uppercase tracking-wide">Slug</span>
+              <span className="mb-1 block">Slug</span>
               <input
                 value={form.slug}
                 onChange={(event) => {
                   updateField('slug', event.target.value);
                   setSlugTouched(true);
                 }}
+                placeholder="problem-slug"
                 className={inputClasses}
                 required
               />
@@ -186,10 +191,11 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
           </div>
 
           <label className="block text-sm text-[var(--color-text-secondary)]">
-            <span className="mb-1 block uppercase tracking-wide">Short Description</span>
+            <span className="mb-1 block">Short Description</span>
             <textarea
               value={form.shortDescription}
               onChange={(event) => updateField('shortDescription', event.target.value)}
+              placeholder="Brief description of the problem"
               rows={3}
               className={`${inputClasses} resize-none`}
               required
@@ -198,7 +204,7 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
 
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block uppercase tracking-wide">Difficulty</span>
+              <span className="mb-1 block">Difficulty</span>
               <select
                 value={form.difficulty}
                 onChange={(event) => updateField('difficulty', event.target.value)}
@@ -211,7 +217,7 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
             </label>
 
             <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block uppercase tracking-wide">Estimated Time</span>
+              <span className="mb-1 block">Estimated Time</span>
               <input
                 value={form.estimatedTime}
                 onChange={(event) => updateField('estimatedTime', event.target.value)}
@@ -221,7 +227,7 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
             </label>
 
             <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block uppercase tracking-wide">Tags</span>
+              <span className="mb-1 block">Tags</span>
               <input
                 value={form.tags}
                 onChange={(event) => updateField('tags', event.target.value)}
@@ -231,46 +237,51 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
             </label>
           </div>
 
-          <label className="block text-sm text-[var(--color-text-secondary)]">
-            <span className="mb-1 block uppercase tracking-wide">Full Problem Content</span>
-            <textarea
-              value={form.fullProblemContent}
-              onChange={(event) => updateField('fullProblemContent', event.target.value)}
-              rows={10}
-              className={`${inputClasses} min-h-48 resize-y font-mono text-xs leading-6 sm:text-sm`}
-              required
-            />
-          </label>
+          <AdminMarkdownEditor
+            label="Full Problem Content"
+            value={form.fullProblemContent}
+            onChange={(value) => updateField('fullProblemContent', value)}
+            placeholder="Write the full problem content here. Use Markdown and LaTeX notation."
+            uploadEndpoint="/api/problems-with-coffee/upload-image"
+          />
 
-          <label className="block text-sm text-[var(--color-text-secondary)]">
-            <span className="mb-1 block uppercase tracking-wide">Solution Content</span>
-            <textarea
-              value={form.solutionContent}
-              onChange={(event) => updateField('solutionContent', event.target.value)}
-              rows={10}
-              className={`${inputClasses} min-h-48 resize-y font-mono text-xs leading-6 sm:text-sm`}
-            />
-          </label>
+          <AdminMarkdownEditor
+            label="Solution Content"
+            value={form.solutionContent}
+            onChange={(value) => updateField('solutionContent', value)}
+            placeholder="Write the solution content here. Use Markdown and LaTeX notation."
+            uploadEndpoint="/api/problems-with-coffee/upload-image"
+          />
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <label className="inline-flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
               <input
                 type="checkbox"
                 checked={form.isPublished}
                 onChange={(event) => updateField('isPublished', event.target.checked)}
-                className="rounded border-[var(--color-border)]"
+                className="rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
               />
-              Published
+              <span>Publish immediately</span>
             </label>
 
-            <button
-              type="button"
-              onClick={saveProblem}
-              disabled={isSaving}
-              className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[#0f0e0d] hover:opacity-90 disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Problem'}
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => saveProblem(false)}
+                disabled={isSaving}
+                className="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-semibold text-[var(--color-text)] transition hover:bg-[var(--color-bg-secondary)] disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Draft'}
+              </button>
+              <button
+                type="button"
+                onClick={() => saveProblem(isEditing ? form.isPublished : true)}
+                disabled={isSaving}
+                className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[#0f0e0d] transition hover:opacity-90 disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : isEditing ? 'Save Changes' : 'Publish'}
+              </button>
+            </div>
           </div>
         </div>
 
