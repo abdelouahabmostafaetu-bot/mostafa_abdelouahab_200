@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import { normalizeCoffeeLevel, normalizeCoffeeSlug, normalizeCoffeeTags } from '@/lib/coffee-problems';
+import { connectToDatabase } from '@/lib/mongodb';
+import CoffeeProblemModel from '@/lib/models/coffee-problem';
 import type { CoffeeProblemDocument } from '@/lib/models/coffee-problem';
 import type { CoffeeProblemLevel } from '@/types/coffee-problem';
 import type { Problem, ProblemSummary } from '@/types/problem';
@@ -32,6 +34,13 @@ function getId(value: ProblemPayload): string {
   const rawId = value._id ?? value.id;
   if (rawId instanceof mongoose.Types.ObjectId) return rawId.toString();
   return rawId ? String(rawId) : '';
+}
+
+function isDatabaseUnavailable(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : '';
+  return /MONGODB_URI is not configured|ENOTFOUND|ECONNREFUSED|MongoServerSelectionError|buffering timed out/i.test(
+    message,
+  );
 }
 
 export function normalizeProblemDifficulty(value: unknown): CoffeeProblemLevel {
@@ -103,6 +112,25 @@ export function mapProblem(payload: ProblemPayload): Problem {
     solutionContent: String(payload.solutionContent ?? payload.solution ?? ''),
     isPublished: Boolean(payload.isPublished ?? payload.published),
   };
+}
+
+export async function getLatestPublishedProblem(): Promise<ProblemSummary | null> {
+  try {
+    await connectToDatabase();
+
+    const problem = await CoffeeProblemModel.findOne(buildPublishedProblemQuery())
+      .sort({ createdAt: -1, _id: -1 })
+      .lean();
+
+    return problem ? mapProblemSummary(problem) : null;
+  } catch (error) {
+    if (isDatabaseUnavailable(error)) {
+      console.warn('Problems with Coffee is unavailable because the database is not configured or reachable.');
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export function normalizeProblemInput(body: ProblemInput | null) {
