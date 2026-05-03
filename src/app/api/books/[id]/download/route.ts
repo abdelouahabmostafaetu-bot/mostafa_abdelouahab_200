@@ -1,4 +1,5 @@
 import { currentUser } from '@clerk/nextjs/server';
+import mongoose from 'mongoose';
 import { type NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
@@ -14,6 +15,30 @@ export const dynamic = 'force-dynamic';
 
 function sanitizeDownloadFileName(value: string): string {
   return value.replace(/[\r\n"\\]/g, '_').trim() || 'book.pdf';
+}
+
+function getDownloadErrorResponse(error: unknown) {
+  const message = error instanceof Error ? error.message : '';
+
+  if (message.includes('MONGODB_URI is not configured')) {
+    return NextResponse.json(
+      { error: 'Database is not configured. MONGODB_URI is missing.' },
+      { status: 503 },
+    );
+  }
+
+  if (/ENOTFOUND|ECONNREFUSED|MongoServerSelectionError|buffering timed out|querySrv/i.test(message)) {
+    return NextResponse.json(
+      { error: 'Database connection failed. Please try again later.' },
+      { status: 503 },
+    );
+  }
+
+  if (/Cast to ObjectId failed|BSONError/i.test(message)) {
+    return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
+  }
+
+  return NextResponse.json({ error: 'Failed to download book.' }, { status: 500 });
 }
 
 function buildDownloadRedirect(request: NextRequest, fileUrl: string, fileName: string) {
@@ -35,18 +60,28 @@ function buildDownloadRedirect(request: NextRequest, fileUrl: string, fileName: 
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
-  const user = await currentUser();
-  if (!user) {
-    const signInUrl = new URL('/sign-in', request.url);
-    signInUrl.searchParams.set('redirect_url', request.nextUrl.pathname);
-    return NextResponse.redirect(signInUrl, { status: 302 });
-  }
-
   try {
+    const user = await currentUser();
+    if (!user) {
+      const signInUrl = new URL('/sign-in', request.url);
+      signInUrl.searchParams.set('redirect_url', request.nextUrl.pathname);
+      return NextResponse.redirect(signInUrl, { status: 302 });
+    }
+
     await connectToDatabase();
 
     const { id } = await context.params;
-    const book = await BookModel.findById(id);
+    const query: Record<string, unknown>[] = [{ slug: id }];
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query.push({ _id: id });
+    }
+
+    const book = await BookModel.findOne({ $or: query });
+
+    if (!book) {
+      return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
+    }
 
     const fileUrl = book?.fileUrl || book?.filePath || '';
 
@@ -57,6 +92,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return buildDownloadRedirect(request, fileUrl, book?.fileName || 'book.pdf');
   } catch (error) {
     console.error('GET /api/books/[id]/download failed:', error);
-    return NextResponse.json({ error: 'Failed to download book.' }, { status: 500 });
+    return getDownloadErrorResponse(error);
   }
 }

@@ -17,6 +17,30 @@ function sanitizeDownloadFileName(value: string): string {
   return value.replace(/[\r\n"\\]/g, '_').trim() || 'book.pdf';
 }
 
+function getDownloadErrorResponse(error: unknown) {
+  const message = error instanceof Error ? error.message : '';
+
+  if (message.includes('MONGODB_URI is not configured')) {
+    return NextResponse.json(
+      { error: 'Database is not configured. MONGODB_URI is missing.' },
+      { status: 503 },
+    );
+  }
+
+  if (/ENOTFOUND|ECONNREFUSED|MongoServerSelectionError|buffering timed out|querySrv/i.test(message)) {
+    return NextResponse.json(
+      { error: 'Database connection failed. Please try again later.' },
+      { status: 503 },
+    );
+  }
+
+  if (/Cast to ObjectId failed|BSONError/i.test(message)) {
+    return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
+  }
+
+  return NextResponse.json({ error: 'Failed to download book.' }, { status: 500 });
+}
+
 function buildDownloadRedirect(request: NextRequest, fileUrl: string, fileName: string) {
   let sourceUrl: URL;
 
@@ -41,14 +65,14 @@ function buildDownloadRedirect(request: NextRequest, fileUrl: string, fileName: 
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
-  const user = await currentUser();
-  if (!user) {
-    const signInUrl = new URL('/sign-in', request.url);
-    signInUrl.searchParams.set('redirect_url', request.nextUrl.pathname);
-    return NextResponse.redirect(signInUrl, { status: 302 });
-  }
-
   try {
+    const user = await currentUser();
+    if (!user) {
+      const signInUrl = new URL('/sign-in', request.url);
+      signInUrl.searchParams.set('redirect_url', request.nextUrl.pathname);
+      return NextResponse.redirect(signInUrl, { status: 302 });
+    }
+
     await connectToDatabase();
 
     const { slug } = await context.params;
@@ -59,6 +83,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const book = await BookModel.findOne({ $or: query });
+
+    if (!book) {
+      return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
+    }
+
     const fileUrl = book?.fileUrl || book?.filePath || '';
 
     if (!fileUrl) {
@@ -68,6 +97,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return buildDownloadRedirect(request, fileUrl, book?.fileName || 'book.pdf');
   } catch (error) {
     console.error('GET /api/library/books/[slug]/download failed:', error);
-    return NextResponse.json({ error: 'Failed to download book.' }, { status: 500 });
+    return getDownloadErrorResponse(error);
   }
 }
