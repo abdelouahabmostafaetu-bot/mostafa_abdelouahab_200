@@ -63,17 +63,7 @@ export default async function RecentActivity() {
         </div>
 
         {latestProblem ? (
-          <div className="mt-10 md:mt-16">
-            <div className="mb-7 flex items-baseline justify-between border-b border-[var(--color-border)] pb-3 md:mb-12 md:pb-4">
-              <h2
-                className="inline-flex items-center gap-2 text-xl font-bold text-[var(--color-text)] md:gap-3 md:text-3xl"
-                style={{ fontFamily: 'var(--font-serif)' }}
-              >
-                <SiteIcon name="equation" alt="" className="h-5 w-5 md:h-7 md:w-7" />
-                Problems with Coffee
-              </h2>
-            </div>
-
+          <div className="mt-9 md:mt-12">
             <article className="group">
               <Link href={`/problems-with-coffee/${latestProblem.slug}`} className="block">
                 <header className="mb-3">
