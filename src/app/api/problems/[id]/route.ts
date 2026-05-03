@@ -61,15 +61,13 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     if (
       !problemInput.title ||
-      !problemInput.slug ||
       !problemInput.shortDescription ||
-      !problemInput.fullProblemContent ||
-      !problemInput.estimatedTime
+      !problemInput.fullProblemContent
     ) {
       return NextResponse.json(
         {
           error:
-            'Title, slug, short description, full problem content, and estimated time are required.',
+            'Title, short description, and full problem content are required.',
         },
         { status: 400 },
       );
@@ -82,20 +80,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Problem not found.' }, { status: 404 });
     }
 
-    const existing = await CoffeeProblemModel.findOne({
-      slug: problemInput.slug,
-      _id: { $ne: problem._id },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Another problem already uses this slug.' },
-        { status: 409 },
-      );
-    }
-
     problem.title = problemInput.title;
-    problem.slug = problemInput.slug;
     problem.shortDescription = problemInput.shortDescription;
     problem.difficulty = problemInput.difficulty;
     problem.level = problemInput.level;

@@ -3,43 +3,30 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import AdminMarkdownEditor from '@/components/admin/AdminMarkdownEditor';
-import { slugify } from '@/lib/utils';
 import type { Problem } from '@/types/problem';
 
 type FormState = {
   title: string;
-  slug: string;
   shortDescription: string;
   fullProblemContent: string;
   solutionContent: string;
-  difficulty: string;
-  estimatedTime: string;
-  tags: string;
   isPublished: boolean;
 };
 
 const emptyForm: FormState = {
   title: '',
-  slug: '',
   shortDescription: '',
   fullProblemContent: '',
   solutionContent: '',
-  difficulty: 'beginner',
-  estimatedTime: '10 min',
-  tags: '',
   isPublished: true,
 };
 
 function toForm(problem: Problem): FormState {
   return {
     title: problem.title,
-    slug: problem.slug,
     shortDescription: problem.shortDescription,
     fullProblemContent: problem.fullProblemContent,
     solutionContent: problem.solutionContent,
-    difficulty: problem.difficulty,
-    estimatedTime: problem.estimatedTime,
-    tags: problem.tags.join(', '),
     isPublished: problem.isPublished,
   };
 }
@@ -47,7 +34,6 @@ function toForm(problem: Problem): FormState {
 export default function ProblemFormClient({ problemId = '' }: { problemId?: string }) {
   const isEditing = Boolean(problemId);
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [slugTouched, setSlugTouched] = useState(isEditing);
   const [isLoading, setIsLoading] = useState(isEditing);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -86,11 +72,6 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
     void loadProblem();
   }, [isEditing, problemId]);
 
-  useEffect(() => {
-    if (slugTouched) return;
-    setForm((current) => ({ ...current, slug: slugify(current.title) }));
-  }, [form.title, slugTouched]);
-
   const inputClasses =
     'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/15';
 
@@ -125,7 +106,6 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
       setStatusMessage(isEditing ? 'Problem updated successfully.' : 'Problem created successfully.');
       if (!isEditing) {
         setForm(emptyForm);
-        setSlugTouched(false);
       } else {
         updateField('isPublished', nextPublished);
       }
@@ -163,32 +143,16 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
         </header>
 
         <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block">Title</span>
-              <input
-                value={form.title}
-                onChange={(event) => updateField('title', event.target.value)}
-                placeholder="Problem title"
-                className={inputClasses}
-                required
-              />
-            </label>
-
-            <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block">Slug</span>
-              <input
-                value={form.slug}
-                onChange={(event) => {
-                  updateField('slug', event.target.value);
-                  setSlugTouched(true);
-                }}
-                placeholder="problem-slug"
-                className={inputClasses}
-                required
-              />
-            </label>
-          </div>
+          <label className="block text-sm text-[var(--color-text-secondary)]">
+            <span className="mb-1 block">Title</span>
+            <input
+              value={form.title}
+              onChange={(event) => updateField('title', event.target.value)}
+              placeholder="Problem title"
+              className={inputClasses}
+              required
+            />
+          </label>
 
           <label className="block text-sm text-[var(--color-text-secondary)]">
             <span className="mb-1 block">Short Description</span>
@@ -201,41 +165,6 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
               required
             />
           </label>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block">Difficulty</span>
-              <select
-                value={form.difficulty}
-                onChange={(event) => updateField('difficulty', event.target.value)}
-                className={inputClasses}
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </label>
-
-            <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block">Estimated Time</span>
-              <input
-                value={form.estimatedTime}
-                onChange={(event) => updateField('estimatedTime', event.target.value)}
-                placeholder="10 min"
-                className={inputClasses}
-              />
-            </label>
-
-            <label className="block text-sm text-[var(--color-text-secondary)]">
-              <span className="mb-1 block">Tags</span>
-              <input
-                value={form.tags}
-                onChange={(event) => updateField('tags', event.target.value)}
-                placeholder="geometry, pi, circle"
-                className={inputClasses}
-              />
-            </label>
-          </div>
 
           <AdminMarkdownEditor
             label="Full Problem Content"

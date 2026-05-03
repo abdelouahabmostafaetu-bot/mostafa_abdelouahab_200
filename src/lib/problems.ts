@@ -18,6 +18,10 @@ export type ProblemInput = {
   isPublished?: boolean;
 };
 
+const DEFAULT_PROBLEM_DIFFICULTY = 'beginner';
+const DEFAULT_PROBLEM_ESTIMATED_TIME = '10 min';
+const PROBLEM_NUMBER_SLUG_PATTERN = /^problem-(\d+)$/i;
+
 function getDateString(value: unknown): string {
   if (value instanceof Date) return value.toISOString();
   if (typeof value === 'string') return value;
@@ -40,6 +44,18 @@ export function normalizeProblemSlug(title: string, slug: string): string {
 
 export function normalizeProblemTags(value: unknown): string[] {
   return normalizeCoffeeTags(value);
+}
+
+export function getNextProblemSlugFromSlugs(slugs: string[]): string {
+  const maxProblemNumber = slugs.reduce((currentMax, slug) => {
+    const match = PROBLEM_NUMBER_SLUG_PATTERN.exec(slug.trim());
+    if (!match) return currentMax;
+
+    const parsed = Number.parseInt(match[1] ?? '', 10);
+    return Number.isFinite(parsed) ? Math.max(currentMax, parsed) : currentMax;
+  }, 0);
+
+  return `problem-${maxProblemNumber + 1}`;
 }
 
 export function buildPublishedProblemQuery() {
@@ -95,8 +111,10 @@ export function normalizeProblemInput(body: ProblemInput | null) {
   const shortDescription = String(body?.shortDescription ?? '').trim();
   const fullProblemContent = String(body?.fullProblemContent ?? '').trim();
   const solutionContent = String(body?.solutionContent ?? '').trim();
-  const difficulty = normalizeProblemDifficulty(body?.difficulty);
-  const estimatedTime = String(body?.estimatedTime ?? '').trim();
+  const difficulty = normalizeProblemDifficulty(body?.difficulty ?? DEFAULT_PROBLEM_DIFFICULTY);
+  const estimatedTime =
+    String(body?.estimatedTime ?? DEFAULT_PROBLEM_ESTIMATED_TIME).trim() ||
+    DEFAULT_PROBLEM_ESTIMATED_TIME;
   const tags = normalizeProblemTags(body?.tags ?? []);
   const isPublished = Boolean(body?.isPublished);
 

@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import {
   buildPublishedProblemQuery,
+  getNextProblemSlugFromSlugs,
   mapProblem,
   mapProblemSummary,
   normalizeProblemInput,
@@ -148,15 +149,13 @@ export async function POST(request: NextRequest) {
 
     if (
       !problemInput.title ||
-      !problemInput.slug ||
       !problemInput.shortDescription ||
-      !problemInput.fullProblemContent ||
-      !problemInput.estimatedTime
+      !problemInput.fullProblemContent
     ) {
       return NextResponse.json(
         {
           error:
-            'Title, slug, short description, full problem content, and estimated time are required.',
+            'Title, short description, and full problem content are required.',
         },
         { status: 400 },
       );
@@ -164,16 +163,17 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase();
 
-    const existing = await CoffeeProblemModel.findOne({ slug: problemInput.slug });
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Another problem already uses this slug.' },
-        { status: 409 },
-      );
-    }
+    const existingProblemSlugs = await CoffeeProblemModel.find(
+      { slug: /^problem-\d+$/i },
+      { slug: 1, _id: 0 },
+    ).lean();
+    const slug = getNextProblemSlugFromSlugs(
+      existingProblemSlugs.map((problem) => String(problem.slug ?? '')),
+    );
 
     const problem = await CoffeeProblemModel.create({
       ...problemInput,
+      slug,
       hint1: '',
       hint2: '',
       keyIdea: '',
