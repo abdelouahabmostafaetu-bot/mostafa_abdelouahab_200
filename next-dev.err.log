@@ -10,3 +10,10 @@
 [site]   syscall: 'querySrv',
 [site]   hostname: '_mongodb._tcp.cluster0.hctfsxk.mongodb.net'
 [site] }
+[site] GET /api/problems failed: Error: querySrv ECONNREFUSED _mongodb._tcp.cluster0.hctfsxk.mongodb.net
+[site]     at ignore-listed frames {
+[site]   errno: undefined,
+[site]   code: 'ECONNREFUSED',
+[site]   syscall: 'querySrv',
+[site]   hostname: '_mongodb._tcp.cluster0.hctfsxk.mongodb.net'
+[site] }

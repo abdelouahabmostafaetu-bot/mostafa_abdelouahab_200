@@ -24,3 +24,6 @@
 [site]  GET /admin/problems 307 in 2.1s (next.js: 1609ms, proxy.ts: 244ms, application-code: 201ms)
 [site]  GET /api/problems?page=1&limit=50 500 in 2.1s (next.js: 1573ms, proxy.ts: 245ms, application-code: 256ms)
 [site]  GET /problems-with-coffee 200 in 2.1s (next.js: 263ms, proxy.ts: 246ms, application-code: 1620ms)
+[site]  GET /api/problems?page=1&limit=50 200 in 448ms (next.js: 376ms, proxy.ts: 65ms, application-code: 8ms)
+[site]  GET /problems-with-coffee 200 in 554ms (next.js: 112ms, proxy.ts: 65ms, application-code: 376ms)
+[site]  GET /admin/problems 307 in 558ms (next.js: 279ms, proxy.ts: 65ms, application-code: 214ms)
