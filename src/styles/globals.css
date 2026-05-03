@@ -228,7 +228,100 @@
   }
 
   .problem-content {
-    line-height: 1.75;
+    line-height: 1.82;
+  }
+
+  .problem-title {
+    overflow-wrap: anywhere;
+  }
+
+  .problem-title .katex {
+    font-size: 0.9em;
+  }
+
+  .problem-title .katex-display {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .problem-article-content {
+    color: var(--color-text-secondary);
+  }
+
+  .problem-article-content p {
+    margin-bottom: 1.15rem;
+    line-height: 1.86;
+  }
+
+  .problem-article-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .problem-article-content a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.24em;
+  }
+
+  .problem-article-content ul,
+  .problem-article-content ol {
+    margin: 1rem 0 1.25rem;
+    padding-left: 1.45rem;
+  }
+
+  .problem-article-content ul {
+    list-style: disc;
+  }
+
+  .problem-article-content ol {
+    list-style: decimal;
+  }
+
+  .problem-article-content li {
+    margin-bottom: 0.55rem;
+    line-height: 1.78;
+  }
+
+  .problem-article-content li::marker {
+    color: var(--color-accent);
+  }
+
+  .problem-article-content blockquote {
+    margin: 1.35rem 0;
+    border-left: 3px solid rgba(243, 107, 22, 0.65);
+    border-radius: 0 10px 10px 0;
+    background: rgba(243, 107, 22, 0.07);
+    padding: 0.9rem 1rem;
+    color: var(--color-text-secondary);
+  }
+
+  .problem-article-content code {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.22);
+    padding: 0.12rem 0.38rem;
+    color: var(--color-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9em;
+  }
+
+  .problem-article-content pre {
+    margin: 1.4rem 0;
+    overflow-x: auto;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    background: #141519;
+    padding: 1rem;
+  }
+
+  .problem-article-content pre code {
+    border: 0;
+    background: transparent;
+    padding: 0;
   }
 
   .problem-content img {
@@ -436,6 +529,7 @@
 }
 
 .katex-display {
+  display: block;
   position: relative;
   margin: 1.45rem 0;
   overflow-x: auto;
@@ -449,6 +543,7 @@
 
 .katex-display > .katex {
   display: inline-block;
+  text-align: initial;
   max-width: 100%;
 }
 

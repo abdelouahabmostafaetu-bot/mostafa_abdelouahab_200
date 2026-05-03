@@ -12,3 +12,11 @@ Creating turbopack project {
   testMode: true
 }
 
+
+[35m
+[Clerk]:[0m You are running in keyless mode.
+You can [35mclaim your keys[0m by visiting https://dashboard.clerk.com/apps/claim?framework=nextjs&token=aww5pg0afdawhnnlzcql8kavpyxorrmuviulf485&return_url=http%3A%2F%2Flocalhost%3A3000%2F
+
+ GET /problems-with-coffee 200 in 2.2s (next.js: 1186ms, proxy.ts: 238ms, application-code: 727ms)
+ GET / 200 in 2.2s (next.js: 262ms, proxy.ts: 241ms, application-code: 1660ms)
+ GET /admin/problems/new 307 in 1918ms (next.js: 89ms, proxy.ts: 1559ms, application-code: 271ms)

@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 text-[11px] text-[var(--color-text-secondary)]">
+    <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">
       {children}
     </span>
   );
@@ -74,17 +74,17 @@ function HtmlSection({
 
   return (
     <section
-      className={`rounded-lg border p-4 sm:p-5 ${
+      className={`rounded-xl border px-4 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)] sm:px-6 sm:py-7 md:px-8 md:py-8 ${
         accent
-          ? 'border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10'
-          : 'border-[var(--color-border)] bg-[var(--color-surface)]'
+          ? 'border-[var(--color-accent)]/25 bg-[linear-gradient(180deg,rgba(243,107,22,0.09),rgba(39,39,43,0.86))]'
+          : 'border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(39,39,43,0.88))]'
       }`}
     >
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.16em] text-[var(--color-accent)]">
+      <h2 className="mb-5 border-b border-[var(--color-border)] pb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-accent)]">
         {title}
       </h2>
       <div
-        className="problem-content prose-academic"
+        className="problem-content problem-article-content prose-academic"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </section>
@@ -114,22 +114,22 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
-        <header className="grid gap-6 border-b border-[var(--color-border)] pb-8 lg:grid-cols-[1fr_280px] lg:items-end">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+        <header className="mx-auto max-w-[900px] border-b border-[var(--color-border)] pb-8 md:pb-10">
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
               Problems with Coffee
             </p>
             <h1
-              className="text-3xl font-semibold leading-tight sm:text-5xl"
+              className="problem-title max-w-[900px] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[1.1] tracking-normal text-[var(--color-text)]"
               style={{ fontFamily: 'var(--font-serif)' }}
               dangerouslySetInnerHTML={{ __html: titleHtml }}
             />
             <p
-              className="mt-4 max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base"
+              className="mt-5 max-w-3xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base sm:leading-8"
               dangerouslySetInnerHTML={{ __html: shortDescriptionHtml }}
             />
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2.5">
               <Badge>{problem.difficulty}</Badge>
               <Badge>{problem.estimatedTime}</Badge>
               {problem.tags.map((tag) => (
@@ -139,14 +139,14 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
           </div>
         </header>
 
-        <main className="mx-auto mt-8 max-w-3xl space-y-6">
+        <main className="mx-auto mt-8 max-w-[900px] space-y-7 md:mt-10">
           <HtmlSection title="Problem" html={problemHtml} />
           <HtmlSection title="Solution" html={solutionHtml} accent />
 
           <div className="border-t border-[var(--color-border)] pt-6">
             <Link
               href="/problems-with-coffee"
-              className="inline-flex rounded-md border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              className="inline-flex rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]"
             >
               Back to Problems with Coffee
             </Link>
