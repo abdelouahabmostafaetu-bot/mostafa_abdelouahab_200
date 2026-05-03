@@ -64,23 +64,15 @@ function Badge({ children }: { children: React.ReactNode }) {
 function HtmlSection({
   title,
   html,
-  accent = false,
 }: {
   title: string;
   html: string;
-  accent?: boolean;
 }) {
   if (!html) return null;
 
   return (
-    <section
-      className={`rounded-xl border px-4 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)] sm:px-6 sm:py-7 md:px-8 md:py-8 ${
-        accent
-          ? 'border-[var(--color-accent)]/25 bg-[linear-gradient(180deg,rgba(243,107,22,0.09),rgba(39,39,43,0.86))]'
-          : 'border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(39,39,43,0.88))]'
-      }`}
-    >
-      <h2 className="mb-5 border-b border-[var(--color-border)] pb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-accent)]">
+    <section className="problem-detail-section border-t border-[var(--color-border)] pt-6 sm:pt-7">
+      <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)] sm:mb-5">
         {title}
       </h2>
       <div
@@ -114,22 +106,22 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
-        <header className="mx-auto max-w-[900px] border-b border-[var(--color-border)] pb-8 md:pb-10">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8">
+        <header className="mx-auto max-w-[900px] border-b border-[var(--color-border)] pb-6 md:pb-10">
           <div>
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
               Problems with Coffee
             </p>
             <h1
-              className="problem-title max-w-[900px] text-[clamp(2rem,5vw,4rem)] font-semibold leading-[1.1] tracking-normal text-[var(--color-text)]"
+              className="problem-title max-w-[900px] text-[clamp(1.75rem,8vw,3.8rem)] font-semibold leading-[1.12] tracking-normal text-[var(--color-text)] sm:text-[clamp(2rem,5vw,4rem)]"
               style={{ fontFamily: 'var(--font-serif)' }}
               dangerouslySetInnerHTML={{ __html: titleHtml }}
             />
             <p
-              className="mt-5 max-w-3xl text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base sm:leading-8"
+              className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)] sm:mt-5 sm:leading-8"
               dangerouslySetInnerHTML={{ __html: shortDescriptionHtml }}
             />
-            <div className="mt-6 flex flex-wrap gap-2.5">
+            <div className="mt-5 flex flex-wrap gap-2 sm:mt-6 sm:gap-2.5">
               <Badge>{problem.difficulty}</Badge>
               <Badge>{problem.estimatedTime}</Badge>
               {problem.tags.map((tag) => (
@@ -139,9 +131,9 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
           </div>
         </header>
 
-        <main className="mx-auto mt-8 max-w-[900px] space-y-7 md:mt-10">
+        <main className="mx-auto mt-7 max-w-[900px] space-y-8 md:mt-10">
           <HtmlSection title="Problem" html={problemHtml} />
-          <HtmlSection title="Solution" html={solutionHtml} accent />
+          <HtmlSection title="Solution" html={solutionHtml} />
 
           <div className="border-t border-[var(--color-border)] pt-6">
             <Link

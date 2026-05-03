@@ -228,7 +228,8 @@
   }
 
   .problem-content {
-    line-height: 1.82;
+    font-size: 16px;
+    line-height: 1.75;
     overflow-wrap: break-word;
   }
 
@@ -253,8 +254,8 @@
   }
 
   .problem-article-content p {
-    margin-bottom: 1.15rem;
-    line-height: 1.86;
+    margin-bottom: 1rem;
+    line-height: 1.75;
   }
 
   .problem-article-content p:last-child {
@@ -289,6 +290,27 @@
 
   .problem-article-content li::marker {
     color: var(--color-accent);
+  }
+
+  .problem-article-content h2,
+  .problem-article-content h3 {
+    margin: 1.7rem 0 0.85rem;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 1.18;
+    color: var(--color-text);
+  }
+
+  .problem-article-content h2 {
+    font-size: clamp(1.35rem, 4vw, 1.85rem);
+  }
+
+  .problem-article-content h3 {
+    font-size: clamp(1.18rem, 3.2vw, 1.5rem);
+  }
+
+  .problem-article-content h2::after {
+    display: none;
   }
 
   .problem-article-content blockquote {
@@ -336,10 +358,24 @@
 
   .problem-content mjx-container,
   .problem-content .katex-display {
+    display: block;
     max-width: 100%;
+    margin: 1rem 0;
+    padding: 0.5rem 0;
     overflow-x: auto;
     overflow-y: hidden;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     text-align: center;
+  }
+
+  .problem-content .katex-display::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .problem-content .katex {
+    max-width: 100%;
   }
 
   .prose-academic hr {
@@ -440,6 +476,31 @@
   .problem-content img {
     margin: 1rem auto;
     border-radius: 10px;
+  }
+
+  .problem-content {
+    font-size: 16px;
+    line-height: 1.75;
+  }
+
+  .problem-content p,
+  .problem-content li {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .problem-article-content p {
+    margin-bottom: 0.95rem;
+  }
+
+  .problem-article-content h2 {
+    font-size: 1.35rem;
+    margin-top: 1.5rem;
+  }
+
+  .problem-article-content h3 {
+    font-size: 1.18rem;
+    margin-top: 1.35rem;
   }
 }
 
