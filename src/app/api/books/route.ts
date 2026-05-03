@@ -96,9 +96,23 @@ function mapBook(payload: Record<string, unknown>, includeRawFileUrl = false) {
   const id = String(payload._id ?? payload.id ?? '');
   const title = String(payload.title ?? '');
   const slug = String(payload.slug ?? '') || id;
-  const fileUrl = String(payload.fileUrl ?? payload.filePath ?? '');
+  const fileUrl = String(
+    payload.pdfUrl ??
+      payload.fileUrl ??
+      payload.pdf_url ??
+      payload.downloadUrl ??
+      payload.filePath ??
+      '',
+  );
   const filePathname = String(payload.filePathname ?? '');
   const hasFile = Boolean(fileUrl);
+  const coverUrl = String(
+    payload.coverUrl ??
+      payload.imageUrl ??
+      payload.cover_url ??
+      payload.thumbnailUrl ??
+      '',
+  );
   const createdAt = getDateString(payload.createdAt) || String(payload.addedAt ?? '');
   const updatedAt = getDateString(payload.updatedAt) || createdAt;
 
@@ -110,14 +124,20 @@ function mapBook(payload: Record<string, unknown>, includeRawFileUrl = false) {
     category: String(payload.category ?? ''),
     description: String(payload.description ?? ''),
     tags: Array.isArray(payload.tags) ? payload.tags.map(String).filter(Boolean) : [],
-    coverUrl: String(payload.coverUrl ?? ''),
+    coverUrl,
+    imageUrl: String(payload.imageUrl ?? ''),
+    cover_url: String(payload.cover_url ?? ''),
+    thumbnailUrl: String(payload.thumbnailUrl ?? ''),
     coverPathname: String(payload.coverPathname ?? ''),
-    fileUrl: includeRawFileUrl ? fileUrl : undefined,
+    pdfUrl: String(payload.pdfUrl ?? ''),
+    fileUrl,
+    pdf_url: String(payload.pdf_url ?? ''),
+    downloadUrl: String(payload.downloadUrl ?? ''),
     filePathname: includeRawFileUrl ? filePathname : '',
     fileName: String(payload.fileName ?? ''),
     fileSize: Number(payload.fileSize ?? 0),
     fileType: String(payload.fileType ?? ''),
-    filePath: includeRawFileUrl ? fileUrl : hasFile ? `/api/library/books/${slug}/download` : '',
+    filePath: fileUrl,
     hasFile,
     addedAt: String(payload.addedAt ?? createdAt),
     createdAt,

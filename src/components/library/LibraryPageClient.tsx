@@ -50,18 +50,28 @@ function parseBooksPayload(payload: unknown): BooksPayload {
   return { books: [] };
 }
 
-function BookCard({ book, isSignedIn }: { book: LibraryBook; isSignedIn: boolean }) {
+function getBookDownloadUrl(book: LibraryBook): string {
+  return book.pdfUrl || book.fileUrl || book.pdf_url || book.downloadUrl || '';
+}
+
+function getBookCoverUrl(book: LibraryBook): string {
+  return book.coverUrl || book.imageUrl || book.cover_url || book.thumbnailUrl || '';
+}
+
+function BookCard({ book }: { book: LibraryBook }) {
   const [expanded, setExpanded] = useState(false);
   const shouldClamp = book.description && book.description.length > 120;
+  const downloadUrl = getBookDownloadUrl(book);
+  const coverUrl = getBookCoverUrl(book);
 
   return (
     <article className="group rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-2.5 transition-colors hover:border-[var(--color-accent)]/50">
       <div className="grid grid-cols-[72px_1fr] gap-3 sm:block">
         <div className="relative aspect-[2/3] w-[72px] overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-bg-muted)] sm:w-full">
-          {book.coverUrl ? (
+          {coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={book.coverUrl}
+              src={coverUrl}
               alt={`${book.title} cover`}
               className="h-full w-full object-cover"
               loading="lazy"
@@ -98,24 +108,22 @@ function BookCard({ book, isSignedIn }: { book: LibraryBook; isSignedIn: boolean
           ) : null}
 
           <div className="mt-2">
-            {book.hasFile ? (
+            {downloadUrl ? (
               <a
-                href={
-                  isSignedIn
-                    ? book.filePath || `/api/library/books/${book.slug}/download`
-                    : '/sign-in'
-                }
+                href={downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-[var(--color-accent)] px-2 text-[11px] font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
               >
                 <SiteIcon name="download" alt="" className="h-3.5 w-3.5" />
-                {isSignedIn ? 'Download' : 'Sign in to download'}
+                Download
                 {book.fileSize ? (
                   <span className="font-medium opacity-70">({formatFileSize(book.fileSize)})</span>
                 ) : null}
               </a>
             ) : (
               <div className="flex h-8 items-center justify-center rounded-md border border-[var(--color-border)] text-[11px] text-[var(--color-text-tertiary)]">
-                No file
+                No PDF
               </div>
             )}
           </div>
@@ -127,7 +135,6 @@ function BookCard({ book, isSignedIn }: { book: LibraryBook; isSignedIn: boolean
 
 export default function LibraryPageClient({
   showAdminLink = false,
-  isSignedIn = false,
 }: {
   showAdminLink?: boolean;
   isSignedIn?: boolean;
@@ -254,7 +261,7 @@ export default function LibraryPageClient({
           <>
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {books.map((book) => (
-                <BookCard key={book.id} book={book} isSignedIn={isSignedIn} />
+                <BookCard key={book.id} book={book} />
               ))}
             </div>
 

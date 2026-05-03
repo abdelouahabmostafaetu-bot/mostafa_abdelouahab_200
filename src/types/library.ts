@@ -7,8 +7,14 @@ export type LibraryBook = {
   description: string;
   tags: string[];
   coverUrl: string;
+  imageUrl?: string;
+  cover_url?: string;
+  thumbnailUrl?: string;
   coverPathname: string;
+  pdfUrl?: string;
   fileUrl?: string;
+  pdf_url?: string;
+  downloadUrl?: string;
   filePathname: string;
   fileName: string;
   fileSize: number;
