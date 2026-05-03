@@ -1829,6 +1829,35 @@ button { font-family: var(--font-body); }
     font-size: 11px;
   }
 
+  .filters {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .filters label {
+    flex: 0 0 auto;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .filters select {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  .filters #sort { width: 100px; }
+  .filters #answered { width: 90px; }
+  .filters #pageSize { width: 75px; }
+
   .pagination {
     margin-top: 12px;
     padding-bottom: env(safe-area-inset-bottom);
