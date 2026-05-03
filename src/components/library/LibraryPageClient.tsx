@@ -55,7 +55,7 @@ function getBookDownloadUrl(book: LibraryBook): string {
 }
 
 function getBookCoverUrl(book: LibraryBook): string {
-  return book.coverUrl || book.imageUrl || book.cover_url || book.thumbnailUrl || '';
+  return book.coverUrl || book.imageUrl || book.cover_url || book.thumbnailUrl || book.cover || '';
 }
 
 function BookCard({ book }: { book: LibraryBook }) {
@@ -63,6 +63,10 @@ function BookCard({ book }: { book: LibraryBook }) {
   const shouldClamp = book.description && book.description.length > 120;
   const downloadUrl = getBookDownloadUrl(book);
   const coverUrl = getBookCoverUrl(book);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Book cover debug:', book.title, coverUrl);
+  }
 
   return (
     <article className="group rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-2.5 transition-colors hover:border-[var(--color-accent)]/50">
@@ -72,13 +76,14 @@ function BookCard({ book }: { book: LibraryBook }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coverUrl}
-              alt={`${book.title} cover`}
+              alt={book.title}
               className="h-full w-full object-cover"
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full items-center justify-center p-2 text-center">
+            <div className="flex h-full flex-col items-center justify-center gap-1 p-2 text-center">
               <SiteIcon name="book" alt="" className="h-6 w-6 opacity-70" />
+              <span className="text-[10px] text-[var(--color-text-tertiary)]">No cover</span>
             </div>
           )}
         </div>

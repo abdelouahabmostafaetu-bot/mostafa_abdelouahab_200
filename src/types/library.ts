@@ -10,6 +10,7 @@ export type LibraryBook = {
   imageUrl?: string;
   cover_url?: string;
   thumbnailUrl?: string;
+  cover?: string;
   coverPathname: string;
   pdfUrl?: string;
   fileUrl?: string;
