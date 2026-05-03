@@ -22,7 +22,12 @@ export async function renderMarkdownPreviewToHtml(source: string) {
 }
 
 export async function renderInlineMarkdownPreviewToHtml(source: string) {
-  const html = await renderMarkdownPreviewToHtml(source.replace(/\s+/g, ' ').trim());
+  const inlineSource = source
+    .replace(/\$\$([\s\S]*?)\$\$/g, (_, math: string) => `$${math.trim()}$`)
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, math: string) => `$${math.trim()}$`)
+    .replace(/\s+/g, ' ')
+    .trim();
+  const html = await renderMarkdownPreviewToHtml(inlineSource);
   const paragraphMatch = html.match(/^<p>([\s\S]*)<\/p>$/);
 
   return paragraphMatch ? paragraphMatch[1] ?? '' : html;

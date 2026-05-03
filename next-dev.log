@@ -19,3 +19,5 @@ You can [35mclaim your keys[0m by visiting https://dashboard.clerk.com/apps/cl
 
  GET / 200 in 3.4s (next.js: 396ms, proxy.ts: 365ms, application-code: 2.6s)
  GET /admin/problems/new 307 in 268ms (next.js: 66ms, proxy.ts: 13ms, application-code: 188ms)
+ HEAD /admin/problems/new 307 in 338ms (next.js: 8ms, proxy.ts: 13ms, application-code: 317ms)
+ HEAD /problems/problem-1 307 in 1632ms (next.js: 1486ms, proxy.ts: 11ms, application-code: 135ms)

@@ -229,6 +229,7 @@
 
   .problem-content {
     line-height: 1.82;
+    overflow-wrap: break-word;
   }
 
   .problem-title {
@@ -338,6 +339,7 @@
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    text-align: center;
   }
 
   .prose-academic hr {
@@ -526,11 +528,13 @@
 .katex {
   color: var(--color-text);
   font-size: 1.03em;
+  max-width: 100%;
 }
 
 .katex-display {
   display: block;
   position: relative;
+  max-width: 100%;
   margin: 1.45rem 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -544,6 +548,30 @@
 .katex-display > .katex {
   display: inline-block;
   text-align: initial;
+  max-width: 100%;
+}
+
+.problem-card {
+  overflow: hidden;
+}
+
+.problem-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.problem-card .katex-display {
+  margin: 0.35rem 0;
+  padding: 0.35rem 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.78rem;
+}
+
+.problem-card .katex {
+  font-size: 0.9em;
   max-width: 100%;
 }
 
@@ -593,7 +621,7 @@
 
 @media (max-width: 640px) {
   .katex {
-    font-size: 0.98em;
+    font-size: 0.94em;
   }
 
   .katex-display {

@@ -62,7 +62,7 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 
 function ProblemCard({ problem }: { problem: ProblemSummaryWithHtml }) {
   return (
-    <article className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-colors hover:border-[var(--color-accent)]/50 sm:p-4">
+    <article className="problem-card rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-colors hover:border-[var(--color-accent)]/50 sm:p-4">
       <div className="flex flex-wrap items-center gap-2">
         <DifficultyBadge difficulty={problem.difficulty} />
         <span className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
@@ -70,7 +70,7 @@ function ProblemCard({ problem }: { problem: ProblemSummaryWithHtml }) {
         </span>
       </div>
       <h2
-        className="mt-3 text-base font-semibold leading-snug text-[var(--color-text)]"
+        className="problem-card-title problem-title mt-3 text-base font-bold leading-[1.35] text-[var(--color-text)]"
         dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
       />
       <p
