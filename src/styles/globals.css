@@ -506,6 +506,28 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  .prose-academic mjx-container,
+  .markdown-content mjx-container,
+  .problem-content mjx-container,
+  .solution-content mjx-container {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    line-height: normal;
+  }
+
+  .prose-academic mjx-container[display="true"],
+  .markdown-content mjx-container[display="true"],
+  .problem-content mjx-container[display="true"],
+  .solution-content mjx-container[display="true"] {
+    display: block;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.35rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .problem-content .katex-display::-webkit-scrollbar,
   .solution-content .katex-display::-webkit-scrollbar,
   .markdown-content .katex-display::-webkit-scrollbar {
@@ -934,8 +956,9 @@
   max-width: 100%;
   margin: 1.25rem 0;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   padding: 0.7rem 0 0.82rem;
+  line-height: normal;
   text-align: center;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -989,6 +1012,10 @@
   display: block;
   max-width: none;
   margin: 0;
+  padding-top: 0.25rem;
+  padding-bottom: 0.35rem;
+  overflow-y: visible;
+  line-height: normal;
   text-align: center;
 }
 

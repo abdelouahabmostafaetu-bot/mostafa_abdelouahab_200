@@ -108,10 +108,12 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
   try {
     problem = await loadProblem(slug);
   } catch {
-    notFound();
+    return notFound();
   }
 
-  if (!problem) notFound();
+  if (!problem) {
+    return notFound();
+  }
 
   const [problemHtml, solutionHtml] = await Promise.all([
     markdownToHtml(problem.fullProblemContent),

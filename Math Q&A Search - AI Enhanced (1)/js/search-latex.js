@@ -333,7 +333,7 @@ function extractDistinctiveSubexprs(tex) {
   }
 
   // 2. Function arguments with complexity: \fn(...) or \fn{...}
-  const fnRe = /\\(ln|log|sin|cos|tan|exp|sec|csc|cot|arcsin|arccos|arctan|arcsec|arccsc|arccot|sinh|cosh|tanh)\s*[({]/g;
+  const fnRe = /\\(sinh|cosh|tanh|ln|log|sin|cos|tan|exp|sec|csc|cot|arcsin|arccos|arctan|arcsec|arccsc|arccot)\s*[({]/g;
   let fm;
   while ((fm = fnRe.exec(tex)) !== null) {
     const fnName = fm[1];
@@ -405,7 +405,7 @@ function extractLatexFragments(tex) {
   const fragments = [];
 
   // 1. Function calls with their arguments (captures \arctan\frac{1}{x}, \log(1+x^2))
-  const fnRe = /\\(arcsin|arccos|arctan|ln|log|sin|cos|tan|exp|sec|csc|cot|sinh|cosh|tanh)/g;
+  const fnRe = /\\(arcsin|arccos|arctan|sinh|cosh|tanh|ln|log|sin|cos|tan|exp|sec|csc|cot)/g;
   let fm;
   while ((fm = fnRe.exec(tex)) !== null) {
     const fnStart = fm.index;
@@ -489,7 +489,7 @@ function latexToReadable(tex) {
     (_, n, d) => '(' + latexToReadable(n) + ')/(' + latexToReadable(d) + ')');
   s = s.replace(/\\sqrt\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/g, 'sqrt($1)');
   s = s.replace(/\\(arcsin|arccos|arctan|arcsec|arccsc|arccot)/g, '$1');
-  s = s.replace(/\\(ln|log|sin|cos|tan|exp|sec|csc|cot|sinh|cosh|tanh)/g, '$1');
+  s = s.replace(/\\(sinh|cosh|tanh|ln|log|sin|cos|tan|exp|sec|csc|cot)/g, '$1');
   s = s.replace(/\\(pi|alpha|beta|gamma|theta|lambda|phi|infty|epsilon|delta|sigma|omega|mu|nu|rho|tau|xi|psi|eta|zeta)/g, '$1');
   s = s.replace(/\\mathrm\{([^}]*)\}/g, '$1');
   s = s.replace(/\\operatorname\{([^}]*)\}/g, '$1');
@@ -515,7 +515,7 @@ function latexToReadable(tex) {
 
 function generateNotationVariants(tex) {
   const variants = new Set();
-  const FN = 'sin|cos|tan|sec|csc|cot|sinh|cosh|tanh|arcsin|arccos|arctan|ln|log|exp';
+  const FN = 'sinh|cosh|tanh|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|ln|log|exp';
   const fnParenRe = new RegExp('\\\\(' + FN + ')\\s*\\(([^)]*)\\)', 'g');
   const bareFnRe  = new RegExp('\\\\(' + FN + ')\\s+([a-zA-Z])(?=[^a-zA-Z{(]|$)', 'g');
 
@@ -614,7 +614,7 @@ function generateNotationVariants(tex) {
     ['\\arctan', '\\tan^{-1}'], ['\\arcsin', '\\sin^{-1}'], ['\\arccos', '\\cos^{-1}']
   ];
   for (const [arc, inv] of invFnMap) {
-    if (tex.includes(arc)) variants.add(tex.replace(new RegExp(arc.replace('\\', '\\\\'), 'g'), inv));
+    if (tex.includes(arc)) variants.add(tex.replace(new RegExp(arc.replace(/\\/g, '\\\\'), 'g'), inv));
     if (tex.includes(inv)) variants.add(tex.replace(new RegExp(inv.replace(/[\\{}^-]/g, '\\$&'), 'g'), arc));
   }
 
@@ -627,7 +627,7 @@ function buildCompactKeywords(tex) {
   const seen = new Set();
 
   // Function names
-  const funcs = tex.match(/\\(sin|cos|tan|sec|csc|cot|ln|log|exp|sinh|cosh|tanh|arcsin|arccos|arctan)/g);
+  const funcs = tex.match(/\\(sinh|cosh|tanh|sin|cos|tan|sec|csc|cot|ln|log|exp|arcsin|arccos|arctan)/g);
   if (funcs) {
     for (const f of funcs) {
       const name = f.slice(1);
@@ -869,7 +869,7 @@ function deepAggressiveRewrites(tex) {
   const rewrites = new Set();
 
   // 1. Every function with both paren and brace forms
-  const fnRe = /\\(sin|cos|tan|sec|csc|cot|ln|log|exp|arcsin|arccos|arctan|sinh|cosh|tanh)/g;
+  const fnRe = /\\(sinh|cosh|tanh|sin|cos|tan|sec|csc|cot|ln|log|exp|arcsin|arccos|arctan)/g;
   let m;
   while ((m = fnRe.exec(tex)) !== null) {
     const fn = m[1];
@@ -951,6 +951,7 @@ function deepAggressiveRewrites(tex) {
 
 function buildSearchQueries(tex, keywords) {
   const queries = [];
+  if (typeof tex !== 'string') tex = '';
   let m;
 
   // 1. Exact \frac blocks (using deep brace parser)
@@ -978,7 +979,7 @@ function buildSearchQueries(tex, keywords) {
   }
 
   // 3. Function calls (including bare-arg forms like \arctan\frac1x)
-  const funcRe = /\\(ln|log|sin|cos|tan|sec|csc|cot|exp|arcsin|arccos|arctan|arcsec|arccsc|arccot|sinh|cosh|tanh)\s*(?:[\({][^)\}]*[\)}]|\\frac\s*(?:\{[^}]*\}|[^\s{}])\s*(?:\{[^}]*\}|[^\s{}]))/g;
+  const funcRe = /\\(sinh|cosh|tanh|ln|log|sin|cos|tan|sec|csc|cot|exp|arcsin|arccos|arctan|arcsec|arccsc|arccot)\s*(?:[\({][^)\}]*[\)}]|\\frac\s*(?:\{[^}]*\}|[^\s{}])\s*(?:\{[^}]*\}|[^\s{}]))/g;
   const funcs = [];
   while ((m = funcRe.exec(tex)) !== null) funcs.push(m[0]);
 
@@ -996,7 +997,7 @@ function buildSearchQueries(tex, keywords) {
 
   // 6. Mixed
   const mixedParts = [];
-  if (funcs.length) mixedParts.push(...funcs.map(f => f.replace(/\\/g, '\\')));
+  if (funcs.length) mixedParts.push(...funcs.map(f => f.replace(/\\/g, '\\\\')));
   if (boundsStr) mixedParts.push(boundsStr);
   if (distinctive.length) mixedParts.push(distinctive[0]);
   if (mixedParts.length) queries.push({ type: 'mixed', q: mixedParts.join(' ') });
@@ -1160,7 +1161,7 @@ function buildSearchQueries(tex, keywords) {
   //     the function names + their arguments (no integral/bounds clutter)
   if (tex) {
     const funcParts = [];
-    const allFnRe = /\\(arcsin|arccos|arctan|ln|log|sin|cos|tan|exp|sec|csc|cot|sinh|cosh|tanh)\b/g;
+    const allFnRe = /\\(arcsin|arccos|arctan|sinh|cosh|tanh|ln|log|sin|cos|tan|exp|sec|csc|cot)\b/g;
     let fnm;
     while ((fnm = allFnRe.exec(tex)) !== null) {
       funcParts.push(fnm[1]);

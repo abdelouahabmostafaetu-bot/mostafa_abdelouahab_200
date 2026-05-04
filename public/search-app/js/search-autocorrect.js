@@ -253,7 +253,7 @@ const SearchAutocorrect = (() => {
     // ── E ──
     'eiganvalue': 'eigenvalue', 'eigenvaleu': 'eigenvalue', 'eigenvlaue': 'eigenvalue',
     'eigenvaule': 'eigenvalue', 'eignvalue': 'eigenvalue', 'eignevalue': 'eigenvalue',
-    'eignvalue': 'eigenvalue', 'eigenvale': 'eigenvalue', 'eigenalue': 'eigenvalue',
+    'eigenvale': 'eigenvalue', 'eigenalue': 'eigenvalue',
     'eiganvalues': 'eigenvalues', 'eigenvaleus': 'eigenvalues', 'eigenvlaues': 'eigenvalues',
     'eiganvector': 'eigenvector', 'eigenvctor': 'eigenvector', 'eigenvectr': 'eigenvector',
     'eigenvectro': 'eigenvector', 'eigenvecor': 'eigenvector',
@@ -450,7 +450,7 @@ const SearchAutocorrect = (() => {
     // ── U ──
     'uncountabel': 'uncountable', 'uncoutnable': 'uncountable',
     'unifrom': 'uniform', 'unifrm': 'uniform', 'unfiorm': 'uniform',
-    'uniquness': 'uniqueness', 'uniqeness': 'uniqueness', 'uniquness': 'uniqueness',
+    'uniquness': 'uniqueness', 'uniqeness': 'uniqueness',
     'unitray': 'unitary', 'untiary': 'unitary',
 
     // ── V ──
@@ -476,13 +476,13 @@ const SearchAutocorrect = (() => {
      ════════════════════════════════════════════════════════════════ */
   const LATEX_TYPO_MAP = {
     // ── Core structures ──
-    '\\frc': '\\frac', '\\frca': '\\frac', '\\frac': '\\frac',
+    '\\frca': '\\frac', '\\frac': '\\frac',
     '\\farc': '\\frac', '\\frc': '\\frac', '\\rfac': '\\frac',
     '\\frak': '\\frac', '\\frc{': '\\frac{', '\\frqc': '\\frac',
     '\\intt': '\\int', '\\itn': '\\int', '\\nit': '\\int',
-    '\\iny': '\\int', '\\Int': '\\int', '\\ni': '\\int',
+    '\\iny': '\\int', '\\Int': '\\int',
     '\\smu': '\\sum', '\\usm': '\\sum', '\\summ': '\\sum',
-    '\\suum': '\\sum', '\\um': '\\sum',
+    '\\suum': '\\sum',
     '\\prd': '\\prod', '\\prod': '\\prod', '\\rpod': '\\prod',
     '\\porduct': '\\prod', '\\prodd': '\\prod',
     '\\sqr': '\\sqrt', '\\sqt': '\\sqrt', '\\sqrot': '\\sqrt',
@@ -497,11 +497,11 @@ const SearchAutocorrect = (() => {
     '\\cosn': '\\cos', '\\cso': '\\cos', '\\cos': '\\cos', '\\cosine': '\\cos',
     '\\tna': '\\tan', '\\taan': '\\tan', '\\atn': '\\tan', '\\tangent': '\\tan',
     '\\cot': '\\cot', '\\cto': '\\cot', '\\cotangent': '\\cot',
-    '\\sce': '\\sec', '\\sce': '\\sec', '\\secant': '\\sec',
+    '\\sce': '\\sec', '\\secant': '\\sec',
     '\\ccs': '\\csc', '\\scsc': '\\csc', '\\cosecant': '\\csc',
 
     // ── Inverse trig ──
-    '\\arcsni': '\\arcsin', '\\arcsni': '\\arcsin', '\\arcisn': '\\arcsin',
+    '\\arcsni': '\\arcsin', '\\arcisn': '\\arcsin',
     '\\arccso': '\\arccos', '\\arccosn': '\\arccos',
     '\\arctna': '\\arctan', '\\arctaan': '\\arctan',
 
@@ -542,7 +542,7 @@ const SearchAutocorrect = (() => {
     '\\Xii': '\\Xi',
     '\\pii': '\\pi', '\\ip': '\\pi',
     '\\Pii': '\\Pi',
-    '\\roh': '\\rho', '\\roh': '\\rho', '\\hro': '\\rho',
+    '\\roh': '\\rho', '\\hro': '\\rho',
     '\\sgima': '\\sigma', '\\sigam': '\\sigma', '\\simga': '\\sigma',
     '\\sigm': '\\sigma',
     '\\Sgima': '\\Sigma', '\\Sigam': '\\Sigma', '\\Simga': '\\Sigma',
@@ -552,14 +552,14 @@ const SearchAutocorrect = (() => {
     '\\Phii': '\\Phi',
     '\\varphii': '\\varphi',
     '\\chi': '\\chi', '\\cih': '\\chi', '\\hci': '\\chi',
-    '\\pis': '\\psi', '\\pis': '\\psi', '\\spi': '\\psi',
+    '\\pis': '\\psi', '\\spi': '\\psi',
     '\\Pis': '\\Psi', '\\Spi': '\\Psi',
     '\\omaeg': '\\omega', '\\omeg': '\\omega', '\\oegma': '\\omega',
     '\\omeag': '\\omega',
     '\\Omaeg': '\\Omega', '\\Omeg': '\\Omega',
 
     // ── Relations & operators ──
-    '\\leqq': '\\leq', '\\leqq': '\\leq', '\\leeq': '\\leq',
+    '\\leqq': '\\leq', '\\leeq': '\\leq',
     '\\geqq': '\\geq', '\\geeq': '\\geq',
     '\\neqq': '\\neq', '\\neeq': '\\neq', '\\enq': '\\neq',
     '\\approxx': '\\approx', '\\apporx': '\\approx', '\\aprox': '\\approx',
@@ -613,7 +613,7 @@ const SearchAutocorrect = (() => {
     '\\pratial': '\\partial', '\\partila': '\\partial',
     '\\nabal': '\\nabla', '\\nalba': '\\nabla', '\\nabals': '\\nabla',
     '\\cdto': '\\cdot', '\\cdoot': '\\cdot', '\\cdt': '\\cdot',
-    '\\tiems': '\\times', '\\tiems': '\\times', '\\tims': '\\times',
+    '\\tiems': '\\times', '\\tims': '\\times',
     '\\times': '\\times',
     '\\ldtos': '\\ldots', '\\ldos': '\\ldots', '\\ldsots': '\\ldots',
     '\\cdtos': '\\cdots', '\\cdos': '\\cdots',

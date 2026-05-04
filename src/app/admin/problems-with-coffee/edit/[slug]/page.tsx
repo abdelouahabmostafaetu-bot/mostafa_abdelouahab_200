@@ -24,7 +24,7 @@ export default async function EditCoffeeProblemPage({ params }: PageProps) {
   const problem = await CoffeeProblemModel.findOne({ slug }).lean();
 
   if (!problem) {
-    notFound();
+    return notFound();
   }
 
   return (

@@ -584,8 +584,9 @@ const SearchEnhance = (() => {
     score += Math.log1p(item.view_count || 0) * 1.5;
 
     // ── Tag relevance ──
-    if (inferredTags && inferredTags.length > 0 && item.tags) {
-      const itemTags = new Set((item.tags || []).map(t => t.toLowerCase()));
+    const tags = Array.isArray(item.tags) ? item.tags : [];
+    if (inferredTags && inferredTags.length > 0 && tags.length > 0) {
+      const itemTags = new Set(tags.map(t => t.toLowerCase()));
       const tagMatches = inferredTags.filter(t => itemTags.has(t.toLowerCase())).length;
       score += tagMatches * 8;
     }

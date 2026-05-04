@@ -50,7 +50,7 @@ export default async function BlogPostPage({
   const post = await getBlogPost(slug);
 
   if (!post) {
-    notFound();
+    return notFound();
   }
 
   const content = await renderMDX(post.content);

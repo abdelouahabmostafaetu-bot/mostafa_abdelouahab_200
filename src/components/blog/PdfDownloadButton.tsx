@@ -283,10 +283,16 @@ export default function PdfDownloadButton({
       // This is safe, doesn't flash the screen, and avoids empty capture bugs.
       const worker = html2pdf().set(opt).from(sourceElement).toPdf();
       const pdf: any = await worker.get('pdf');
+      if (
+        !pdf ||
+        !pdf.internal ||
+        typeof pdf.internal.getNumberOfPages !== 'function'
+      ) {
+        throw new Error('Generated PDF is missing page information.');
+      }
+
       try {
-        const pageCount = typeof pdf?.internal?.getNumberOfPages === 'function'
-          ? pdf.internal.getNumberOfPages()
-          : 0;
+        const pageCount = pdf.internal.getNumberOfPages();
         if (pageCount > 0) {
           const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
