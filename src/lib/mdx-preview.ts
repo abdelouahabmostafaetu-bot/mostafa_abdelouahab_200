@@ -15,8 +15,58 @@ type HtmlNode = {
   [key: string]: unknown;
 };
 
+type MarkdownNode = {
+  type?: string;
+  value?: string;
+  children?: MarkdownNode[];
+  [key: string]: unknown;
+};
+
 const MATH_SCROLL_CLASS = 'math-scroll';
 const MATH_SCROLL_INNER_CLASS = 'math-scroll__inner';
+
+function normalizeKatexMathValue(value: string) {
+  return value
+    .replace(/\\begin\{align\*?\}/g, '\\begin{aligned}')
+    .replace(/\\end\{align\*?\}/g, '\\end{aligned}');
+}
+
+function normalizeKatexMarkdownChunk(value: string) {
+  return value
+    .replace(/\$\$\s*\\begin\{align\*?\}/g, () => '$$\n\\begin{aligned}')
+    .replace(/\\end\{align\*?\}\s*\$\$/g, () => '\\end{aligned}\n$$');
+}
+
+function normalizeKatexMarkdownSource(source: string) {
+  return source
+    .split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g)
+    .map((chunk) => {
+      if (chunk.startsWith('```') || chunk.startsWith('~~~')) {
+        return chunk;
+      }
+
+      return normalizeKatexMarkdownChunk(chunk);
+    })
+    .join('');
+}
+
+function normalizeMathNodes(node: MarkdownNode) {
+  if ((node.type === 'math' || node.type === 'inlineMath') && typeof node.value === 'string') {
+    node.value = normalizeKatexMathValue(node.value);
+  }
+
+  if (!Array.isArray(node.children)) {
+    return;
+  }
+
+  node.children.forEach(normalizeMathNodes);
+}
+
+function remarkNormalizeKatexMath() {
+  return (tree: unknown) => {
+    normalizeMathNodes(tree as MarkdownNode);
+  };
+}
 
 function getClassNames(node: HtmlNode) {
   const className = node.properties?.className ?? node.properties?.class;
@@ -91,12 +141,13 @@ export async function renderMarkdownPreviewToHtml(source: string) {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkMath)
+    .use(remarkNormalizeKatexMath)
     .use(remarkRehype)
     .use(rehypeKatex, { strict: false, throwOnError: false })
     .use(rehypeWrapDisplayMath)
     .use(rehypeSlug)
     .use(rehypeStringify)
-    .process(source);
+    .process(normalizeKatexMarkdownSource(source));
 
   return String(file);
 }
