@@ -507,6 +507,7 @@
   }
 
   .prose-academic mjx-container,
+  .blog-content mjx-container,
   .markdown-content mjx-container,
   .problem-content mjx-container,
   .solution-content mjx-container {
@@ -517,6 +518,7 @@
   }
 
   .prose-academic mjx-container[display="true"],
+  .blog-content mjx-container[display="true"],
   .markdown-content mjx-container[display="true"],
   .problem-content mjx-container[display="true"],
   .solution-content mjx-container[display="true"] {
@@ -524,7 +526,7 @@
     margin-top: 0.75rem;
     margin-bottom: 0.75rem;
     padding-top: 0.25rem;
-    padding-bottom: 0.35rem;
+    padding-bottom: 0.45rem;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -1013,7 +1015,7 @@
   max-width: none;
   margin: 0;
   padding-top: 0.25rem;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.45rem;
   overflow-y: visible;
   line-height: normal;
   text-align: center;
