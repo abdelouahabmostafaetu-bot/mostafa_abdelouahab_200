@@ -79,21 +79,31 @@ function Badge({ children }: { children: React.ReactNode }) {
 function HtmlSection({
   title,
   html,
+  variant,
 }: {
   title: string;
   html: string;
+  variant: 'problem' | 'solution';
 }) {
   if (!html) return null;
 
+  const content = (
+    <div
+      className={`${variant === 'problem' ? 'problem-content' : 'solution-content'} markdown-content problem-article-content prose-academic`}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+
   return (
-    <section className="problem-detail-section border-t border-[var(--color-border)] pt-6 sm:pt-7">
+    <section
+      className={`problem-detail-section ${
+        variant === 'problem' ? 'problem-section' : 'solution-section'
+      }`}
+    >
       <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)] sm:mb-5">
         {title}
       </h2>
-      <div
-        className="problem-content markdown-content solution-content problem-article-content prose-academic"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {variant === 'problem' ? <div className="problem-box">{content}</div> : content}
     </section>
   );
 }
@@ -147,9 +157,9 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
           </div>
         </header>
 
-        <main className="mx-auto mt-7 max-w-[900px] space-y-8 md:mt-10">
-          <HtmlSection title="Problem" html={problemHtml} />
-          <HtmlSection title="Solution" html={solutionHtml} />
+        <main className="problem-detail-container mt-7 space-y-8 md:mt-10">
+          <HtmlSection title="Problem" html={problemHtml} variant="problem" />
+          <HtmlSection title="Solution" html={solutionHtml} variant="solution" />
 
           <div className="border-t border-[var(--color-border)] pt-6">
             <Link

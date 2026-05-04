@@ -1002,7 +1002,7 @@ export default function CoffeeProblemFormClient({
               />
             ) : (
               <div
-                className="problem-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
+                className="problem-content markdown-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: problemPreviewHtml }}
               />
             )}
@@ -1079,7 +1079,7 @@ export default function CoffeeProblemFormClient({
               />
             ) : (
               <div
-                className="problem-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
+                className="solution-content markdown-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: solutionPreviewHtml }}
               />
             )}

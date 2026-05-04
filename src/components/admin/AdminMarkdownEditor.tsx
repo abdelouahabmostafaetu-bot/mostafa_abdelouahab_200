@@ -104,7 +104,7 @@ export default function AdminMarkdownEditor({
   value,
   onChange,
   placeholder,
-  previewClassName = 'blog-content problem-content',
+  previewClassName = 'blog-content problem-content markdown-content',
   imageAltText = 'Problem image',
   uploadEndpoint,
 }: AdminMarkdownEditorProps) {
@@ -460,33 +460,6 @@ export default function AdminMarkdownEditor({
           {label}
         </span>
         <div className="flex items-center gap-2">
-          <div className="flex overflow-hidden rounded-md border border-[var(--color-border)] text-xs">
-            <button
-              type="button"
-              onClick={() => setMode('write')}
-              className={`px-3 py-1.5 ${
-                mode === 'write'
-                  ? 'bg-[var(--color-accent)] text-[#0f0e0d]'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
-              }`}
-            >
-              Write
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (mode !== 'preview') void togglePreview();
-              }}
-              disabled={isPreviewLoading}
-              className={`px-3 py-1.5 ${
-                mode === 'preview'
-                  ? 'bg-[var(--color-accent)] text-[#0f0e0d]'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
-              } disabled:opacity-50`}
-            >
-              Preview
-            </button>
-          </div>
           <button
             type="button"
             onClick={handleUndo}
