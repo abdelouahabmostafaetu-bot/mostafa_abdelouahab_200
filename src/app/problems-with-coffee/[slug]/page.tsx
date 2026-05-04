@@ -2,10 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { buildPublishedProblemQuery, mapProblem } from '@/lib/problems';
-import {
-  renderInlineMarkdownPreviewToHtml,
-  renderMarkdownPreviewToHtml,
-} from '@/lib/mdx-preview';
+import { renderMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
 import type { Problem } from '@/types/problem';
@@ -18,7 +15,19 @@ type PageProps = {
 
 async function markdownToHtml(value: string) {
   if (!value.trim()) return '';
-  return renderMarkdownPreviewToHtml(value);
+  return renderMarkdownPreviewToHtml(normalizeProblemLatex(value));
+}
+
+function normalizeProblemLatex(source: string) {
+  return source
+    .replace(
+      /\\sqrt\s*\\dfrac\{\\sqrt\{1\+x\^4\}-1\}\{x\^2\}/g,
+      '\\sqrt{\\dfrac{\\sqrt{1+x^4}-1}{x^2}}',
+    )
+    .replace(
+      /\\sqrt\s*\\frac\{\\sqrt\{1\+x\^4\}-1\}\{x\^2\}/g,
+      '\\sqrt{\\dfrac{\\sqrt{1+x^4}-1}{x^2}}',
+    );
 }
 
 async function loadProblem(slug: string): Promise<Problem | null> {
@@ -29,21 +38,6 @@ async function loadProblem(slug: string): Promise<Problem | null> {
     ...buildPublishedProblemQuery(),
   }).lean();
   return problem ? mapProblem(problem) : null;
-}
-
-function getProblemDisplayTitle(title: string) {
-  const normalizedTitle = title.toLowerCase();
-
-  if (
-    normalizedTitle.includes('arccos') &&
-    normalizedTitle.includes('arctan') &&
-    normalizedTitle.includes('arctanh') &&
-    (normalizedTitle.includes('512') || title.includes('π') || title.includes('\\pi'))
-  ) {
-    return 'A π⁴/512 Integral with arccos, arctan and arctanh';
-  }
-
-  return title;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -66,14 +60,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: 'Problems with Coffee',
     };
   }
-}
-
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">
-      {children}
-    </span>
-  );
 }
 
 function HtmlSection({
@@ -124,40 +110,11 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
     markdownToHtml(problem.fullProblemContent),
     markdownToHtml(problem.solutionContent),
   ]);
-  const displayTitle = getProblemDisplayTitle(problem.title);
-  const [titleHtml, shortDescriptionHtml] = await Promise.all([
-    renderInlineMarkdownPreviewToHtml(displayTitle),
-    renderInlineMarkdownPreviewToHtml(problem.shortDescription),
-  ]);
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="problem-page mx-auto w-full max-w-6xl px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8">
-        <header className="mx-auto max-w-[900px] border-b border-[var(--color-border)] pb-6 md:pb-10">
-          <div>
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
-              Problems with Coffee
-            </p>
-            <h1
-              className="problem-hero-title problem-title max-w-[900px] text-[clamp(1.75rem,8vw,3.8rem)] font-semibold leading-[1.12] tracking-normal text-[var(--color-text)] sm:text-[clamp(2rem,5vw,4rem)]"
-              style={{ fontFamily: 'var(--font-serif)' }}
-              dangerouslySetInnerHTML={{ __html: titleHtml }}
-            />
-            <p
-              className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-text-secondary)] sm:mt-5 sm:leading-8"
-              dangerouslySetInnerHTML={{ __html: shortDescriptionHtml }}
-            />
-            <div className="mt-5 flex flex-wrap gap-2 sm:mt-6 sm:gap-2.5">
-              <Badge>{problem.difficulty}</Badge>
-              <Badge>{problem.estimatedTime}</Badge>
-              {problem.tags.map((tag) => (
-                <Badge key={tag}>{tag}</Badge>
-              ))}
-            </div>
-          </div>
-        </header>
-
-        <main className="problem-detail-container mt-7 space-y-8 md:mt-10">
+        <main className="problem-detail-container space-y-8">
           <HtmlSection title="Problem" html={problemHtml} variant="problem" />
           <HtmlSection title="Solution" html={solutionHtml} variant="solution" />
 
