@@ -938,6 +938,7 @@
   padding: 0.7rem 0 0.82rem;
   text-align: center;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.42) transparent;
 }
@@ -960,6 +961,7 @@
 }
 
 .math-scroll .katex-display {
+  min-width: max-content;
   margin: 0;
   overflow: visible !important;
   border: none !important;
@@ -971,6 +973,7 @@
 
 .math-scroll .katex-display > .katex {
   display: inline-block;
+  min-width: max-content;
   max-width: none;
   margin-right: auto;
   margin-left: auto;
@@ -1054,7 +1057,7 @@
 @media (max-width: 420px) {
   .math-scroll .katex-display,
   .math-scroll mjx-container[display="true"] {
-    font-size: 0.84rem;
+    font-size: 0.9rem;
   }
 }
 
