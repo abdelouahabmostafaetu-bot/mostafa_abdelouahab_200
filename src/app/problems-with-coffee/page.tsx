@@ -52,47 +52,31 @@ function buildPageHref(
   return `/problems-with-coffee?${query.toString()}`;
 }
 
-function DifficultyBadge({ difficulty }: { difficulty: string }) {
+function ProblemListItem({ problem }: { problem: ProblemSummaryWithHtml }) {
   return (
-    <span className="rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[var(--color-accent)]">
-      {difficulty}
-    </span>
-  );
-}
-
-function ProblemCard({ problem }: { problem: ProblemSummaryWithHtml }) {
-  return (
-    <article className="problem-card rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-colors hover:border-[var(--color-accent)]/50 sm:p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <DifficultyBadge difficulty={problem.difficulty} />
-        <span className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
-          {problem.estimatedTime}
-        </span>
-      </div>
-      <h2
-        className="problem-card-title problem-title mt-3 text-base font-bold leading-[1.35] text-[var(--color-text)]"
+    <article className="problem-list-item">
+      <Link
+        href={`/problems-with-coffee/${problem.slug}`}
+        className="problem-list-title problem-title"
         dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
       />
       <p
-        className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--color-text-secondary)]"
+        className="problem-list-description"
         dangerouslySetInnerHTML={{ __html: problem.shortDescriptionHtml }}
       />
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="problem-list-meta">
         {problem.tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]"
-          >
+          <span key={tag} className="problem-tag">
             {tag}
           </span>
         ))}
+        {problem.difficulty ? (
+          <span className="problem-muted-badge">{problem.difficulty}</span>
+        ) : null}
+        {problem.estimatedTime ? (
+          <span className="problem-muted-badge">{problem.estimatedTime}</span>
+        ) : null}
       </div>
-      <Link
-        href={`/problems-with-coffee/${problem.slug}`}
-        className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--color-accent)] px-3 py-2 text-xs font-semibold text-[#0f0e0d] hover:opacity-90"
-      >
-        Open Problem
-      </Link>
     </article>
   );
 }
@@ -241,9 +225,9 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="problem-list mt-8">
             {data.problems.map((problem) => (
-              <ProblemCard key={problem.slug} problem={problem} />
+              <ProblemListItem key={problem.slug} problem={problem} />
             ))}
           </div>
         )}

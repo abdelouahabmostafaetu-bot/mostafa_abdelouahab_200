@@ -554,6 +554,7 @@
     font-size: 1.18rem;
     margin-top: 1.35rem;
   }
+
 }
 
 @media (min-width: 768px) {
@@ -686,6 +687,107 @@
 .problem-card .katex {
   font-size: 0.9em;
   max-width: 100%;
+}
+
+.problem-list {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.problem-list-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.problem-list-item:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.problem-list-title {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: #f5f5f5;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.problem-list-title:hover {
+  color: var(--color-accent);
+}
+
+.problem-list-title .katex {
+  max-width: 100%;
+  font-size: 0.92em;
+}
+
+.problem-list-title .katex-display {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.problem-list-description {
+  display: -webkit-box;
+  max-width: 760px;
+  margin-top: 0.35rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.problem-list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.problem-tag {
+  border-radius: 4px;
+  background: rgba(243, 107, 22, 0.12);
+  padding: 0.2rem 0.45rem;
+  color: #ff8a3d;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.problem-muted-badge {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.2rem 0.45rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+@media (max-width: 640px) {
+  .problem-list {
+    max-width: 100%;
+  }
+
+  .problem-list-item {
+    padding: 1rem 0;
+  }
+
+  .problem-list-title {
+    font-size: 1rem;
+  }
+
+  .problem-list-description {
+    font-size: 0.92rem;
+  }
 }
 
 .katex-html {
