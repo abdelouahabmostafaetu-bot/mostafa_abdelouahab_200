@@ -235,6 +235,8 @@
   }
 
   .problem-detail-container {
+    --problem-detail-accent: #ff6b1a;
+    --problem-detail-accent-rgb: 255, 107, 26;
     width: min(100%, 880px);
     max-width: 880px;
     min-width: 0;
@@ -244,7 +246,7 @@
 
   .section-kicker {
     margin: 0 0 1rem;
-    color: var(--article-gold);
+    color: var(--problem-detail-accent, var(--color-accent));
     font-size: 0.66rem;
     font-weight: 700;
     letter-spacing: 0.22em;
@@ -309,6 +311,24 @@
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
+  .problem-detail-back-link {
+    display: inline-flex;
+    border: 1px solid var(--color-border);
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .problem-detail-back-link:hover {
+    border-color: var(--problem-detail-accent, var(--color-accent));
+    background: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.1);
+    color: var(--problem-detail-accent, var(--color-accent));
+  }
+
   .equation-box,
   .math-box,
   .formula-box,
@@ -369,7 +389,7 @@
   }
 
   .problem-article-content a {
-    color: var(--color-accent);
+    color: var(--problem-detail-accent, var(--color-accent));
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.24em;
@@ -395,7 +415,7 @@
   }
 
   .problem-article-content li::marker {
-    color: var(--color-accent);
+    color: var(--problem-detail-accent, var(--color-accent));
   }
 
   .problem-article-content h2,
@@ -421,9 +441,9 @@
 
   .problem-article-content blockquote {
     margin: 1.35rem 0;
-    border-left: 3px solid rgba(217, 182, 111, 0.6);
+    border-left: 3px solid rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.62);
     border-radius: 0 10px 10px 0;
-    background: rgba(217, 182, 111, 0.052);
+    background: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.055);
     padding: 0.9rem 1rem;
     color: var(--color-text-secondary);
   }
@@ -919,7 +939,7 @@
   text-align: center;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: rgba(217, 182, 111, 0.42) transparent;
+  scrollbar-color: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.42) transparent;
 }
 
 .math-scroll::-webkit-scrollbar {
@@ -927,7 +947,7 @@
 }
 
 .math-scroll::-webkit-scrollbar-thumb {
-  background: rgba(217, 182, 111, 0.38);
+  background: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.38);
   border-radius: 999px;
 }
 

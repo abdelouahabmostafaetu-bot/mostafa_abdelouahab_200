@@ -128,7 +128,7 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
           <div className="problem-detail-actions">
             <Link
               href="/problems-with-coffee"
-              className="inline-flex rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]"
+              className="problem-detail-back-link"
             >
               Back to Problems with Coffee
             </Link>
