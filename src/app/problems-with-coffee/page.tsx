@@ -221,31 +221,31 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
           </div>
         )}
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-10 flex flex-row flex-nowrap items-center justify-center gap-2 sm:gap-3">
           {data.pagination.hasPreviousPage ? (
             <Link
               href={buildPageHref(page - 1, { search, level, tag })}
-              className="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm hover:border-[var(--color-accent)]"
+              className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs hover:border-[var(--color-accent)] sm:px-4 sm:text-sm"
             >
               Previous
             </Link>
           ) : (
-            <span className="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm opacity-40">
+            <span className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs opacity-40 sm:px-4 sm:text-sm">
               Previous
             </span>
           )}
-          <span className="text-sm text-[var(--color-text-secondary)]">
+          <span className="whitespace-nowrap text-xs text-[var(--color-text-secondary)] sm:text-sm">
             Page {data.pagination.page} of {data.pagination.totalPages}
           </span>
           {data.pagination.hasNextPage ? (
             <Link
               href={buildPageHref(page + 1, { search, level, tag })}
-              className="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm hover:border-[var(--color-accent)]"
+              className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs hover:border-[var(--color-accent)] sm:px-4 sm:text-sm"
             >
               Next
             </Link>
           ) : (
-            <span className="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm opacity-40">
+            <span className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs opacity-40 sm:px-4 sm:text-sm">
               Next
             </span>
           )}
