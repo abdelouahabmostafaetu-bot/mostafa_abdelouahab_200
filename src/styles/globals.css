@@ -1081,6 +1081,47 @@
   .math-scroll mjx-container[display="true"] {
     font-size: 0.92rem;
   }
+
+  mjx-container {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible !important;
+    line-height: normal !important;
+    padding-top: 0.15rem;
+    padding-bottom: 0.25rem;
+  }
+
+  mjx-container[display="true"] {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible !important;
+    padding-top: 0.35rem;
+    padding-bottom: 0.55rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  mjx-container[jax="SVG"] > svg,
+  mjx-container svg,
+  mjx-container mjx-math,
+  mjx-container mjx-root,
+  mjx-container mjx-surd {
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .prose-academic mjx-container,
+  .blog-content mjx-container,
+  .markdown-content mjx-container,
+  .problem-content mjx-container,
+  .solution-content mjx-container,
+  .math-scroll {
+    overflow-y: visible !important;
+  }
 }
 
 @media (max-width: 420px) {
