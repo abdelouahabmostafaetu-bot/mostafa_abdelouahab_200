@@ -86,10 +86,17 @@ function HtmlSection({
         variant === 'problem' ? 'problem-section' : 'solution-section'
       }`}
     >
-      <p className="section-kicker">
-        {title}
-      </p>
-      {variant === 'problem' ? <div className="problem-box">{content}</div> : content}
+      {variant === 'problem' ? (
+        <div className="problem-box">
+          <p className="section-kicker">{title}</p>
+          {content}
+        </div>
+      ) : (
+        <div className="solution-panel">
+          <p className="section-kicker">{title}</p>
+          {content}
+        </div>
+      )}
     </section>
   );
 }
@@ -113,12 +120,12 @@ export default async function CoffeeProblemDetailPage({ params }: PageProps) {
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="problem-page mx-auto w-full max-w-6xl px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8">
-        <main className="problem-detail-container space-y-8">
+      <div className="problem-page mx-auto w-full px-4 pb-14 pt-24 sm:px-6 sm:pb-16 sm:pt-28 lg:px-8">
+        <main className="problem-detail-container">
           <HtmlSection title="Problem" html={problemHtml} variant="problem" />
           <HtmlSection title="Solution" html={solutionHtml} variant="solution" />
 
-          <div className="border-t border-[var(--color-border)] pt-6">
+          <div className="problem-detail-actions">
             <Link
               href="/problems-with-coffee"
               className="inline-flex rounded-md border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]"
