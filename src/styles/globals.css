@@ -1087,21 +1087,25 @@
   .markdown-content .katex,
   .problem-content .katex,
   .solution-content .katex,
+  .latest-problem-title .katex,
   .prose-academic .katex-html,
   .blog-content .katex-html,
   .markdown-content .katex-html,
   .problem-content .katex-html,
   .solution-content .katex-html,
+  .latest-problem-title .katex-html,
   .prose-academic .katex .sqrt,
   .blog-content .katex .sqrt,
   .markdown-content .katex .sqrt,
   .problem-content .katex .sqrt,
   .solution-content .katex .sqrt,
+  .latest-problem-title .katex .sqrt,
   .prose-academic .katex .vlist,
   .blog-content .katex .vlist,
   .markdown-content .katex .vlist,
   .problem-content .katex .vlist,
-  .solution-content .katex .vlist {
+  .solution-content .katex .vlist,
+  .latest-problem-title .katex .vlist {
     overflow: visible !important;
   }
 
@@ -1109,7 +1113,8 @@
   .blog-content .katex svg,
   .markdown-content .katex svg,
   .problem-content .katex svg,
-  .solution-content .katex svg {
+  .solution-content .katex svg,
+  .latest-problem-title .katex svg {
     max-width: none !important;
     max-height: none !important;
     overflow: visible !important;

@@ -84,7 +84,7 @@ export default async function RecentActivity() {
                     {latestProblem.estimatedTime ? <span>{latestProblem.estimatedTime}</span> : null}
                   </div>
                   <h3
-                    className="mb-2 text-lg font-semibold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-2xl"
+                    className="latest-problem-title mb-2 text-lg font-semibold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-2xl"
                     style={{ fontFamily: 'var(--font-serif)' }}
                     dangerouslySetInnerHTML={{ __html: latestProblemHtml?.title ?? '' }}
                   />
