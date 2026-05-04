@@ -55,28 +55,17 @@ function buildPageHref(
 function ProblemListItem({ problem }: { problem: ProblemSummaryWithHtml }) {
   return (
     <article className="problem-list-item">
-      <Link
-        href={`/problems-with-coffee/${problem.slug}`}
-        className="problem-list-title problem-title"
-        dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
-      />
+      <h2 className="problem-list-heading">
+        <Link
+          href={`/problems-with-coffee/${problem.slug}`}
+          className="problem-list-title problem-title"
+          dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
+        />
+      </h2>
       <p
         className="problem-list-description"
         dangerouslySetInnerHTML={{ __html: problem.shortDescriptionHtml }}
       />
-      <div className="problem-list-meta">
-        {problem.tags.map((tag) => (
-          <span key={tag} className="problem-tag">
-            {tag}
-          </span>
-        ))}
-        {problem.difficulty ? (
-          <span className="problem-muted-badge">{problem.difficulty}</span>
-        ) : null}
-        {problem.estimatedTime ? (
-          <span className="problem-muted-badge">{problem.estimatedTime}</span>
-        ) : null}
-      </div>
     </article>
   );
 }

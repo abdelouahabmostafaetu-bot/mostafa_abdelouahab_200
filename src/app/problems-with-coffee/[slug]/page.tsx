@@ -86,9 +86,9 @@ function HtmlSection({
         variant === 'problem' ? 'problem-section' : 'solution-section'
       }`}
     >
-      <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)] sm:mb-5">
+      <p className="section-kicker">
         {title}
-      </h2>
+      </p>
       {variant === 'problem' ? <div className="problem-box">{content}</div> : content}
     </section>
   );
