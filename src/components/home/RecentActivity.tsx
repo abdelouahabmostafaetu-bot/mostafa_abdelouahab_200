@@ -11,6 +11,12 @@ export default async function RecentActivity() {
     getLatestPublishedProblem(),
   ]);
   const adminUser = await getCurrentAdminUser();
+  const postsWithHtml = await Promise.all(
+    posts.map(async (post) => ({
+      ...post,
+      titleHtml: await renderInlineMarkdownPreviewToHtml(post.title),
+    })),
+  );
   const latestProblemHtml = latestProblem
     ? {
         title: await renderInlineMarkdownPreviewToHtml(latestProblem.title),
@@ -34,8 +40,8 @@ export default async function RecentActivity() {
         </div>
 
         <div className="space-y-7 md:space-y-10">
-          {posts.length > 0 ? (
-            posts.map((post) => (
+          {postsWithHtml.length > 0 ? (
+            postsWithHtml.map((post) => (
               <article key={post.slug} className="group">
                 <Link href={`/blog/${post.slug}`} className="block">
                   <header className="mb-3">
@@ -43,9 +49,11 @@ export default async function RecentActivity() {
                       <SiteIcon name="document" alt="" className="mr-2 h-3.5 w-3.5" />
                       <span>{post.category}</span>
                     </div>
-                    <h3 className="mb-2 text-lg font-semibold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-2xl" style={{ fontFamily: 'var(--font-serif)' }}>
-                      {post.title}
-                    </h3>
+                    <h3
+                      className="blog-card-title mb-2 text-lg font-semibold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-2xl"
+                      style={{ fontFamily: 'var(--font-serif)' }}
+                      dangerouslySetInnerHTML={{ __html: post.titleHtml }}
+                    />
                   </header>
                   <p className="line-clamp-2 max-w-3xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-relaxed">
                     {post.excerpt}
@@ -90,7 +98,7 @@ export default async function RecentActivity() {
                   />
                 </header>
                 <p
-                  className="line-clamp-2 max-w-3xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-relaxed"
+                  className="latest-problem-summary line-clamp-2 max-w-3xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-relaxed"
                   dangerouslySetInnerHTML={{
                     __html: latestProblemHtml?.shortDescription ?? '',
                   }}

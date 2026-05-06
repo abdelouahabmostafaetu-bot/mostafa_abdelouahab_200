@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft, Clock } from 'lucide-react';
 import { getBlogPost } from '@/lib/content';
 import { renderMDX, extractHeadings } from '@/lib/mdx';
+import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import { formatDate } from '@/lib/utils';
 import TableOfContents from '@/components/blog/TableOfContents';
 import { TagList } from '@/components/blog/Tag';
@@ -54,6 +55,7 @@ export default async function BlogPostPage({
   }
 
   const content = await renderMDX(post.content);
+  const titleHtml = await renderInlineMarkdownPreviewToHtml(post.title);
   const headings = extractHeadings(post.content);
 
   return (
@@ -83,11 +85,10 @@ export default async function BlogPostPage({
                 </div>
 
                 <h1
-                  className="text-[clamp(2.25rem,11vw,3.35rem)] font-normal leading-[0.98] text-[var(--color-text)] md:text-[4.4rem]"
+                  className="blog-post-title text-[clamp(2.25rem,11vw,3.35rem)] font-normal leading-[0.98] text-[var(--color-text)] md:text-[4.4rem]"
                   style={{ fontFamily: 'var(--font-serif)' }}
-                >
-                  {post.title}
-                </h1>
+                  dangerouslySetInnerHTML={{ __html: titleHtml }}
+                />
 
                 {post.excerpt && (
                   <p className="mt-5 max-w-3xl text-[14px] leading-6 text-[var(--color-text-secondary)] md:mt-6 md:text-lg md:leading-8">

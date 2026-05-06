@@ -6,6 +6,7 @@ import Pagination from '@/components/blog/Pagination';
 import Link from 'next/link';
 import { getCurrentAdminUser } from '@/lib/admin';
 import SiteIcon from '@/components/ui/SiteIcon';
+import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 
 const POSTS_PER_PAGE = 15;
 
@@ -35,7 +36,12 @@ export default async function BlogPage({
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const startIdx = (safePage - 1) * POSTS_PER_PAGE;
-  const posts = filteredPosts.slice(startIdx, startIdx + POSTS_PER_PAGE);
+  const posts = await Promise.all(
+    filteredPosts.slice(startIdx, startIdx + POSTS_PER_PAGE).map(async (post) => ({
+      ...post,
+      titleHtml: await renderInlineMarkdownPreviewToHtml(post.title),
+    })),
+  );
 
   return (
     <div className="pt-20 pb-20">
@@ -87,6 +93,7 @@ export default async function BlogPage({
                 key={post.slug}
                 slug={post.slug}
                 title={post.title}
+                titleHtml={post.titleHtml}
                 category={post.category}
                 excerpt={post.excerpt}
                 readingTime={post.readingTime}

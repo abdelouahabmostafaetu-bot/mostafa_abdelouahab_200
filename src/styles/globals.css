@@ -817,6 +817,10 @@
   color: var(--color-text);
   font-size: 1.03em;
   max-width: 100%;
+  overflow: visible !important;
+}
+
+.katex * {
   overflow: visible;
 }
 
@@ -826,7 +830,7 @@
   max-width: 100%;
   margin: 1.45rem 0;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   padding: 0.85rem 1rem;
   border-radius: 14px;
   background: rgba(87, 199, 186, 0.055);
@@ -837,7 +841,9 @@
 .katex-display > .katex {
   display: inline-block;
   text-align: initial;
-  max-width: 100%;
+  width: max-content;
+  max-width: none;
+  white-space: nowrap;
 }
 
 .problem-card {
@@ -911,6 +917,7 @@
   padding: 0;
   border: 0;
   background: transparent;
+  overflow: visible;
 }
 
 .problem-list-description {
@@ -1007,7 +1014,7 @@
 
 .math-scroll .katex,
 .math-scroll .katex-html {
-  overflow: visible;
+  overflow: visible !important;
 }
 
 .math-scroll mjx-container[display="true"] {
@@ -1024,6 +1031,41 @@
 .problem-article-content .math-scroll,
 .problem-article-content mjx-container[display="true"] {
   max-width: 100%;
+}
+
+.problem-card-title,
+.latest-problem-title,
+.about-latest-problem-title,
+.blog-card-title,
+.blog-post-title,
+.problem-list-title,
+.problem-list-description,
+.latest-problem-summary {
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.problem-card-title .katex,
+.latest-problem-title .katex,
+.about-latest-problem-title .katex,
+.blog-card-title .katex,
+.blog-post-title .katex,
+.problem-list-title .katex,
+.problem-list-description .katex,
+.latest-problem-summary .katex {
+  overflow: visible !important;
+  line-height: 1.45 !important;
+  vertical-align: middle;
+}
+
+.problem-card-title:has(.katex),
+.blog-card-title:has(.katex),
+.problem-list-title:has(.katex),
+.problem-list-description:has(.katex),
+.latest-problem-summary:has(.katex) {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: initial;
 }
 
 @media (min-width: 768px) {

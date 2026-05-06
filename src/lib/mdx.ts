@@ -5,17 +5,31 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeSlug from 'rehype-slug';
 import { getMDXComponents } from '@/components/blog/MDXComponents';
-import { renderMarkdownPreviewToHtml } from '@/lib/mdx-preview';
+import {
+  collectMathReferenceLabels,
+  createRemarkNormalizeKatexMath,
+  normalizeKatexMarkdownSource,
+  rehypeWrapDisplayMath,
+  renderMarkdownPreviewToHtml,
+} from '@/lib/mdx-preview';
 
 export async function renderMDX(source: string) {
+  const normalizedSource = normalizeKatexMarkdownSource(source);
+  const referenceLabels = collectMathReferenceLabels(normalizedSource);
+
   try {
     const { content } = await compileMDX({
-      source,
+      source: normalizedSource,
       options: {
         mdxOptions: {
-          remarkPlugins: [remarkMath, remarkGfm],
+          remarkPlugins: [
+            remarkMath,
+            remarkGfm,
+            createRemarkNormalizeKatexMath(referenceLabels),
+          ],
           rehypePlugins: [
             [rehypeKatex, { strict: false, throwOnError: false }],
+            rehypeWrapDisplayMath,
             rehypeSlug,
           ],
         },

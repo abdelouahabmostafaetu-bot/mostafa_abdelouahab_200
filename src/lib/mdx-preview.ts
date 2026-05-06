@@ -51,7 +51,7 @@ function inferReferenceNumber(id: string) {
   return normalizeReferenceId(id).match(/(\d+)$/)?.[1] ?? '';
 }
 
-function collectMathReferenceLabels(source: string): MathReferenceMap {
+export function collectMathReferenceLabels(source: string): MathReferenceMap {
   const labels: MathReferenceMap = new Map();
   let nextLabelNumber = 1;
 
@@ -152,7 +152,7 @@ function normalizeKatexMarkdownChunk(value: string) {
     .replace(/\\end\{align\*?\}\s*\$\$/g, () => '\\end{aligned}\n$$');
 }
 
-function normalizeKatexMarkdownSource(source: string) {
+export function normalizeKatexMarkdownSource(source: string) {
   return source
     .split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g)
     .map((chunk) => {
@@ -204,7 +204,7 @@ function normalizeMathNodes(node: MarkdownNode, labels: MathReferenceMap) {
   node.children.forEach((child) => normalizeMathNodes(child, labels));
 }
 
-function createRemarkNormalizeKatexMath(labels: MathReferenceMap) {
+export function createRemarkNormalizeKatexMath(labels: MathReferenceMap) {
   return function remarkNormalizeKatexMath() {
     return (tree: unknown) => {
       normalizeMathNodes(tree as MarkdownNode, labels);
@@ -274,7 +274,7 @@ function wrapDisplayMath(parent: HtmlNode) {
   });
 }
 
-function rehypeWrapDisplayMath() {
+export function rehypeWrapDisplayMath() {
   return (tree: unknown) => {
     wrapDisplayMath(tree as HtmlNode);
   };

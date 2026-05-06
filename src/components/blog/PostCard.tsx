@@ -5,6 +5,7 @@ import { TagList } from './Tag';
 interface PostCardProps {
   slug: string;
   title: string;
+  titleHtml?: string;
   category: string;
   excerpt: string;
   readingTime: string;
@@ -16,6 +17,7 @@ interface PostCardProps {
 export default function PostCard({
   slug,
   title,
+  titleHtml,
   category,
   excerpt,
   readingTime,
@@ -49,9 +51,20 @@ export default function PostCard({
           </span>
         </div>
 
-        <h3 className="mt-2 text-base md:text-2xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-text)]" style={{ fontFamily: 'var(--font-serif)' }}>
-          {title}
-        </h3>
+        {titleHtml ? (
+          <h3
+            className="blog-card-title mt-2 text-base md:text-2xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-text)]"
+            style={{ fontFamily: 'var(--font-serif)' }}
+            dangerouslySetInnerHTML={{ __html: titleHtml }}
+          />
+        ) : (
+          <h3
+            className="blog-card-title mt-2 text-base md:text-2xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-text)]"
+            style={{ fontFamily: 'var(--font-serif)' }}
+          >
+            {title}
+          </h3>
+        )}
 
         <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-3 md:text-sm md:leading-7">
           {excerpt}

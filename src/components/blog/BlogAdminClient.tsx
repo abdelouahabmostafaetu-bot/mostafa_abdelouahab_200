@@ -1233,7 +1233,7 @@ export default function BlogAdminClient({ initialPostId = '' }: BlogAdminClientP
                             </div>
                           ) : (
                             <div
-                              className="blog-content prose-academic max-w-none"
+                              className="blog-content markdown-content prose-academic max-w-none"
                               style={{ fontFamily: 'var(--font-serif)' }}
                               dangerouslySetInnerHTML={{ __html: previewHtml }}
                             />

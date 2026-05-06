@@ -711,7 +711,7 @@ export default function AddBlogPostClient() {
               />
             ) : (
               <div
-                className="blog-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
+                className="blog-content markdown-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             )}

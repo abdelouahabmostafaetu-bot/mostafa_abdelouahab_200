@@ -261,7 +261,10 @@ header p {
   border-top: 0;
   min-height: 44px;
   overflow-x: auto;
+  overflow-y: visible;
   font-size: 18px;
+  line-height: 1.6;
+  -webkit-overflow-scrolling: touch;
 }
 
 .latex-preview .placeholder-text {
@@ -693,6 +696,12 @@ header p {
   line-height: 1.5;
   max-height: 100px;
   overflow: hidden;
+}
+
+.result-snippet:has(mjx-container) {
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .meta {
@@ -1344,6 +1353,11 @@ button { font-family: var(--font-body); }
 
 .qa-body-content { word-wrap: break-word; overflow: hidden; color: var(--text); }
 
+.qa-body-content:not(.collapsed):has(mjx-container) {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
 .qa-body-content.collapsed {
   max-height: 180px;
   overflow: hidden;
@@ -1370,6 +1384,35 @@ button { font-family: var(--font-body); }
   border-radius: 0;
   box-shadow: none;
   font-family: var(--font-mono);
+}
+
+.latex-preview mjx-container,
+.results mjx-container {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible !important;
+  line-height: 1.6 !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.latex-preview mjx-container[display="true"],
+.results mjx-container[display="true"] {
+  display: block;
+  width: 100%;
+  padding-top: 0.35rem;
+  padding-bottom: 0.55rem;
+}
+
+.latex-preview mjx-container[jax="CHTML"],
+.results mjx-container[jax="CHTML"],
+.latex-preview mjx-container[jax="CHTML"] mjx-math,
+.results mjx-container[jax="CHTML"] mjx-math,
+.latex-preview mjx-container[jax="CHTML"] mjx-root,
+.results mjx-container[jax="CHTML"] mjx-root,
+.latex-preview mjx-container[jax="CHTML"] mjx-surd,
+.results mjx-container[jax="CHTML"] mjx-surd {
+  overflow: visible !important;
+  line-height: 1.6 !important;
 }
 
 .qa-body-content blockquote {
