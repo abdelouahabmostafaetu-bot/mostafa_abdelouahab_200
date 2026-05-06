@@ -1,29 +1,22 @@
 import { put } from '@vercel/blob';
 import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit, createSafeBlobPath } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg']);
-const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg']);
-
-function sanitizeFileName(value: string): string {
-  const parsed = path.parse(value || 'blog-image');
-  const safeName = (parsed.name || 'blog-image')
-    .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .replace(/_+/g, '_');
-  return `${safeName || 'blog-image'}${parsed.ext.toLowerCase()}`;
-}
+const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'blog-assets-post', 20);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const contentType = request.headers.get('content-type') ?? '';
@@ -44,7 +37,7 @@ export async function POST(request: NextRequest) {
     const extension = path.extname(fileValue.name || '').toLowerCase();
     if (!ALLOWED_IMAGE_TYPES.has(fileValue.type) || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
       return NextResponse.json(
-        { error: 'Only PNG, JPG, and JPEG images are allowed.' },
+        { error: 'Only PNG, JPG, JPEG, and WEBP images are allowed.' },
         { status: 400 },
       );
     }
@@ -56,9 +49,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const blob = await put(`blog-images/${Date.now()}-${sanitizeFileName(fileValue.name)}`, fileValue, {
+    const blob = await put(createSafeBlobPath('blog-images', fileValue.type), fileValue, {
       access: 'public',
-      addRandomSuffix: true,
     });
     return NextResponse.json(
       {

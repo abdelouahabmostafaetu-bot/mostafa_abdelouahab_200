@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit, createSafeBlobPath } from '@/lib/security';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 
 export const runtime = 'nodejs';
@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'library-get-upload-url-post', 20);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const body = (await request.json()) as HandleUploadBody;
@@ -18,14 +19,12 @@ export async function POST(request: NextRequest) {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (pathname) => {
-        const cleanName = pathname.replace(/[^a-zA-Z0-9.-_]/g, '_');
+      onBeforeGenerateToken: async () => {
         return {
-          allowedContentTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'],
+          allowedContentTypes: ['application/pdf'],
           maximumSizeInBytes: 31457280, // Allow up to 30 MB
           validUntil: Date.now() + 1000 * 60 * 5, // 5 mins
-          addRandomSuffix: true,
-          pathname: `library/books/${Date.now()}-${cleanName}`,
+          pathname: createSafeBlobPath('library/books', 'application/pdf'),
         };
       },
       onUploadCompleted: async () => {

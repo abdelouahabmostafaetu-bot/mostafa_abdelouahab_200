@@ -1,4 +1,5 @@
 import { del } from '@vercel/blob';
+import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import BlogPostModel from '@/lib/models/blog-post';
@@ -8,8 +9,8 @@ import {
   normalizeBlogSlug,
   normalizeTags,
 } from '@/lib/content';
-import { requireAdmin } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit, getUnknownFields, isPlainObject, jsonError } from '@/lib/security';
 
 type RouteContext = {
   params: Promise<{
@@ -40,7 +41,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'blog-posts-put', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const body = (await request.json().catch(() => null)) as
@@ -56,9 +58,31 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         }
       | null;
 
+    if (!isPlainObject(body)) {
+      return jsonError('Request body must be a JSON object.', 400);
+    }
+
+    const unknownFields = getUnknownFields(body, [
+      'title',
+      'slug',
+      'excerpt',
+      'category',
+      'tags',
+      'coverImageUrl',
+      'content',
+      'isPublished',
+    ]);
+    if (unknownFields.length > 0) {
+      return jsonError(`Unknown field: ${unknownFields[0]}.`, 400);
+    }
+
     await connectToDatabase();
 
     const { id } = await context.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid post id.' }, { status: 400 });
+    }
+
     const post = await BlogPostModel.findById(id);
     if (!post) {
       return NextResponse.json({ error: 'Post not found.' }, { status: 404 });
@@ -123,12 +147,17 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'blog-posts-delete', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     await connectToDatabase();
 
     const { id } = await context.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid post id.' }, { status: 400 });
+    }
+
     const post = await BlogPostModel.findById(id);
     if (!post) {
       return NextResponse.json({ error: 'Post not found.' }, { status: 404 });

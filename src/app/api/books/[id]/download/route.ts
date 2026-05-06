@@ -22,7 +22,7 @@ function getDownloadErrorResponse(error: unknown) {
 
   if (message.includes('MONGODB_URI is not configured')) {
     return NextResponse.json(
-      { error: 'Database is not configured. MONGODB_URI is missing.' },
+      { error: 'Database is not configured.' },
       { status: 503 },
     );
   }

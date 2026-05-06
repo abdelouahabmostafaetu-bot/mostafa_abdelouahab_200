@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdminApi } from '@/lib/admin';
 import { checkRateLimit } from '@/lib/security';
 
 export const runtime = 'nodejs';
@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
   if (limited) return limited;
 
   await request.json().catch(() => null);
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

@@ -6,8 +6,8 @@ import {
   normalizeBlogSlug,
   normalizeTags,
 } from '@/lib/content';
-import { requireAdmin } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit, getUnknownFields, isPlainObject, jsonError } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,14 +28,14 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string): {
   if (isMissingMongoUri) {
     return {
       status: 503,
-      message: 'Server configuration is incomplete. MONGODB_URI is missing.',
+      message: 'Server configuration is incomplete.',
     };
   }
 
   if (isDatabaseConnectionIssue) {
     return {
       status: 503,
-      message: 'Database connection failed. Check MongoDB URI and Atlas network access.',
+      message: 'Database connection failed.',
     };
   }
 
@@ -50,7 +50,8 @@ export async function GET(request: NextRequest) {
   const adminMode = request.nextUrl.searchParams.get('admin') === '1';
 
   if (adminMode) {
-    await requireAdmin();
+    const forbidden = await requireAdminApi();
+    if (forbidden) return forbidden;
   }
 
   try {
@@ -90,7 +91,8 @@ export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'blog-posts-post', 20);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const body = (await request.json().catch(() => null)) as
@@ -105,6 +107,24 @@ export async function POST(request: NextRequest) {
           isPublished?: boolean;
         }
       | null;
+
+    if (!isPlainObject(body)) {
+      return jsonError('Request body must be a JSON object.', 400);
+    }
+
+    const unknownFields = getUnknownFields(body, [
+      'title',
+      'slug',
+      'excerpt',
+      'category',
+      'tags',
+      'coverImageUrl',
+      'content',
+      'isPublished',
+    ]);
+    if (unknownFields.length > 0) {
+      return jsonError(`Unknown field: ${unknownFields[0]}.`, 400);
+    }
 
     await connectToDatabase();
 

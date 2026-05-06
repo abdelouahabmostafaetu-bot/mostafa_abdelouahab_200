@@ -1,6 +1,6 @@
 import { put } from '@vercel/blob';
 import { type NextRequest, NextResponse } from 'next/server';
-import { getCurrentAdminUser, requireAdmin } from '@/lib/admin';
+import { getCurrentAdminUser, requireAdminApi } from '@/lib/admin';
 import { normalizeCategory } from '@/lib/library-categories';
 import { normalizeFileUrl } from '@/lib/library-files';
 import {
@@ -9,7 +9,12 @@ import {
 } from '@/lib/library-uploads';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
-import { checkRateLimit } from '@/lib/security';
+import {
+  checkRateLimit,
+  createSafeBlobPath,
+  getUnknownFields,
+  isPlainObject,
+} from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -167,14 +172,14 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string): {
   if (isMissingMongoUri) {
     return {
       status: 503,
-      message: 'Server configuration is incomplete. MONGODB_URI is missing.',
+      message: 'Server configuration is incomplete.',
     };
   }
 
   if (isDatabaseConnectionIssue) {
     return {
       status: 503,
-      message: 'Database connection failed. Check MongoDB URI and Atlas network access.',
+      message: 'Database connection failed.',
     };
   }
 
@@ -274,7 +279,24 @@ export async function GET(request: NextRequest) {
 }
 
 async function readJsonBookPayload(request: NextRequest) {
-  const body = (await request.json()) as Record<string, unknown>;
+  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!isPlainObject(body)) {
+    return { error: 'Request body must be a JSON object.' };
+  }
+
+  const unknownFields = getUnknownFields(body, [
+    'title',
+    'author',
+    'category',
+    'description',
+    'tags',
+    'file',
+    'cover',
+  ]);
+  if (unknownFields.length > 0) {
+    return { error: `Unknown field: ${unknownFields[0]}.` };
+  }
+
   const title = String(body.title ?? '').trim();
   const author = String(body.author ?? '').trim();
   const category = normalizeCategory(String(body.category ?? '').trim());
@@ -345,9 +367,8 @@ async function readMultipartBookPayload(request: NextRequest) {
     }
 
     const filename = sanitizeUploadFileName(fileValue.name, 'book.pdf');
-    const blob = await put(`library/books/${Date.now()}-${filename}`, fileValue, {
+    const blob = await put(createSafeBlobPath('library/books', fileValue.type), fileValue, {
       access: 'public',
-      addRandomSuffix: true,
     });
 
     return {
@@ -405,7 +426,8 @@ export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'books-post', 20);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     await connectToDatabase();

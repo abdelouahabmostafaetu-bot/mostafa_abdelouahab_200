@@ -1,8 +1,8 @@
 import { put } from '@vercel/blob';
 import path from 'node:path';
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit, createSafeBlobPath } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,22 +12,15 @@ const ALLOWED_IMAGE_TYPES = new Set([
   'image/png',
   'image/jpeg',
   'image/jpg',
+  'image/webp',
 ]);
-const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg']);
-
-function sanitizeFileName(value: string): string {
-  const parsed = path.parse(value || 'blog-image');
-  const name = parsed.name || 'blog-image';
-  const extension = parsed.ext.toLowerCase();
-  const safeName = name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/_+/g, '_');
-  return `${safeName || 'blog-image'}${extension}`;
-}
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 function validateImageFile(file: File): string | null {
   const extension = path.extname(file.name || '').toLowerCase();
 
   if (!ALLOWED_IMAGE_TYPES.has(file.type) || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
-    return 'Only PNG, JPG, and JPEG images are allowed.';
+    return 'Only PNG, JPG, JPEG, and WEBP images are allowed.';
   }
 
   if (file.size > MAX_IMAGE_SIZE) {
@@ -41,7 +34,8 @@ export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'blog-upload-image-post', 20);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const contentType = request.headers.get('content-type') ?? '';
@@ -65,11 +59,10 @@ export async function POST(request: NextRequest) {
     }
 
     const blob = await put(
-      `blog-images/${Date.now()}-${sanitizeFileName(fileValue.name)}`,
+      createSafeBlobPath('blog-images', fileValue.type),
       fileValue,
       {
         access: 'public',
-        addRandomSuffix: true,
       },
     );
 
