@@ -12,9 +12,10 @@ import {
   rehypeWrapDisplayMath,
   renderMarkdownPreviewToHtml,
 } from '@/lib/mdx-preview';
+import { sanitizeMarkdownSource } from '@/lib/security';
 
 export async function renderMDX(source: string) {
-  const normalizedSource = normalizeKatexMarkdownSource(source);
+  const normalizedSource = normalizeKatexMarkdownSource(sanitizeMarkdownSource(source));
   const referenceLabels = collectMathReferenceLabels(normalizedSource);
 
   try {

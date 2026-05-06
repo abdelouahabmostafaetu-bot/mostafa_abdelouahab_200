@@ -8,7 +8,6 @@ export default [
       'node_modules/**',
       'public/**',
       'Math Q&A Search - AI Enhanced (1)/**',
-      'my-library-mongodb/**',
     ],
   },
   {

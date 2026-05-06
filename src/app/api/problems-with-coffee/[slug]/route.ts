@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdminApi } from '@/lib/admin';
 import {
   mapCoffeeProblem,
   normalizeCoffeeLevel,
@@ -8,7 +8,7 @@ import {
 } from '@/lib/coffee-problems';
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
-import { checkRateLimit } from '@/lib/security';
+import { checkRateLimit, getUnknownFields, isPlainObject, jsonError } from '@/lib/security';
 import type { CoffeeProblemLevel } from '@/types/coffee-problem';
 
 type RouteContext = {
@@ -25,7 +25,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const adminMode = request.nextUrl.searchParams.get('admin') === '1';
 
   if (adminMode) {
-    await requireAdmin();
+    const forbidden = await requireAdminApi();
+    if (forbidden) return forbidden;
   }
 
   try {
@@ -57,7 +58,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'coffee-problems-put', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const body = (await request.json().catch(() => null)) as
@@ -69,15 +71,47 @@ export async function PUT(request: NextRequest, context: RouteContext) {
           estimatedTime?: string;
           tags?: string[] | string;
           problemStatement?: string;
+          fullProblemContent?: string;
           hint1?: string;
           hint2?: string;
           keyIdea?: string;
           solution?: string;
+          solutionContent?: string;
           lesson?: string;
           coverImage?: string;
           published?: boolean;
+          isPublished?: boolean;
+          difficulty?: string;
         }
       | null;
+
+    if (!isPlainObject(body)) {
+      return jsonError('Request body must be a JSON object.', 400);
+    }
+
+    const unknownFields = getUnknownFields(body, [
+      'title',
+      'slug',
+      'shortDescription',
+      'level',
+      'difficulty',
+      'estimatedTime',
+      'tags',
+      'problemStatement',
+      'fullProblemContent',
+      'hint1',
+      'hint2',
+      'keyIdea',
+      'solution',
+      'solutionContent',
+      'lesson',
+      'coverImage',
+      'published',
+      'isPublished',
+    ]);
+    if (unknownFields.length > 0) {
+      return jsonError(`Unknown field: ${unknownFields[0]}.`, 400);
+    }
 
     await connectToDatabase();
 
@@ -91,7 +125,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const title = String(body?.title ?? '').trim();
     const shortDescription = String(body?.shortDescription ?? '').trim();
     const estimatedTime = String(body?.estimatedTime ?? '').trim();
-    const problemStatement = String(body?.problemStatement ?? '').trim();
+    const problemStatement = String(body?.problemStatement ?? body?.fullProblemContent ?? '').trim();
     const nextSlug = normalizeCoffeeSlug(title, String(body?.slug ?? ''));
 
     if (!title || !shortDescription || !estimatedTime || !problemStatement) {
@@ -126,10 +160,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     problem.hint1 = String(body?.hint1 ?? '').trim();
     problem.hint2 = String(body?.hint2 ?? '').trim();
     problem.keyIdea = String(body?.keyIdea ?? '').trim();
-    problem.solution = String(body?.solution ?? '').trim();
+    problem.solution = String(body?.solution ?? body?.solutionContent ?? '').trim();
     problem.lesson = String(body?.lesson ?? '').trim();
     problem.coverImage = String(body?.coverImage ?? '').trim();
-    problem.published = Boolean(body?.published);
+    problem.published = Boolean(body?.published ?? body?.isPublished);
 
     await problem.save();
 
@@ -144,7 +178,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'coffee-problems-delete', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     await connectToDatabase();

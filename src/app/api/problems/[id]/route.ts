@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdminApi } from '@/lib/admin';
 import {
   buildPublishedProblemQuery,
   findProblemByIdOrSlug,
@@ -8,7 +8,7 @@ import {
 } from '@/lib/problems';
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
-import { checkRateLimit } from '@/lib/security';
+import { checkRateLimit, getUnknownFields, isPlainObject, jsonError } from '@/lib/security';
 
 type RouteContext = {
   params: Promise<{
@@ -24,7 +24,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const adminMode = request.nextUrl.searchParams.get('admin') === '1';
 
   if (adminMode) {
-    await requireAdmin();
+    const forbidden = await requireAdminApi();
+    if (forbidden) return forbidden;
   }
 
   try {
@@ -50,13 +51,37 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'problems-put', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const { id } = await context.params;
     const body = (await request.json().catch(() => null)) as Parameters<
       typeof normalizeProblemInput
     >[0];
+    if (!isPlainObject(body)) {
+      return jsonError('Request body must be a JSON object.', 400);
+    }
+
+    const unknownFields = getUnknownFields(body, [
+      'title',
+      'slug',
+      'shortDescription',
+      'difficulty',
+      'level',
+      'estimatedTime',
+      'tags',
+      'problemStatement',
+      'fullProblemContent',
+      'solution',
+      'solutionContent',
+      'isPublished',
+      'published',
+    ]);
+    if (unknownFields.length > 0) {
+      return jsonError(`Unknown field: ${unknownFields[0]}.`, 400);
+    }
+
     const problemInput = normalizeProblemInput(body);
 
     if (
@@ -132,7 +157,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'problems-delete', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const { id } = await context.params;

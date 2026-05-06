@@ -1,7 +1,7 @@
 import { put } from '@vercel/blob';
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit, createSafeBlobPath } from '@/lib/security';
 import {
   sanitizeUploadFileName,
   validateBookUploadFile,
@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'library-upload-book-file-post', 20);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const contentType = request.headers.get('content-type') ?? '';
@@ -38,9 +39,8 @@ export async function POST(request: NextRequest) {
     }
 
     const filename = sanitizeUploadFileName(fileValue.name, 'book.pdf');
-    const blob = await put(`library/books/${Date.now()}-${filename}`, fileValue, {
+    const blob = await put(createSafeBlobPath('library/books', fileValue.type), fileValue, {
       access: 'public',
-      addRandomSuffix: true,
     });
 
     return NextResponse.json(

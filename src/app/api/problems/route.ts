@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdminApi } from '@/lib/admin';
 import {
   buildPublishedProblemQuery,
   mapProblem,
@@ -8,7 +8,7 @@ import {
 } from '@/lib/problems';
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
-import { checkRateLimit } from '@/lib/security';
+import { checkRateLimit, getUnknownFields, isPlainObject, jsonError } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -34,14 +34,14 @@ function getPublicErrorDetails(error: unknown, fallbackMessage: string) {
   if (isMissingMongoUri) {
     return {
       status: 503,
-      message: 'Server configuration is incomplete. MONGODB_URI is missing.',
+      message: 'Server configuration is incomplete.',
     };
   }
 
   if (isDatabaseConnectionIssue) {
     return {
       status: 503,
-      message: 'Database connection failed. Check MongoDB URI and Atlas network access.',
+      message: 'Database connection failed.',
     };
   }
 
@@ -81,7 +81,8 @@ export async function GET(request: NextRequest) {
   const adminMode = request.nextUrl.searchParams.get('admin') === '1';
 
   if (adminMode) {
-    await requireAdmin();
+    const forbidden = await requireAdminApi();
+    if (forbidden) return forbidden;
   }
 
   try {
@@ -161,12 +162,36 @@ export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'problems-post', 20);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const body = (await request.json().catch(() => null)) as Parameters<
       typeof normalizeProblemInput
     >[0];
+    if (!isPlainObject(body)) {
+      return jsonError('Request body must be a JSON object.', 400);
+    }
+
+    const unknownFields = getUnknownFields(body, [
+      'title',
+      'slug',
+      'shortDescription',
+      'difficulty',
+      'level',
+      'estimatedTime',
+      'tags',
+      'problemStatement',
+      'fullProblemContent',
+      'solution',
+      'solutionContent',
+      'isPublished',
+      'published',
+    ]);
+    if (unknownFields.length > 0) {
+      return jsonError(`Unknown field: ${unknownFields[0]}.`, 400);
+    }
+
     const problemInput = normalizeProblemInput(body);
 
     if (

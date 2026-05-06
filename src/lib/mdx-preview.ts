@@ -6,6 +6,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeKatex from 'rehype-katex';
 import rehypeSlug from 'rehype-slug';
 import rehypeStringify from 'rehype-stringify';
+import { sanitizeMarkdownSource } from '@/lib/security';
 
 type HtmlNode = {
   type?: string;
@@ -281,7 +282,7 @@ export function rehypeWrapDisplayMath() {
 }
 
 export async function renderMarkdownPreviewToHtml(source: string) {
-  const normalizedSource = normalizeKatexMarkdownSource(source);
+  const normalizedSource = normalizeKatexMarkdownSource(sanitizeMarkdownSource(source));
   const referenceLabels = collectMathReferenceLabels(normalizedSource);
 
   const file = await unified()

@@ -1,6 +1,7 @@
 import { del, put } from '@vercel/blob';
+import mongoose from 'mongoose';
 import { type NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdminApi } from '@/lib/admin';
 import { normalizeCategory } from '@/lib/library-categories';
 import {
   deleteStoredLibraryFile,
@@ -14,7 +15,7 @@ import {
 } from '@/lib/library-uploads';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
-import { checkRateLimit } from '@/lib/security';
+import { checkRateLimit, createSafeBlobPath } from '@/lib/security';
 
 type RouteContext = {
   params: Promise<{
@@ -94,12 +95,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'books-get-one', 60);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     await connectToDatabase();
 
     const { id } = await context.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid book id.' }, { status: 400 });
+    }
+
     const book = await BookModel.findById(id).lean();
     if (!book) {
       return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
@@ -115,7 +121,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'books-put', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const contentType = request.headers.get('content-type') ?? '';
@@ -129,6 +136,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     await connectToDatabase();
 
     const { id } = await context.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid book id.' }, { status: 400 });
+    }
+
     const book = await BookModel.findById(id);
     if (!book) {
       return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
@@ -169,9 +180,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       }
 
       const filename = sanitizeUploadFileName(fileValue.name, 'book.pdf');
-      const blob = await put(`library/books/${Date.now()}-${filename}`, fileValue, {
+      const blob = await put(createSafeBlobPath('library/books', fileValue.type), fileValue, {
         access: 'public',
-        addRandomSuffix: true,
       });
 
       book.fileUrl = blob.url;
@@ -218,12 +228,17 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   const limited = checkRateLimit(request, 'books-delete', 30);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     await connectToDatabase();
 
     const { id } = await context.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: 'Invalid book id.' }, { status: 400 });
+    }
+
     const book = await BookModel.findById(id);
     if (!book) {
       return NextResponse.json({ error: 'Book not found.' }, { status: 404 });

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { renderMarkdownPreviewToHtml } from '@/lib/mdx-preview';
-import { requireAdmin } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit, getUnknownFields, isPlainObject, jsonError } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'blog-preview-post', 60);
   if (limited) return limited;
 
-  await requireAdmin();
+  const forbidden = await requireAdminApi();
+  if (forbidden) return forbidden;
 
   try {
     const body = (await request.json().catch(() => null)) as
@@ -18,6 +19,15 @@ export async function POST(request: NextRequest) {
           content?: string;
         }
       | null;
+
+    if (!isPlainObject(body)) {
+      return jsonError('Request body must be a JSON object.', 400);
+    }
+
+    const unknownFields = getUnknownFields(body, ['content']);
+    if (unknownFields.length > 0) {
+      return jsonError(`Unknown field: ${unknownFields[0]}.`, 400);
+    }
 
     const content =
       String(body?.content ?? '').trim() ||
