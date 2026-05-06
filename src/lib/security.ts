@@ -11,14 +11,63 @@ type RateLimitBucket = {
 const buckets = new Map<string, RateLimitBucket>();
 
 const CODE_FENCE_PATTERN = /(```[\s\S]*?```|~~~[\s\S]*?~~~)/g;
-const UNSAFE_HTML_TAG_PATTERN =
-  /<\/?\s*(script|iframe|object|embed|base|link|meta|form|input|button|textarea|select|option|svg|math|style)\b[^>]*>/gi;
-const EVENT_HANDLER_ATTRIBUTE_PATTERN =
-  /\s+on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|\{[^}]*\}|[^\s>]+)/g;
-const DANGEROUS_URL_ATTRIBUTE_PATTERN =
-  /\s+(href|src)\s*=\s*(?:"\s*(javascript:|vbscript:|data:text\/html)[^"]*"|'\s*(javascript:|vbscript:|data:text\/html)[^']*'|\{?\s*["']?\s*(javascript:|vbscript:|data:text\/html)[^}\s>]*\}?)/gi;
+const HTML_TAG_PATTERN = /<\/?\s*([A-Za-z][A-Za-z0-9:-]*)(?:\s+[^<>]*)?\/?>/g;
+const HTML_ATTRIBUTE_PATTERN =
+  /\s+([A-Za-z_:][A-Za-z0-9_:.-]*)(?:\s*=\s*("[^"]*"|'[^']*'|\{(?:[^{}]|\{[^{}]*\})*\}|[^\s"'=<>`]+))?/g;
 const DANGEROUS_MARKDOWN_LINK_PATTERN =
-  /\]\(\s*(javascript:|vbscript:|data:text\/html)[^)]+\)/gi;
+  /\]\(\s*(javascript:|vbscript:|data:|file:)[^)]+\)/gi;
+
+const SAFE_HTML_TAGS = new Set([
+  'a',
+  'b',
+  'blockquote',
+  'br',
+  'code',
+  'details',
+  'div',
+  'em',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'hr',
+  'i',
+  'img',
+  'li',
+  'ol',
+  'p',
+  'pre',
+  'span',
+  'strong',
+  'summary',
+  'table',
+  'tbody',
+  'td',
+  'th',
+  'thead',
+  'tr',
+  'u',
+  'ul',
+]);
+const SAFE_HTML_ATTRIBUTES = new Set([
+  'alt',
+  'class',
+  'classname',
+  'height',
+  'href',
+  'id',
+  'rel',
+  'src',
+  'style',
+  'target',
+  'title',
+  'width',
+]);
+const URL_HTML_ATTRIBUTES = new Set(['href', 'src']);
+const DANGEROUS_PROTOCOL_PATTERN = /^\s*(?:javascript|vbscript|data|file):/i;
+const DANGEROUS_STYLE_PATTERN = /(?:expression\s*\(|javascript:|vbscript:|data:|file:)/i;
 
 const MIME_EXTENSION_MAP = new Map([
   ['image/jpeg', 'jpg'],
@@ -97,11 +146,72 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;');
 }
 
-function sanitizeMarkdownChunk(value: string): string {
+function unwrapAttributeValue(value: string): string {
   return value
-    .replace(UNSAFE_HTML_TAG_PATTERN, (tag) => escapeHtml(tag))
-    .replace(EVENT_HANDLER_ATTRIBUTE_PATTERN, '')
-    .replace(DANGEROUS_URL_ATTRIBUTE_PATTERN, '')
+    .trim()
+    .replace(/^\{+|}+$/g, '')
+    .replace(/^['"]|['"]$/g, '')
+    .trim();
+}
+
+function isSafeHtmlAttribute(name: string, value: string | undefined): boolean {
+  const lowerName = name.toLowerCase();
+
+  if (lowerName.startsWith('on')) {
+    return false;
+  }
+
+  if (
+    !SAFE_HTML_ATTRIBUTES.has(lowerName) &&
+    !lowerName.startsWith('aria-') &&
+    !lowerName.startsWith('data-')
+  ) {
+    return false;
+  }
+
+  if (!value) {
+    return true;
+  }
+
+  const unwrappedValue = unwrapAttributeValue(value);
+  if (URL_HTML_ATTRIBUTES.has(lowerName)) {
+    return !DANGEROUS_PROTOCOL_PATTERN.test(unwrappedValue);
+  }
+
+  if (lowerName === 'style') {
+    return !DANGEROUS_STYLE_PATTERN.test(unwrappedValue);
+  }
+
+  return true;
+}
+
+function sanitizeAllowedHtmlTag(tag: string, tagName: string): string {
+  const lowerTagName = tagName.toLowerCase();
+
+  if (!SAFE_HTML_TAGS.has(lowerTagName)) {
+    return escapeHtml(tag);
+  }
+
+  if (/^<\s*\//.test(tag)) {
+    return `</${lowerTagName}>`;
+  }
+
+  const safeAttributes: string[] = [];
+  for (const match of tag.matchAll(HTML_ATTRIBUTE_PATTERN)) {
+    const [, attributeName = '', attributeValue] = match;
+    if (isSafeHtmlAttribute(attributeName, attributeValue)) {
+      safeAttributes.push(attributeValue ? `${attributeName}=${attributeValue}` : attributeName);
+    }
+  }
+
+  const closing = /\/\s*>$/.test(tag) ? ' /' : '';
+  return `<${lowerTagName}${safeAttributes.length ? ` ${safeAttributes.join(' ')}` : ''}${closing}>`;
+}
+
+function sanitizeMarkdownChunk(value: string): string {
+  // HTML is rebuilt from a tag/attribute allow-list so event handlers and dangerous protocols are removed globally.
+  return value
+    .replace(HTML_TAG_PATTERN, (tag, tagName: string) => sanitizeAllowedHtmlTag(tag, tagName))
     .replace(DANGEROUS_MARKDOWN_LINK_PATTERN, '](#)');
 }
 
