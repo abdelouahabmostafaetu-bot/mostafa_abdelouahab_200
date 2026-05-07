@@ -75,6 +75,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       'fullProblemContent',
       'solution',
       'solutionContent',
+      'solutions',
       'isPublished',
       'published',
     ]);
@@ -86,13 +87,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     if (
       !problemInput.title ||
-      !problemInput.shortDescription ||
       !problemInput.fullProblemContent
     ) {
       return NextResponse.json(
         {
           error:
-            'Title, short description, and full problem content are required.',
+            'Title and full problem content are required.',
         },
         { status: 400 },
       );
@@ -137,6 +137,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
     problem.fullProblemContent = problemInput.fullProblemContent;
     problem.problemStatement = problemInput.problemStatement;
+    problem.solutions = problemInput.solutions;
     problem.solutionContent = problemInput.solutionContent;
     problem.solution = problemInput.solution;
     if (typeof body?.isPublished === 'boolean') {

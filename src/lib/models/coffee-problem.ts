@@ -16,6 +16,7 @@ export type CoffeeProblemDocument = {
   hint2: string;
   keyIdea: string;
   solution: string;
+  solutions: string[];
   solutionContent: string;
   lesson: string;
   coverImage: string;
@@ -45,6 +46,7 @@ const coffeeProblemSchema = new mongoose.Schema<CoffeeProblemDocument>(
     hint2: { type: String, default: '' },
     keyIdea: { type: String, default: '' },
     solution: { type: String, default: '' },
+    solutions: { type: [String], default: [] },
     solutionContent: { type: String, default: '' },
     lesson: { type: String, default: '' },
     coverImage: { type: String, default: '' },

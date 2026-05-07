@@ -14,6 +14,7 @@ export type ProblemInput = {
   shortDescription?: string;
   fullProblemContent?: string;
   solutionContent?: string;
+  solutions?: string[];
   difficulty?: string;
   estimatedTime?: string;
   tags?: string[] | string;
@@ -103,13 +104,29 @@ export function mapProblemSummary(
   };
 }
 
+function normalizeProblemSolutions(payload: ProblemPayload): string[] {
+  const explicitSolutions = Array.isArray(payload.solutions)
+    ? payload.solutions.map(String).map((value) => value.trim()).filter(Boolean)
+    : [];
+
+  if (explicitSolutions.length > 0) {
+    return explicitSolutions;
+  }
+
+  const legacySolution = String(payload.solutionContent ?? payload.solution ?? '').trim();
+  return legacySolution ? [legacySolution] : [];
+}
+
 export function mapProblem(payload: ProblemPayload): Problem {
+  const solutions = normalizeProblemSolutions(payload);
+
   return {
     ...mapProblemSummary(payload, true),
     fullProblemContent: String(
       payload.fullProblemContent ?? payload.problemStatement ?? '',
     ),
-    solutionContent: String(payload.solutionContent ?? payload.solution ?? ''),
+    solutionContent: solutions[0] ?? String(payload.solutionContent ?? payload.solution ?? ''),
+    solutions,
     isPublished: Boolean(payload.isPublished ?? payload.published),
   };
 }
@@ -136,9 +153,20 @@ export async function getLatestPublishedProblem(): Promise<ProblemSummary | null
 export function normalizeProblemInput(body: ProblemInput | null) {
   const title = String(body?.title ?? '').trim();
   const slug = normalizeProblemSlug(title, String(body?.slug ?? ''));
-  const shortDescription = String(body?.shortDescription ?? '').trim();
   const fullProblemContent = String(body?.fullProblemContent ?? '').trim();
-  const solutionContent = String(body?.solutionContent ?? '').trim();
+  const explicitSolutions = Array.isArray(body?.solutions)
+    ? body.solutions.map(String).map((value) => value.trim()).filter(Boolean)
+    : [];
+  const legacySolutionContent = String(body?.solutionContent ?? '').trim();
+  const solutions = explicitSolutions.length > 0
+    ? explicitSolutions
+    : legacySolutionContent
+      ? [legacySolutionContent]
+      : [];
+  const solutionContent = solutions[0] ?? '';
+  const shortDescription =
+    String(body?.shortDescription ?? '').trim() ||
+    buildProblemPreview(fullProblemContent);
   const difficulty = normalizeProblemDifficulty(body?.difficulty ?? DEFAULT_PROBLEM_DIFFICULTY);
   const estimatedTime =
     String(body?.estimatedTime ?? DEFAULT_PROBLEM_ESTIMATED_TIME).trim() ||
@@ -158,7 +186,21 @@ export function normalizeProblemInput(body: ProblemInput | null) {
     isPublished,
     level: difficulty,
     problemStatement: fullProblemContent,
+    solutions,
     solution: solutionContent,
     published: isPublished,
   };
+}
+
+function buildProblemPreview(source: string): string {
+  return source
+    .replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, ' ')
+    .replace(/\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]/g, ' ')
+    .replace(/\$([^$]+)\$/g, '$1')
+    .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
+    .replace(/[#>*_`~\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 180);
 }

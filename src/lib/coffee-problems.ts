@@ -71,6 +71,11 @@ export function mapCoffeeProblemSummary(
 export function mapCoffeeProblem(
   payload: Partial<CoffeeProblemDocument> & Record<string, unknown>,
 ): CoffeeProblem {
+  const explicitSolutions = Array.isArray(payload.solutions)
+    ? payload.solutions.map(String).filter(Boolean)
+    : [];
+  const legacySolution = String(payload.solutionContent ?? payload.solution ?? '').trim();
+
   return {
     ...mapCoffeeProblemSummary(payload, true),
     problemStatement: String(payload.problemStatement ?? ''),
@@ -78,6 +83,7 @@ export function mapCoffeeProblem(
     hint2: String(payload.hint2 ?? ''),
     keyIdea: String(payload.keyIdea ?? ''),
     solution: String(payload.solution ?? ''),
+    solutions: explicitSolutions.length > 0 ? explicitSolutions : legacySolution ? [legacySolution] : [],
     lesson: String(payload.lesson ?? ''),
     fullProblemContent: String(payload.fullProblemContent ?? ''),
     solutionContent: String(payload.solutionContent ?? ''),

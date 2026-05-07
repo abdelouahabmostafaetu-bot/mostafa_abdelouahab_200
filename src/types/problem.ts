@@ -14,6 +14,7 @@ export type ProblemSummary = {
 export type Problem = ProblemSummary & {
   fullProblemContent: string;
   solutionContent: string;
+  solutions: string[];
   isPublished: boolean;
 };
 

@@ -7,27 +7,33 @@ import type { Problem } from '@/types/problem';
 
 type FormState = {
   title: string;
-  shortDescription: string;
   fullProblemContent: string;
   solutionContent: string;
+  solutions: string[];
 };
 
 const emptyForm: FormState = {
   title: '',
-  shortDescription: '',
   fullProblemContent: '',
   solutionContent: '',
+  solutions: [''],
 };
 
 const inputClasses =
   'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/15';
 
 function toForm(problem: Problem): FormState {
+  const solutions = problem.solutions.length > 0
+    ? problem.solutions
+    : problem.solutionContent.trim()
+      ? [problem.solutionContent]
+      : [''];
+
   return {
     title: problem.title,
-    shortDescription: problem.shortDescription,
     fullProblemContent: problem.fullProblemContent,
-    solutionContent: problem.solutionContent,
+    solutionContent: solutions[0] ?? '',
+    solutions,
   };
 }
 
@@ -97,6 +103,37 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const updateSolution = (index: number, value: string) => {
+    setForm((current) => {
+      const solutions = [...current.solutions];
+      solutions[index] = value;
+      return {
+        ...current,
+        solutionContent: solutions[0] ?? '',
+        solutions,
+      };
+    });
+  };
+
+  const addSolution = () => {
+    setForm((current) => ({
+      ...current,
+      solutions: [...current.solutions, ''],
+    }));
+  };
+
+  const removeSolution = (index: number) => {
+    setForm((current) => {
+      const solutions = current.solutions.filter((_, solutionIndex) => solutionIndex !== index);
+      const nextSolutions = solutions.length > 0 ? solutions : [''];
+      return {
+        ...current,
+        solutionContent: nextSolutions[0] ?? '',
+        solutions: nextSolutions,
+      };
+    });
+  };
+
   const saveProblem = async () => {
     setIsSaving(true);
     setErrorMessage('');
@@ -104,11 +141,12 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
 
     try {
       const endpoint = isEditing ? `/api/problems/${problemId}` : '/api/problems';
+      const solutions = form.solutions.map((solution) => solution.trim()).filter(Boolean);
       const requestPayload = {
         title: form.title,
-        shortDescription: form.shortDescription,
         fullProblemContent: form.fullProblemContent,
-        solutionContent: form.solutionContent,
+        solutionContent: solutions[0] ?? '',
+        solutions,
         ...(isEditing
           ? {}
           : {
@@ -180,7 +218,7 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
 
         <div className="mx-auto max-w-4xl">
           <main className="space-y-5">
-            <section className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5">
+            <section className="admin-problem-editor-section">
               <div className="space-y-4">
                 <label className="block">
                   <FieldLabel help="Write a clear mathematical problem title. Inline LaTeX is supported.">
@@ -194,24 +232,10 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
                     required
                   />
                 </label>
-
-                <label className="block">
-                  <FieldLabel help="This is the preview shown on cards. Markdown and inline LaTeX are supported.">
-                    Short Description
-                  </FieldLabel>
-                  <textarea
-                    value={form.shortDescription}
-                    onChange={(event) => updateField('shortDescription', event.target.value)}
-                    placeholder="A classical integral involving logarithms and rational functions."
-                    rows={3}
-                    className={`mt-2 ${inputClasses} resize-none`}
-                    required
-                  />
-                </label>
               </div>
             </section>
 
-            <section className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5">
+            <section className="admin-problem-editor-section">
               <AdminMarkdownEditor
                 label="Problem Details"
                 value={form.fullProblemContent}
@@ -221,14 +245,47 @@ export default function ProblemFormClient({ problemId = '' }: { problemId?: stri
               />
             </section>
 
-            <section className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5">
-              <AdminMarkdownEditor
-                label="Solution"
-                value={form.solutionContent}
-                onChange={(value) => updateField('solutionContent', value)}
-                placeholder="Write a detailed solution. Use Markdown and LaTeX."
-                uploadEndpoint="/api/problems-with-coffee/upload-image"
-              />
+            <section className="admin-problem-editor-section">
+              <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <FieldLabel help="Use one editor per approach. Old one-solution problems open as Solution 1.">
+                  Solutions
+                </FieldLabel>
+                <button
+                  type="button"
+                  onClick={addSolution}
+                  className="inline-flex min-h-10 w-full items-center justify-center rounded-md border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-accent)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 sm:w-auto"
+                >
+                  Add solution
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {form.solutions.map((solution, index) => (
+                  <div key={index} className="admin-solution-editor">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="text-sm font-semibold text-[var(--color-text)]">
+                        Solution {index + 1}
+                      </span>
+                      {form.solutions.length > 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => removeSolution(index)}
+                          className="rounded-md px-2 py-1 text-xs font-medium text-red-300 transition-colors hover:bg-red-500/10"
+                        >
+                          Remove
+                        </button>
+                      ) : null}
+                    </div>
+                    <AdminMarkdownEditor
+                      label={`Solution ${index + 1}`}
+                      value={solution}
+                      onChange={(value) => updateSolution(index, value)}
+                      placeholder="Write a detailed solution. Use Markdown and LaTeX."
+                      uploadEndpoint="/api/problems-with-coffee/upload-image"
+                    />
+                  </div>
+                ))}
+              </div>
             </section>
 
             <div className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-5 sm:flex-row sm:justify-end">
