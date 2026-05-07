@@ -208,15 +208,15 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
-        <header className="border-b border-[var(--color-border)] pb-8">
+        <header className="mx-auto max-w-4xl border-b border-[var(--color-border)] pb-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h1
-              className="flex items-center gap-3 text-3xl font-semibold leading-tight sm:text-5xl"
+              className="flex items-center gap-3 text-3xl font-semibold leading-tight sm:text-4xl"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
               <Coffee
                 aria-hidden="true"
-                className="h-8 w-8 shrink-0 text-[var(--color-accent)] sm:h-10 sm:w-10"
+                className="h-7 w-7 shrink-0 text-[var(--color-accent)] sm:h-9 sm:w-9"
               />
               <span>Problems with Coffee</span>
             </h1>
