@@ -5,6 +5,7 @@ import 'katex/dist/katex.min.css';
 import '@/styles/globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import BirthdayCelebration from '@/components/BirthdayCelebration';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const dmSerif = DM_Serif_Display({
@@ -80,6 +81,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
+          <BirthdayCelebration />
           <SpeedInsights />
         </ClerkProvider>
       </body>
