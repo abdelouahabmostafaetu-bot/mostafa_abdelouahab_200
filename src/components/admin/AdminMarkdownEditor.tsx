@@ -50,9 +50,9 @@ type AdminMarkdownEditorProps = {
   uploadEndpoint?: string;
 };
 
-const IMAGE_ACCEPT = 'image/png,image/jpeg,image/jpg';
+const IMAGE_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
 const IMAGE_MAX_SIZE = 4 * 1024 * 1024;
-const IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg']);
+const IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
 
 const inputClasses =
   'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-all duration-150 placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/15';
@@ -85,7 +85,7 @@ function parseUploadResponse(responseText: string): UploadResponse {
 
 function validateImageFile(file: File): string | null {
   if (!IMAGE_TYPES.has(file.type)) {
-    return 'Only PNG, JPG, and JPEG images are allowed.';
+    return 'Only PNG, JPG, JPEG, and WEBP images are allowed.';
   }
 
   if (file.size > IMAGE_MAX_SIZE) {

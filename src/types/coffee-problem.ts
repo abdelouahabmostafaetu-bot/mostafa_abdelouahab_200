@@ -21,6 +21,7 @@ export type CoffeeProblem = CoffeeProblemSummary & {
   hint2: string;
   keyIdea: string;
   solution: string;
+  solutions: string[];
   lesson: string;
   fullProblemContent: string;
   solutionContent: string;

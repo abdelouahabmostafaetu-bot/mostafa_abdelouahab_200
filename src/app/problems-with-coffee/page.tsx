@@ -52,20 +52,49 @@ function buildPageHref(
   return `/problems-with-coffee?${query.toString()}`;
 }
 
-function ProblemListItem({ problem }: { problem: ProblemSummaryWithHtml }) {
+function buildProblemSummaryFallback(source: string) {
+  return source
+    .replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, ' ')
+    .replace(/\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]/g, ' ')
+    .replace(/\$([^$]+)\$/g, '$1')
+    .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
+    .replace(/[#>*_`~\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 180);
+}
+
+function ProblemListItem({
+  problem,
+  index,
+}: {
+  problem: ProblemSummaryWithHtml;
+  index: number;
+}) {
+  const variant = index % 3;
+
   return (
-    <article className="problem-list-item">
-      <h2 className="problem-list-heading">
-        <Link
-          href={`/problems-with-coffee/${problem.slug}`}
-          className="problem-list-title problem-title"
-          dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
-        />
-      </h2>
-      <p
-        className="problem-list-description"
-        dangerouslySetInnerHTML={{ __html: problem.shortDescriptionHtml }}
-      />
+    <article className="problem-list-item" data-variant={variant}>
+      <Link href={`/problems-with-coffee/${problem.slug}`} className="problem-list-link">
+        <div className="problem-list-accent" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <div className="problem-list-meta">
+            <span>Problem {index + 1}</span>
+            {problem.estimatedTime ? <span>{problem.estimatedTime}</span> : null}
+          </div>
+          <h2 className="problem-list-heading">
+            <span
+              className="problem-list-title problem-title"
+              dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
+            />
+          </h2>
+          <p
+            className="problem-list-description"
+            dangerouslySetInnerHTML={{ __html: problem.shortDescriptionHtml }}
+          />
+        </div>
+      </Link>
     </article>
   );
 }
@@ -125,13 +154,14 @@ async function loadProblems({
   const problems = await Promise.all(
     docs.map(async (doc) => {
       const problem = mapProblemSummary(doc);
+      const summary =
+        problem.shortDescription ||
+        buildProblemSummaryFallback(String(doc.fullProblemContent ?? doc.problemStatement ?? ''));
 
       return {
         ...problem,
         titleHtml: await renderInlineMarkdownPreviewToHtml(problem.title),
-        shortDescriptionHtml: await renderInlineMarkdownPreviewToHtml(
-          problem.shortDescription,
-        ),
+        shortDescriptionHtml: await renderInlineMarkdownPreviewToHtml(summary),
       };
     }),
   );
@@ -215,8 +245,8 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
           </div>
         ) : (
           <div className="problem-list mt-8">
-            {data.problems.map((problem) => (
-              <ProblemListItem key={problem.slug} problem={problem} />
+            {data.problems.map((problem, index) => (
+              <ProblemListItem key={problem.slug} problem={problem} index={index} />
             ))}
           </div>
         )}

@@ -185,6 +185,7 @@ export async function POST(request: NextRequest) {
       'fullProblemContent',
       'solution',
       'solutionContent',
+      'solutions',
       'isPublished',
       'published',
     ]);
@@ -196,13 +197,12 @@ export async function POST(request: NextRequest) {
 
     if (
       !problemInput.title ||
-      !problemInput.shortDescription ||
       !problemInput.fullProblemContent
     ) {
       return NextResponse.json(
         {
           error:
-            'Title, short description, and full problem content are required.',
+            'Title and full problem content are required.',
         },
         { status: 400 },
       );
