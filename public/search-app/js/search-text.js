@@ -106,7 +106,16 @@ async function searchText(forceOriginal) {
   }
 
   const stats = { sources: {}, timing: {}, totalResults: 0, cached: 0 };
+  const isPaginationSearch = State.currentPage > 1;
   if (defaultTags.length > 0) stats.defaultTags = defaultTags;
+  console.log('FETCH SEARCH', {
+    q,
+    mode: State.searchMode,
+    sort: DOM.sort.value,
+    status: DOM.answered.value || 'all',
+    page: State.currentPage,
+    pagesize: DOM.pageSize.value,
+  });
 
   // ════════════════════════════════════════════════
   // PHASE 1a: Fire all base search engines in parallel
@@ -135,6 +144,7 @@ async function searchText(forceOriginal) {
   );
 
   // Strategy 3: /similar — similar titles
+  if (!isPaginationSearch) {
   const simParams = new URLSearchParams({
     order: 'desc', sort: 'relevance', site: Config.SITE,
     pagesize: '10', filter: Config.SE_FILTER, title: q,
@@ -145,8 +155,10 @@ async function searchText(forceOriginal) {
       .then(r => r.ok ? r.json().then(d => ({ engine: 'similar', data: d, cached: r._cached })) : ({ engine: 'similar', data: null }))
       .catch(() => ({ engine: 'similar', data: null }))
   );
+  }
 
   // Optional server-side Firecrawl web expansion. The API key stays on the Next.js server.
+  if (!isPaginationSearch) {
   promises.push(
     fetch('/api/search/web', {
       method: 'POST',
@@ -160,6 +172,7 @@ async function searchText(forceOriginal) {
       .then(r => r.ok ? r.json().then(d => ({ engine: 'firecrawl', data: { items: d.items || [] } })) : ({ engine: 'firecrawl', data: null }))
       .catch(() => ({ engine: 'firecrawl', data: null }))
   );
+  }
 
   // ════════════════════════════════════════════════
   // PHASE 1b: Enhanced queries (synonyms, tags, decompose, phrase, answer-body, cross-site)
@@ -181,7 +194,7 @@ async function searchText(forceOriginal) {
   // ════════════════════════════════════════════════
   // PHASE 1c: Semantic query rewrites (intent-driven alternate queries)
   // ════════════════════════════════════════════════
-  if (queryRewrites.length > 0) {
+  if (!isPaginationSearch && queryRewrites.length > 0) {
     for (const rq of queryRewrites.slice(0, 2)) {
       const rwParams = new URLSearchParams({
         order: 'desc', sort: 'relevance', site: Config.SITE,
@@ -199,7 +212,7 @@ async function searchText(forceOriginal) {
   // ════════════════════════════════════════════════
   // PHASE 1d: Intent-boosted tag search (search tags that match detected intent)
   // ════════════════════════════════════════════════
-  if (detectedIntents.length > 0 && detectedIntents[0].intent !== 'generic' && detectedIntents[0].boostTags.length > 0) {
+  if (!isPaginationSearch && detectedIntents.length > 0 && detectedIntents[0].intent !== 'generic' && detectedIntents[0].boostTags.length > 0) {
     const intentTags = detectedIntents[0].boostTags.slice(0, 2).join(';');
     const intentWords = q.split(/\s+/).filter(w => w.length > 3).slice(0, 3).join(' ');
     if (intentWords) {
@@ -220,7 +233,7 @@ async function searchText(forceOriginal) {
   // ════════════════════════════════════════════════
   // PHASE 1e: Cross-concept bridge queries
   // ════════════════════════════════════════════════
-  if (typeof SearchIntelligence !== 'undefined') {
+  if (!isPaginationSearch && typeof SearchIntelligence !== 'undefined') {
     const bridges = SearchIntelligence.findConceptBridges(q);
     for (const bq of bridges.slice(0, 1)) {
       const brParams = new URLSearchParams({
@@ -311,7 +324,7 @@ async function searchText(forceOriginal) {
     // ════════════════════════════════════════════════
     // PHASE 2b: Fetch related, linked & hot-by-tag questions
     // ════════════════════════════════════════════════
-    if (typeof SearchEnhance !== 'undefined' && allItems.length > 0) {
+    if (!isPaginationSearch && typeof SearchEnhance !== 'undefined' && allItems.length > 0) {
       const topIds = allItems.slice(0, 3).map(i => i.question_id).filter(Boolean);
       const inferredTags = SearchEnhance.inferTags(q, 3);
 
@@ -360,7 +373,7 @@ async function searchText(forceOriginal) {
     // PHASE 2c: Fetch tag wikis for context sidebar
     // ════════════════════════════════════════════════
     let tagWikis = [];
-    if (typeof SearchEnhance !== 'undefined') {
+    if (!isPaginationSearch && typeof SearchEnhance !== 'undefined') {
       const inferredTags = SearchEnhance.inferTags(q, 3);
       if (inferredTags.length > 0) {
         tagWikis = await SearchEnhance.fetchTagWikis(inferredTags, 3).catch(() => []);
@@ -370,7 +383,7 @@ async function searchText(forceOriginal) {
     // ════════════════════════════════════════════════
     // PHASE 2d: Google fallback — if fewer than 10 results found
     // ════════════════════════════════════════════════
-    if (typeof SearchEnhance !== 'undefined' && allItems.length < 10) {
+    if (!isPaginationSearch && typeof SearchEnhance !== 'undefined' && allItems.length < 10) {
       showStatus(allItems.length < 5
         ? 'Few results — trying Google fallback…'
         : 'Supplementing with Google results…');
@@ -449,7 +462,7 @@ async function searchText(forceOriginal) {
     // ════════════════════════════════════════════════
     // PHASE 4: Intelligence layer — TF-IDF, dedup, snippets, confidence
     // ════════════════════════════════════════════════
-    if (typeof SearchIntelligence !== 'undefined') {
+    if (!isPaginationSearch && typeof SearchIntelligence !== 'undefined') {
       const intelStart = performance.now();
 
       // 4a: TF-IDF rare term boost
@@ -520,7 +533,7 @@ async function searchText(forceOriginal) {
     // ════════════════════════════════════════════════
     // PHASE 4b: Adaptive recall expansion (if still too few results)
     // ════════════════════════════════════════════════
-    if (typeof SearchIntelligence !== 'undefined' && allItems.length < 5) {
+    if (!isPaginationSearch && typeof SearchIntelligence !== 'undefined' && allItems.length < 5) {
       const fallbackLevel = allItems.length === 0 ? 3 : allItems.length < 3 ? 2 : 1;
       const fallbacks = SearchIntelligence.generateFallbacks(q, fallbackLevel);
       if (fallbacks.length > 0) {

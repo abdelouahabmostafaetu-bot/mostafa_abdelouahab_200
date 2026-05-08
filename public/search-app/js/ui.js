@@ -194,8 +194,10 @@ function syncParentSearchUrl(params) {
   if (window.parent === window) return;
 
   try {
-    const nextUrl = `/search?${params.toString()}`;
-    window.parent.history.replaceState(null, '', nextUrl);
+    window.parent.postMessage(
+      { type: 'SEARCH_URL_UPDATE', query: params.toString() },
+      window.location.origin
+    );
   } catch (_) {}
 }
 

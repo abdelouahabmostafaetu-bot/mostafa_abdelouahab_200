@@ -920,7 +920,7 @@ const SearchEnhance = (() => {
     for (const sq of subQueries.slice(0, 1)) {
       const params = new URLSearchParams({
         order: 'desc', sort: 'relevance', site: Config.SITE,
-        page: '1', pagesize: '5', q: sq,
+        page, pagesize: '5', q: sq,
         filter: Config.SE_FILTER,
       });
       extras.push({ url: `${Config.SE_API}/search/advanced?${params}`, engine: 'decompose' });
@@ -931,7 +931,7 @@ const SearchEnhance = (() => {
     for (const ph of phrases.slice(0, 1)) {
       const params = new URLSearchParams({
         order: 'desc', sort: 'relevance', site: Config.SITE,
-        page: '1', pagesize: '8', q: `"${ph}"`,
+        page, pagesize: '8', q: `"${ph}"`,
         filter: Config.SE_FILTER,
       });
       extras.push({ url: `${Config.SE_API}/search/advanced?${params}`, engine: 'phrase' });
