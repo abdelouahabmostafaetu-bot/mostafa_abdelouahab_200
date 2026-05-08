@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Clock } from 'lucide-react';
 import { getBlogPost } from '@/lib/content';
 import { renderMDX, extractHeadings } from '@/lib/mdx';
@@ -103,10 +104,13 @@ export default async function BlogPostPage({
                 )}
 
                 {post.coverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={post.coverImageUrl}
                     alt={post.title}
+                    width={1200}
+                    height={675}
+                    sizes="(min-width: 1024px) 832px, calc(100vw - 32px)"
+                    priority
                     className="mt-8 w-full rounded-2xl border border-[var(--color-border)] object-cover shadow-[0_20px_55px_rgba(0,0,0,0.25)]"
                   />
                 ) : null}

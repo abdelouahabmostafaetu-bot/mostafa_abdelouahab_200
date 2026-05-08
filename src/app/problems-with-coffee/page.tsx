@@ -76,7 +76,7 @@ function ProblemListItem({
 
   return (
     <article className="problem-list-item" data-variant={variant}>
-      <Link href={`/problems-with-coffee/${problem.slug}`} className="problem-list-link">
+      <Link href={`/problems-with-coffee/${problem.slug}`} prefetch className="problem-list-link">
         <div className="problem-list-accent" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <div className="problem-list-meta">

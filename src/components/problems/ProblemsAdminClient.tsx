@@ -179,7 +179,7 @@ export default function ProblemsAdminClient() {
                       disabled={isDeleting}
                       className="rounded-md border border-red-500/30 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/10 disabled:opacity-50"
                     >
-                      Delete
+                      {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                   </div>
                 </article>

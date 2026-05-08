@@ -25,7 +25,7 @@ export default async function BlogPage({
   const resolvedSearchParams = await searchParams;
   const adminUser = await getCurrentAdminUser();
   const allPosts = await getBlogPosts();
-  const allTags = await getAllTags();
+  const allTags = await getAllTags(allPosts);
   const activeTag = resolvedSearchParams.tag || '';
 
   const filteredPosts = activeTag

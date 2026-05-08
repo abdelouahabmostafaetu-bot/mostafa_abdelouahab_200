@@ -43,7 +43,11 @@ export default async function RecentActivity() {
           {postsWithHtml.length > 0 ? (
             postsWithHtml.map((post) => (
               <article key={post.slug} className="group">
-                <Link href={`/blog/${post.slug}`} className="block">
+                <Link
+                  href={`/blog/${post.slug}`}
+                  prefetch
+                  className="block cursor-pointer transition-opacity duration-150 active:opacity-80"
+                >
                   <header className="mb-3">
                     <div className="flex items-center text-xs text-[var(--color-text-secondary)] uppercase tracking-widest font-medium mb-3">
                       <SiteIcon name="document" alt="" className="mr-2 h-3.5 w-3.5" />
@@ -82,7 +86,11 @@ export default async function RecentActivity() {
         {latestProblem ? (
           <div className="mt-9 md:mt-12">
             <article className="group">
-              <Link href={`/problems-with-coffee/${latestProblem.slug}`} className="block">
+              <Link
+                href={`/problems-with-coffee/${latestProblem.slug}`}
+                prefetch
+                className="block cursor-pointer transition-opacity duration-150 active:opacity-80"
+              >
                 <header className="mb-3">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--color-text-secondary)] uppercase tracking-widest font-medium mb-3">
                     <span className="inline-flex items-center">

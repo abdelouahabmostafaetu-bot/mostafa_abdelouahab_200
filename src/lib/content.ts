@@ -155,8 +155,10 @@ export async function getBlogCategories(): Promise<string[]> {
   return ['All', ...Array.from(categories)];
 }
 
-export async function getAllTags(): Promise<{ tag: string; count: number }[]> {
-  const posts = await getBlogPosts();
+export async function getAllTags(
+  providedPosts?: Pick<BlogPost, 'tags'>[],
+): Promise<{ tag: string; count: number }[]> {
+  const posts = providedPosts ?? await getBlogPosts();
   const tagCounts = new Map<string, number>();
 
   posts.forEach((post) => {

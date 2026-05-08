@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import SiteIcon from '@/components/ui/SiteIcon';
 import { TagList } from './Tag';
 
@@ -29,13 +30,16 @@ export default function PostCard({
     <article className={!isLast ? 'mb-4' : ''}>
       <Link
         href={`/blog/${slug}`}
-        className="group block rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-6 transition-colors duration-150 hover:bg-[var(--color-bg-muted)]"
+        prefetch
+        className="group block cursor-pointer rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-all duration-150 hover:bg-[var(--color-bg-muted)] active:scale-[0.995] active:opacity-90 md:p-6"
       >
         {coverImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={coverImageUrl}
             alt={title}
+            width={960}
+            height={540}
+            sizes="(min-width: 768px) 768px, calc(100vw - 32px)"
             className="mb-4 aspect-[16/9] w-full rounded-xl border border-[var(--color-border)] object-cover"
           />
         ) : null}

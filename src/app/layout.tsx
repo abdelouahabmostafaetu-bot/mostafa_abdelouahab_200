@@ -5,6 +5,7 @@ import 'katex/dist/katex.min.css';
 import '@/styles/globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import NavigationFeedback from '@/components/layout/NavigationFeedback';
 import BirthdayCelebration from '@/components/BirthdayCelebration';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -78,6 +79,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-svh overflow-x-hidden flex flex-col">
         <ClerkProvider>
+          <NavigationFeedback />
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />

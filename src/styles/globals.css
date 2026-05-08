@@ -72,6 +72,17 @@
     overflow-x: hidden;
   }
 
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
   ::selection {
     background-color: rgba(243, 107, 22, 0.32);
   }
@@ -805,6 +816,18 @@
   }
 }
 
+@keyframes navigation-progress {
+  0% {
+    transform: translateX(-110%);
+  }
+  55% {
+    transform: translateX(85%);
+  }
+  100% {
+    transform: translateX(210%);
+  }
+}
+
 /* ===== Focus Styles ===== */
 @layer base {
   *:focus-visible {
@@ -1254,12 +1277,18 @@
   padding: 1rem 0.2rem;
   border-radius: 0.5rem;
   color: inherit;
+  cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 
 .problem-list-link:hover {
   background: rgba(255, 255, 255, 0.025);
+}
+
+.problem-list-link:active {
+  opacity: 0.9;
+  transform: scale(0.997);
 }
 
 .problem-list-link:hover .problem-list-title {
