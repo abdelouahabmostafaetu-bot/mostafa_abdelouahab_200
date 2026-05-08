@@ -37,8 +37,8 @@
 
   <!-- ==================== MODE TOGGLE ==================== -->
   <div class="mode-toggle">
-    <button class="mode-btn active" id="modeText" onclick="setMode('text')">&#128269; Text Search</button>
-    <button class="mode-btn" id="modeLatex" onclick="setMode('latex')">&#8721; LaTeX Search</button>
+    <button class="mode-btn active" id="modeText" onclick="handleModeSwitch('text')" type="button">&#128269; Text Search</button>
+    <button class="mode-btn" id="modeLatex" onclick="handleModeSwitch('latex')" type="button">&#8721; LaTeX Search</button>
   </div>
 
   <!-- ==================== TEXT SEARCH ==================== -->
@@ -176,6 +176,7 @@
       initLatexSearch();
       initSearchHistory();
       initTagSelectors();
+      initSearchUrlState();
 
       /* Search tips toggle */
       const tipsPanel = document.getElementById('searchTips');

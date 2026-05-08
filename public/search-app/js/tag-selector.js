@@ -78,6 +78,7 @@ const TagSelector = (function () {
       chip.querySelector('.tag-remove').addEventListener('click', () => {
         _selected[mode].delete(tag);
         renderChips(mode);
+        document.dispatchEvent(new CustomEvent('search-tags-change', { detail: { mode } }));
       });
       container.appendChild(chip);
     }
@@ -137,6 +138,7 @@ const TagSelector = (function () {
     if (input) input.value = '';
     if (dropdown) { dropdown.innerHTML = ''; dropdown.classList.remove('open'); }
     renderChips(mode);
+    document.dispatchEvent(new CustomEvent('search-tags-change', { detail: { mode } }));
     if (input) input.focus();
   }
 
@@ -191,12 +193,21 @@ const TagSelector = (function () {
     _selected[mode].clear();
     renderChips(mode);
   }
+  function setSelected(mode, tags) {
+    const key = mode || 'text';
+    _selected[key].clear();
+    (Array.isArray(tags) ? tags : []).forEach(tag => {
+      const normalized = String(tag || '').trim();
+      if (normalized) _selected[key].add(normalized);
+    });
+    renderChips(key);
+  }
   function init() {
     wireMode('text');
     wireMode('latex');
   }
 
-  return { init, getSelected, getSelectedArray, clearSelection, TAG_GROUPS, ALL_TAGS };
+  return { init, getSelected, getSelectedArray, clearSelection, setSelected, TAG_GROUPS, ALL_TAGS };
 })();
 
 function initTagSelectors() {

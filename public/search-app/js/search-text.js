@@ -23,15 +23,23 @@
 let _textSearchId = 0;
 
 function initTextSearch() {
-  DOM.searchBtn.addEventListener('click', () => { State.currentPage = 1; searchText(); });
+  DOM.searchBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    handleSearchSubmit('text');
+  });
   DOM.query.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { State.currentPage = 1; searchText(); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearchSubmit('text');
+    }
   });
 }
 
 async function searchText(forceOriginal) {
   let q = DOM.query.value.trim();
   if (!q) { showStatus('Please enter a search term.'); clearResults(); return; }
+  State.searchMode = 'text';
+  updateSearchUrl(getSearchStateFromDom(State.currentPage));
 
   // ── Autocorrect typos ──
   let acBanner = null;
@@ -283,7 +291,9 @@ async function searchText(forceOriginal) {
     stats.totalResults = allItems.length;
 
     if (!allItems.length) {
-      showStatus('No results found. Try a different query.');
+      showStatus('No results found. Try another keyword or tag.');
+      showEmptyState('No results found. Try another keyword or tag.');
+      State.isPageLoading = false;
       return;
     }
 
@@ -561,6 +571,11 @@ async function searchText(forceOriginal) {
     if (thisId !== _textSearchId) return;
     if (err.name === 'AbortError') showError('Request timed out. Try again.');
     else showError(err.message);
+  } finally {
+    if (thisId === _textSearchId) {
+      State.isPageLoading = false;
+      renderPagination();
+    }
   }
 }
 
@@ -666,16 +681,21 @@ async function enrichWithBodiesAndAnswers(items, thisId, idField) {
    ================================================================ */
 
 function renderTextResults(items, quota, stats) {
-  if (!items.length) { showStatus('No results found. Try a different query.'); return; }
+  if (!items.length) {
+    showStatus('No results found. Try another keyword or tag.');
+    showEmptyState('No results found. Try another keyword or tag.');
+    return;
+  }
 
   const quotaStr = quota != null ? ` (API quota: ${quota})` : '';
   const pageSize = Math.min(parseInt(DOM.pageSize?.value || '20', 10) || 20, 20);
   const visibleItems = items.slice(0, pageSize);
+  State.lastResultCount = visibleItems.length;
   if (typeof _lastSearchResults !== 'undefined') {
     _lastSearchResults = items;
     _lastSearchQuery = DOM.query ? DOM.query.value.trim() : '';
   }
-  showStatus(`Page ${State.currentPage} - showing ${visibleItems.length} of ${items.length} results${quotaStr}`);
+  showStatus(`Page ${State.currentPage} · showing ${visibleItems.length} results${quotaStr}`);
 
   const frag = document.createDocumentFragment();
 
@@ -821,7 +841,7 @@ function renderTextResults(items, quota, stats) {
   DOM.results.innerHTML = '';
   DOM.results.appendChild(frag);
 
-  renderPagination(searchText);
+  renderPagination();
 
   // ← أضف هذا فقط
   requestAnimationFrame(() => {

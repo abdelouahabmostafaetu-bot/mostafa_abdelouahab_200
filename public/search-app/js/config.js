@@ -3,7 +3,7 @@
    ================================================================ */
 
 const Config = Object.freeze({
-  SE_API : 'https://api.stackexchange.com/2.3',
+  SE_API : '/api/search/stackexchange',
   SITE   : 'math',
   SE_FILTER      : '!nNPvSNdWme',       // search results: includes excerpt
   SE_BODY_FILTER : '!nNPvSNe7y9',       // questions: includes body HTML
@@ -14,7 +14,7 @@ const Config = Object.freeze({
   /* ── SE API key (register free at https://stackapps.com/) ──
      An API key raises your limit from 300 to 10,000 requests/day.
      Set to '' or null to use unauthenticated access. */
-  SE_API_KEY : 'rl_P6eGCwgfTcm4zDJBK685m4Wir',
+  SE_API_KEY : '',
 
   /* ── CORS proxy fallback ──
      When the direct SE API returns 429 (rate-limited), requests
@@ -35,4 +35,6 @@ const State = {
   currentPage : 1,
   hasMore     : false,
   searchMode  : 'text',                  // 'text' | 'latex'
+  isPageLoading: false,
+  lastResultCount: 0,
 };

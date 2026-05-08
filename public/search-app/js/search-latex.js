@@ -44,12 +44,21 @@ let _latexSearchId = 0;
 let _lastSearchStats = null;
 
 function initLatexSearch() {
-  DOM.latexSearchBtn.addEventListener('click', () => { State.currentPage = 1; searchLatex(); });
+  DOM.latexSearchBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    handleSearchSubmit('latex');
+  });
   DOM.latexKeywords.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { State.currentPage = 1; searchLatex(); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearchSubmit('latex');
+    }
   });
   DOM.latexInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.ctrlKey) { State.currentPage = 1; searchLatex(); }
+    if (e.key === 'Enter' && e.ctrlKey) {
+      e.preventDefault();
+      handleSearchSubmit('latex');
+    }
   });
 }
 
@@ -1433,6 +1442,8 @@ function normalizeBareFrags(tex) {
 async function searchLatex(forceOriginal) {
   let rawTex   = DOM.latexInput.value.trim();
   let keywords = DOM.latexKeywords.value.trim();
+  State.searchMode = 'latex';
+  updateSearchUrl(getSearchStateFromDom(State.currentPage));
 
   // ── Normalize LaTeX spacing so "\int_0^1 ln(sin(x)) dx" === "\int_0^1ln(sin(x))dx"
   if (rawTex && typeof LaTeXCanon !== 'undefined') {
@@ -1446,7 +1457,7 @@ async function searchLatex(forceOriginal) {
 
   if (!rawTex && !keywords) {
     showStatus('Please enter a LaTeX formula or keywords.');
-    clearResults();
+    showEmptyState('Search mathematical questions from Stack Exchange.');
     return;
   }
 
@@ -2267,7 +2278,17 @@ async function searchLatex(forceOriginal) {
     stopTimer();
     if (thisId !== _latexSearchId) return;
     if (err.name === 'AbortError') showError('Request timed out. Try again.');
-    else showError(err.message);
+    else {
+      showError(err.message);
+      if (/No results found/i.test(err.message || '')) {
+        showEmptyState('No results found. Try another keyword or tag.');
+      }
+    }
+  } finally {
+    if (thisId === _latexSearchId) {
+      State.isPageLoading = false;
+      renderPagination();
+    }
   }
 }
 
@@ -2437,17 +2458,19 @@ function renderLatexResults(items, quota) {
       msg += ` <a class="google-inline-link" href="https://www.google.com/search?q=${googleQ}" target="_blank" rel="noopener">&#128269; Search on Google</a>`;
     }
     showStatus(msg);
+    showEmptyState('No results found. Try another keyword or tag.');
     return;
   }
 
   const quotaStr = quota != null ? `  (API quota: ${quota})` : '';
   const pageSize = Math.min(parseInt(DOM.pageSize?.value || '20', 10) || 20, 20);
   const visibleItems = items.slice(0, pageSize);
+  State.lastResultCount = visibleItems.length;
   if (typeof _lastSearchResults !== 'undefined') {
     _lastSearchResults = items;
     _lastSearchQuery = DOM.latexInput ? DOM.latexInput.value.trim() : '';
   }
-  showStatus(`Page ${State.currentPage} - showing ${visibleItems.length} of ${items.length} results${quotaStr}`);
+  showStatus(`Page ${State.currentPage} · showing ${visibleItems.length} results${quotaStr}`);
 
   const frag = document.createDocumentFragment();
 
@@ -2564,7 +2587,7 @@ function renderLatexResults(items, quota) {
     DOM.results.appendChild(fallback);
   }
 
-  renderPagination(searchLatex);
+  renderPagination();
 }
 
 /* ================================================================

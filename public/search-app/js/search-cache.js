@@ -84,12 +84,33 @@ const SearchCache = (() => {
      COMBINED GET / SET  (memory first, then secondary)
      ──────────────────────────────────────────── */
   function get(url) {
-    return memGet(url) || persistGet(url);
+    const key = _cacheKey(url);
+    return memGet(key) || persistGet(key);
   }
 
   function set(url, data) {
-    memSet(url, data);
-    persistSet(url, data);
+    const key = _cacheKey(url);
+    memSet(key, data);
+    persistSet(key, data);
+  }
+
+  function _cacheKey(url) {
+    try {
+      if (typeof getSearchStateFromDom !== 'function') return url;
+      const state = getSearchStateFromDom(State.currentPage);
+      return [
+        url,
+        `q=${state.q}`,
+        `tags=${state.tags}`,
+        `mode=${state.mode}`,
+        `sort=${state.sort}`,
+        `status=${state.status || 'all'}`,
+        `pagesize=${state.pagesize}`,
+        `page=${state.page}`,
+      ].join('|');
+    } catch (_) {
+      return url;
+    }
   }
 
   /* ────────────────────────────────────────────

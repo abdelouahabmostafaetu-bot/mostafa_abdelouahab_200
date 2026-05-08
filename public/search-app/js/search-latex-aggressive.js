@@ -15,6 +15,8 @@
 async function searchLatex(forceOriginal) {
   let rawTex   = DOM.latexInput.value.trim();
   let keywords = DOM.latexKeywords.value.trim();
+  State.searchMode = 'latex';
+  updateSearchUrl(getSearchStateFromDom(State.currentPage));
 
   // ── Normalize LaTeX spacing
   if (rawTex && typeof LaTeXCanon !== 'undefined') {
@@ -28,7 +30,7 @@ async function searchLatex(forceOriginal) {
 
   if (!rawTex && !keywords) {
     showStatus('Please enter a LaTeX formula or keywords.');
-    clearResults();
+    showEmptyState('Search mathematical questions from Stack Exchange.');
     return;
   }
 
@@ -785,12 +787,22 @@ async function searchLatex(forceOriginal) {
     lazyTypeset();
 
     stopTimer();
-    showStatus(`✅ Blitz search complete — ${allItems.length} results from ${Object.keys(stats.sources).length} sources in ${Math.round((performance.now() - startTime)/1000)}s`);
+    showStatus(`Page ${State.currentPage} · showing ${Math.min(allItems.length, normalizePageSize(DOM.pageSize?.value))} results · completed in ${Math.round((performance.now() - startTime)/1000)}s`);
 
   } catch (err) {
     stopTimer();
     if (thisId !== _latexSearchId) return;
     if (err.name === 'AbortError') showError('Request timed out. Try again.');
-    else showError(err.message);
+    else {
+      showError(err.message);
+      if (/No results found/i.test(err.message || '')) {
+        showEmptyState('No results found. Try another keyword or tag.');
+      }
+    }
+  } finally {
+    if (thisId === _latexSearchId) {
+      State.isPageLoading = false;
+      renderPagination();
+    }
   }
 }
