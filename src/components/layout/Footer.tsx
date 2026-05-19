@@ -10,7 +10,10 @@ export default function Footer() {
       <div className="max-w-5xl mx-auto px-4 py-7 sm:px-6 sm:py-12">
         <div className="flex flex-col gap-5 sm:gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-semibold text-[var(--color-text)] mb-1.5 tracking-tight sm:text-base sm:mb-2">
+            <p
+              className="text-sm text-[var(--color-text)] mb-1.5 tracking-tight sm:text-base sm:mb-2"
+              style={{ fontFamily: 'var(--font-serif)' }}
+            >
               Abdelouahab Mostafa
             </p>
             <p className="max-w-sm text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm sm:leading-6">

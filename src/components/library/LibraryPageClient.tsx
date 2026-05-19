@@ -69,7 +69,7 @@ function BookCard({ book }: { book: LibraryBook }) {
   }
 
   return (
-    <article className="group rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-2.5 transition-colors hover:border-[var(--color-accent)]/50">
+    <article className="group border border-[var(--color-border)] bg-[var(--color-surface)] p-2.5 transition-colors hover:border-[var(--color-accent)]/50">
       <div className="grid grid-cols-[72px_1fr] gap-3 sm:block">
         <div className="relative aspect-[2/3] w-[72px] overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-bg-muted)] sm:w-full">
           {coverUrl ? (
@@ -118,7 +118,7 @@ function BookCard({ book }: { book: LibraryBook }) {
                 href={downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-[var(--color-accent)] px-2 text-[11px] font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
+                className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-[var(--color-accent)] px-2 text-[11px] font-semibold text-[var(--color-bg)] transition-opacity hover:opacity-90"
               >
                 <SiteIcon name="download" alt="" className="h-3.5 w-3.5" />
                 Download
@@ -205,7 +205,7 @@ export default function LibraryPageClient({
 
   return (
     <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto w-full max-w-6xl px-3 pb-16 pt-24 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl px-3 pb-16 pt-24 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--color-border)] pb-5">
           <div>
             <div className="mb-2 flex items-center gap-2">
@@ -214,10 +214,10 @@ export default function LibraryPageClient({
                 My Favourite Books
               </p>
             </div>
-            <h1
-              className="text-2xl font-semibold leading-tight text-[var(--color-text)] sm:text-3xl"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
+              <h1
+               className="text-3xl font-normal leading-tight text-[var(--color-text)] sm:text-4xl"
+               style={{ fontFamily: 'var(--font-serif)' }}
+             >
               Personal Library
             </h1>
           </div>

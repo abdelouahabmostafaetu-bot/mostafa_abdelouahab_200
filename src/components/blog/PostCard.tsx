@@ -27,11 +27,11 @@ export default function PostCard({
   isLast = false,
 }: PostCardProps) {
   return (
-    <article className={!isLast ? 'mb-4' : ''}>
+    <article className={!isLast ? 'mb-2 border-b border-[var(--color-border)] pb-6 md:mb-4 md:pb-8' : ''}>
       <Link
         href={`/blog/${slug}`}
         prefetch
-        className="group block cursor-pointer rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-all duration-150 hover:bg-[var(--color-bg-muted)] active:scale-[0.995] active:opacity-90 md:p-6"
+        className="group block cursor-pointer py-1 transition-colors duration-150 hover:text-[var(--color-accent)]"
       >
         {coverImageUrl ? (
           <Image
@@ -40,7 +40,7 @@ export default function PostCard({
             width={960}
             height={540}
             sizes="(min-width: 768px) 768px, calc(100vw - 32px)"
-            className="mb-4 aspect-[16/9] w-full rounded-xl border border-[var(--color-border)] object-cover"
+            className="mb-4 aspect-[16/9] w-full rounded object-cover"
           />
         ) : null}
 
@@ -57,20 +57,20 @@ export default function PostCard({
 
         {titleHtml ? (
           <h3
-            className="blog-card-title mt-2 text-base md:text-2xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-text)]"
+            className="blog-card-title mt-3 text-xl md:text-3xl font-normal leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-accent)]"
             style={{ fontFamily: 'var(--font-serif)' }}
             dangerouslySetInnerHTML={{ __html: titleHtml }}
           />
         ) : (
           <h3
-            className="blog-card-title mt-2 text-base md:text-2xl font-semibold leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-text)]"
+            className="blog-card-title mt-3 text-xl md:text-3xl font-normal leading-snug text-[var(--color-text)] transition-colors duration-150 group-hover:text-[var(--color-accent)]"
             style={{ fontFamily: 'var(--font-serif)' }}
           >
             {title}
           </h3>
         )}
 
-        <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-3 md:text-sm md:leading-7">
+        <p className="mt-3 line-clamp-2 text-[14px] leading-7 text-[var(--color-text-secondary)] md:line-clamp-3 md:text-base md:leading-8">
           {excerpt}
         </p>
       </Link>
