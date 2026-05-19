@@ -44,8 +44,8 @@ export default async function BlogPage({
   );
 
   return (
-    <div className="pt-20 pb-20">
-      <div className="max-w-5xl mx-auto px-4 md:px-6">
+    <div className="pt-24 pb-20">
+      <div className="max-w-3xl mx-auto px-4 md:px-6">
         <div className="mb-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -54,12 +54,12 @@ export default async function BlogPage({
                 Writing
               </p>
               <h1
-                className="text-2xl md:text-4xl font-semibold text-[var(--color-text)] mb-3"
+                className="text-3xl md:text-5xl font-normal text-[var(--color-text)] mb-3"
                 style={{ fontFamily: 'var(--font-serif)' }}
               >
                 Blog
               </h1>
-              <p className="max-w-2xl text-[12px] md:text-sm leading-6 md:leading-7 text-[var(--color-text-secondary)]">
+              <p className="max-w-2xl text-[14px] md:text-base leading-7 md:leading-8 text-[var(--color-text-secondary)]">
                 {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
                 {activeTag ? ` tagged "${activeTag}"` : ''}
                 {totalPages > 1 ? ` \u00b7 Page ${safePage} of ${totalPages}` : ''}
@@ -104,7 +104,7 @@ export default async function BlogPage({
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-20 text-center">
+            <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] py-20 text-center">
             <p className="text-sm text-[var(--color-text-secondary)]">
               {activeTag ? 'No posts found for this tag.' : 'No blog posts yet.'}
             </p>

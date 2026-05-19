@@ -211,7 +211,7 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
         <header className="mx-auto max-w-4xl border-b border-[var(--color-border)] pb-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h1
-              className="flex items-center gap-3 text-3xl font-semibold leading-tight sm:text-4xl"
+              className="flex items-center gap-3 text-3xl font-normal leading-tight sm:text-5xl"
               style={{ fontFamily: 'var(--font-serif)' }}
             >
               <Coffee
@@ -232,7 +232,7 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
         </header>
 
         {warning ? (
-          <div className="mt-5 rounded-md border border-amber-500/30 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
+          <div className="mt-5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
             {warning}
           </div>
         ) : null}

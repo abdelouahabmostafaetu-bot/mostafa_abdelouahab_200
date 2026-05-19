@@ -60,11 +60,11 @@ export default async function BlogPostPage({
   const headings = extractHeadings(post.content);
 
   return (
-    <div className="bg-[radial-gradient(circle_at_50%_0%,rgba(20,184,166,0.10),transparent_34rem)] pb-12 pt-16 md:pb-20 md:pt-28">
+    <div className="pb-12 pt-20 md:pb-20 md:pt-28">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <Link
           href="/blog"
-          className="group mb-6 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]/70 px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-text)] md:mb-10 md:text-xs"
+          className="group mb-6 inline-flex items-center gap-1.5 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-text)] md:mb-10 md:text-xs"
         >
           <ArrowLeft size={12} />
           All Posts
@@ -72,10 +72,10 @@ export default async function BlogPostPage({
 
         <div className="flex gap-10 xl:gap-14">
           <article className="min-w-0 flex-grow">
-            <div className="mx-auto max-w-[52rem] border-none bg-transparent py-2 md:rounded-2xl md:border md:border-[var(--color-border)] md:bg-[var(--color-surface)] md:p-10 md:shadow-[0_24px_80px_rgba(0,0,0,0.22)] lg:p-12">
+            <div className="mx-auto max-w-[52rem] border-none bg-transparent py-2 md:border md:border-[var(--color-border)] md:bg-[var(--color-surface)] md:p-10 lg:p-12">
               <header className="mb-9 border-b border-[var(--color-border)]/70 pb-7 md:mb-12 md:pb-9">
                 <div className="mb-5 flex flex-wrap items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-tertiary)] md:text-xs">
-                  <span className="rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 px-3 py-1 text-[var(--color-accent)]">
+                  <span className="rounded border border-[var(--color-accent)]/35 bg-[var(--color-accent)]/5 px-3 py-1 text-[var(--color-accent)]">
                     {post.category}
                   </span>
                   <span>{formatDate(post.publishedAt || post.createdAt)}</span>
@@ -86,7 +86,7 @@ export default async function BlogPostPage({
                 </div>
 
                 <h1
-                  className="blog-post-title text-[clamp(2.25rem,11vw,3.35rem)] font-normal leading-[0.98] text-[var(--color-text)] md:text-[4.4rem]"
+                  className="blog-post-title text-[clamp(2.25rem,11vw,3.35rem)] font-normal leading-[1.08] text-[var(--color-text)] md:text-[4.4rem]"
                   style={{ fontFamily: 'var(--font-serif)' }}
                   dangerouslySetInnerHTML={{ __html: titleHtml }}
                 />
@@ -111,7 +111,7 @@ export default async function BlogPostPage({
                     height={675}
                     sizes="(min-width: 1024px) 832px, calc(100vw - 32px)"
                     priority
-                    className="mt-8 w-full rounded-2xl border border-[var(--color-border)] object-cover shadow-[0_20px_55px_rgba(0,0,0,0.25)]"
+                    className="mt-8 w-full rounded border border-[var(--color-border)] object-cover"
                   />
                 ) : null}
               </header>

@@ -27,11 +27,11 @@ export default async function RecentActivity() {
     : null;
 
   return (
-    <section className="py-10 md:py-16">
-      <div className="max-w-4xl mx-auto px-4 md:px-6">
-        <div className="mb-7 flex items-baseline justify-between border-b border-[var(--color-border)] pb-3 md:mb-12 md:pb-4">
+    <section className="py-14 md:py-20">
+      <div className="max-w-3xl mx-auto px-4 md:px-6">
+        <div className="mb-8 flex items-baseline justify-between border-b border-[var(--color-border)] pb-4 md:mb-12">
           <h2
-            className="inline-flex items-center gap-2 text-xl font-bold text-[var(--color-text)] md:gap-3 md:text-3xl"
+            className="inline-flex items-center gap-2 text-2xl font-normal text-[var(--color-text)] md:gap-3 md:text-4xl"
             style={{ fontFamily: 'var(--font-serif)' }}
           >
             <SiteIcon name="notebook" alt="" className="h-5 w-5 md:h-7 md:w-7" />
@@ -42,24 +42,24 @@ export default async function RecentActivity() {
         <div className="space-y-7 md:space-y-10">
           {postsWithHtml.length > 0 ? (
             postsWithHtml.map((post) => (
-              <article key={post.slug} className="group">
+              <article key={post.slug} className="group border-b border-[var(--color-border)] pb-7 md:pb-8">
                 <Link
                   href={`/blog/${post.slug}`}
                   prefetch
                   className="block cursor-pointer transition-opacity duration-150 active:opacity-80"
                 >
-                  <header className="mb-3">
+                    <header className="mb-2">
                     <div className="flex items-center text-xs text-[var(--color-text-secondary)] uppercase tracking-widest font-medium mb-3">
                       <SiteIcon name="document" alt="" className="mr-2 h-3.5 w-3.5" />
                       <span>{post.category}</span>
                     </div>
                     <h3
-                      className="blog-card-title mb-2 text-lg font-semibold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-2xl"
+                      className="blog-card-title mb-2 text-xl font-normal text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-3xl"
                       style={{ fontFamily: 'var(--font-serif)' }}
                       dangerouslySetInnerHTML={{ __html: post.titleHtml }}
                     />
                   </header>
-                  <p className="line-clamp-2 max-w-3xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-relaxed">
+                  <p className="line-clamp-2 max-w-3xl text-[14px] leading-7 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-8">
                     {post.excerpt}
                   </p>
                 </Link>
@@ -85,13 +85,13 @@ export default async function RecentActivity() {
 
         {latestProblem ? (
           <div className="mt-9 md:mt-12">
-            <article className="group">
+            <article className="group border-b border-[var(--color-border)] pb-7 md:pb-8">
               <Link
                 href={`/problems-with-coffee/${latestProblem.slug}`}
                 prefetch
                 className="block cursor-pointer transition-opacity duration-150 active:opacity-80"
               >
-                <header className="mb-3">
+                  <header className="mb-2">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--color-text-secondary)] uppercase tracking-widest font-medium mb-3">
                     <span className="inline-flex items-center">
                       <SiteIcon name="math" alt="" className="mr-2 h-3.5 w-3.5" />
@@ -100,13 +100,13 @@ export default async function RecentActivity() {
                     {latestProblem.estimatedTime ? <span>{latestProblem.estimatedTime}</span> : null}
                   </div>
                   <h3
-                    className="latest-problem-title mb-2 text-lg font-semibold text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-2xl"
+                     className="latest-problem-title mb-2 text-xl font-normal text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:mb-4 md:text-3xl"
                     style={{ fontFamily: 'var(--font-serif)' }}
                     dangerouslySetInnerHTML={{ __html: latestProblemHtml?.title ?? '' }}
                   />
                 </header>
                 <p
-                  className="latest-problem-summary line-clamp-2 max-w-3xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-relaxed"
+                  className="latest-problem-summary line-clamp-2 max-w-3xl text-[14px] leading-7 text-[var(--color-text-secondary)] md:line-clamp-none md:text-base md:leading-8"
                   dangerouslySetInnerHTML={{
                     __html: latestProblemHtml?.shortDescription ?? '',
                   }}

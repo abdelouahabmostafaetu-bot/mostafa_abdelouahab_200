@@ -10,7 +10,7 @@ import {
   SignUpButton,
   UserButton,
 } from '@clerk/nextjs';
-import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
+import { type SiteIconName } from '@/components/ui/SiteIcon';
 
 const navLinks = [
   { href: '/', label: 'About', icon: 'home' },
@@ -22,19 +22,11 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 8);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -43,19 +35,18 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)] transition-all duration-300 ${
-        scrolled
-          ? 'md:border-[var(--color-border)] md:bg-[var(--color-bg)]/95 md:backdrop-blur-md'
-          : 'md:border-transparent md:bg-transparent'
-      }`}
+      className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)]"
     >
       <nav className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="flex h-14 items-center justify-between md:h-16">
+        <div className="flex h-16 items-center justify-between">
           <Link href="/" className="group flex flex-col leading-none">
-            <span className="text-sm font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)] sm:text-base">
+            <span
+              className="text-base text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)]"
+              style={{ fontFamily: 'var(--font-serif)' }}
+            >
               Abdelouahab Mostafa
             </span>
-            <span className="hidden sm:block mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
+            <span className="hidden sm:block mt-1 text-[11px] uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
               Mathematics Notes
             </span>
           </Link>
@@ -68,16 +59,13 @@ export default function Navbar() {
                 href={link.href}
                 className={`rounded-lg px-3 py-2 text-sm transition-all duration-150 ${
                     isActive(link.href)
-                      ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text)] font-medium'
-                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
-                  }`}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <SiteIcon name={link.icon} alt="" className="h-4 w-4" />
-                  {link.label}
-                  </span>
-                </Link>
-              ))}
+                      ? 'text-[var(--color-text)] font-medium'
+                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'
+                   }`}
+                 >
+                   {link.label}
+                 </Link>
+               ))}
             </div>
 
             <div className="ml-2 flex items-center gap-2">
@@ -127,7 +115,7 @@ export default function Navbar() {
         />
 
         <aside
-          className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-[min(17rem,82vw)] border-r border-[var(--color-border)] bg-[#080808] shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-[min(17rem,82vw)] border-r border-[var(--color-border)] bg-[var(--color-bg)] transform transition-transform duration-300 ease-in-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -142,17 +130,14 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`block rounded-md px-3 py-2 text-xs transition-colors duration-150 ${
-                  isActive(link.href)
-                    ? 'bg-[var(--color-bg-elevated)] font-medium text-[var(--color-text)]'
-                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
-                }`}
-              >
-                <span className="inline-flex items-center gap-2.5">
-                  <SiteIcon name={link.icon} alt="" className="h-3.5 w-3.5" />
-                {link.label}
-                </span>
-              </Link>
-            ))}
+                   isActive(link.href)
+                     ? 'font-medium text-[var(--color-text)]'
+                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'
+                 }`}
+               >
+                 {link.label}
+               </Link>
+             ))}
 
             <div className="mt-4 border-t border-[var(--color-border)] pt-4">
               <Show when="signed-out">
