@@ -47,12 +47,15 @@ export default function NoteCategories({ category, count }: NoteCategoriesProps)
   const info = categoryInfo[category] || categoryInfo.note;
 
   return (
-    <div className="flex items-start gap-4">
-      <div className="text-4xl">{info.icon}</div>
+    <div className="flex items-center justify-between">
       <div>
-        <h2 className="text-2xl font-bold text-white">{info.title}</h2>
-        <p className="mt-1 text-gray-400">{info.description}</p>
-        <p className="mt-2 text-sm text-gray-500">{count} items</p>
+        <h2 className="text-xl font-semibold text-[var(--color-text)] flex items-center gap-2">
+          <span>{info.icon}</span> {info.title}
+        </h2>
+        <p className="text-[12px] text-[var(--color-text-secondary)] mt-1">{info.description}</p>
+      </div>
+      <div className="text-[10px] uppercase tracking-widest text-[var(--color-text-tertiary)] font-medium">
+        {count} item{count !== 1 ? 's' : ''}
       </div>
     </div>
   );
