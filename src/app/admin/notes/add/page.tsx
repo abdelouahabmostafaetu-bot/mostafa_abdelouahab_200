@@ -129,68 +129,6 @@ export default function AddNotePage() {
                 />
               </div>
 
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-semibold text-white mb-2">Category</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                >
-                  <option value="theorem">Theorem</option>
-                  <option value="definition">Definition</option>
-                  <option value="lemma">Lemma</option>
-                  <option value="corollary">Corollary</option>
-                  <option value="conjecture">Conjecture</option>
-                  <option value="note">Note</option>
-                </select>
-              </div>
-
-              {/* Difficulty */}
-              <div>
-                <label className="block text-sm font-semibold text-white mb-2">Difficulty Level</label>
-                <select
-                  name="difficulty"
-                  value={formData.difficulty}
-                  onChange={handleInputChange}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                >
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="research">Research Level</option>
-                </select>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <label className="block text-sm font-semibold text-white mb-2">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  name="tags"
-                  value={formData.tags}
-                  onChange={handleInputChange}
-                  placeholder="e.g., number theory, proof, famous"
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                />
-              </div>
-
-              {/* Favorite */}
-              <div className="flex items-center gap-3 p-4 rounded-lg border border-gray-700 bg-gray-900/50">
-                <input
-                  type="checkbox"
-                  name="isFavorite"
-                  checked={formData.isFavorite}
-                  onChange={handleInputChange}
-                  id="isFavorite"
-                  className="h-4 w-4 rounded border-gray-700 bg-gray-900 text-blue-500 focus:ring-2 focus:ring-blue-500"
-                />
-                <label htmlFor="isFavorite" className="text-sm font-semibold text-white cursor-pointer">
-                  Mark as Favorite ⭐
-                </label>
-              </div>
-
               {/* Preview */}
               <div>
                 <label className="block text-sm font-semibold text-white mb-2">Preview (optional)</label>
@@ -204,34 +142,11 @@ export default function AddNotePage() {
                 />
               </div>
             </div>
-
-            {/* Right Column */}
-            <div className="space-y-6">
-              {/* References */}
-              <div>
-                <label className="block text-sm font-semibold text-white mb-2">References (one per line)</label>
-                <textarea
-                  name="references"
-                  value={formData.references}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Wikipedia article\nArXiv paper\nTextbook reference"
-                  rows={5}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
-                />
-              </div>
-
-              {/* Info Box */}
-              <div className="rounded-lg border border-blue-700/30 bg-blue-900/20 p-4">
-                <p className="text-xs text-blue-200">
-                  💡 <strong>Tip:</strong> Use markdown formatting in your content. LaTeX expressions like $ax^2 + bx + c$ are fully supported.
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Content Editor */}
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Content * (Markdown supported, LaTeX enabled)</label>
+            <label className="block text-sm font-semibold text-white mb-2">Content *</label>
             <AdminMarkdownEditor
               value={formData.content}
               onChange={handleContentChange}
@@ -260,3 +175,4 @@ export default function AddNotePage() {
     </main>
   );
 }
+
