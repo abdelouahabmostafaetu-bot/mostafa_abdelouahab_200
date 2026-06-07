@@ -1,134 +1,173 @@
-import { Metadata } from 'next';
-import { connectToDatabase } from '@/lib/mongodb';
-import { Note } from '@/lib/models/note';
-import NoteCard from '@/components/notes/NoteCard';
-import NoteCategories from '@/components/notes/NoteCategories';
-import Link from 'next/link';
-import { getCurrentAdminUser } from '@/lib/admin';
-import SiteIcon from '@/components/ui/SiteIcon';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Note } from "@/lib/models/note";
+import NoteCard from "@/components/notes/NoteCard";
+import { getCurrentAdminUser } from "@/lib/admin";
+import SiteIcon from "@/components/ui/SiteIcon";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: 'My Notes - Theorems & Definitions',
-  description: 'A collection of elegant theorems, definitions, and mathematical notes.',
+  title: "My Notes",
+  description:
+    "A collection of theorems, definitions, lemmas, and mathematical notes.",
+};
+
+const CATEGORIES = [
+  "theorem",
+  "definition",
+  "lemma",
+  "corollary",
+  "conjecture",
+  "note",
+] as const;
+
+const CATEGORY_LABELS: Record<string, string> = {
+  theorem: "Theorems",
+  definition: "Definitions",
+  lemma: "Lemmas",
+  corollary: "Corollaries",
+  conjecture: "Conjectures",
+  note: "Notes",
+};
+
+type FormattedNote = {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  preview?: string;
+  difficulty: string;
+  isFavorite: boolean;
+  tags: string[];
 };
 
 export default async function NotesPage() {
-  await connectToDatabase();
   const adminUser = await getCurrentAdminUser();
 
+  let notes: FormattedNote[] = [];
+  let fetchError = false;
+
   try {
-    // Fetch all published notes sorted by favorites first, then by date
-    const notes = await Note.find({ published: true })
+    await connectToDatabase();
+
+    const raw = await Note.find({ published: true })
       .sort({ isFavorite: -1, createdAt: -1 })
       .lean();
 
-    const formattedNotes = notes.map((note) => ({
-      ...note,
-      id: note._id,
-      _id: undefined,
+    notes = raw.map((n) => ({
+      id: String(n._id),
+      title: String(n.title ?? ""),
+      slug: String(n.slug ?? ""),
+      category: String(n.category ?? "note"),
+      preview: n.preview ? String(n.preview) : undefined,
+      difficulty: String(n.difficulty ?? "intermediate"),
+      isFavorite: Boolean(n.isFavorite),
+      tags: Array.isArray(n.tags) ? (n.tags as string[]) : [],
     }));
+  } catch (err) {
+    console.error("Notes: DB error:", err);
+    fetchError = true;
+  }
 
-    // Group notes by category
-    const categories = ['theorem', 'definition', 'lemma', 'corollary', 'conjecture', 'note'];
-    const groupedNotes = categories.reduce(
-      (acc, category) => {
-        acc[category] = formattedNotes.filter((note) => note.category === category);
-        return acc;
-      },
-      {} as Record<string, any[]>
-    );
+  const favorites = notes.filter((n) => n.isFavorite);
 
-    return (
-      <div className="pt-20 pb-20">
-        <div className="max-w-5xl mx-auto px-4 md:px-6">
-          <div className="mb-12">
-             <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] md:text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-2">
-                  <SiteIcon name="book" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
-                  Mathematical Collection
-                </p>
-                <h1
-                  className="text-2xl md:text-4xl font-semibold text-[var(--color-text)] mb-3"
-                  style={{ fontFamily: 'var(--font-serif)' }}
-                >
-                  My Notes & Theorems
-                </h1>
-                <p className="max-w-2xl text-[12px] md:text-sm leading-6 md:leading-7 text-[var(--color-text-secondary)]">
-                  {formattedNotes.length} note{formattedNotes.length !== 1 ? 's' : ''} &middot; {formattedNotes.filter((n) => n.isFavorite).length} favorites
-                </p>
-              </div>
+  const grouped = CATEGORIES.reduce<Record<string, FormattedNote[]>>(
+    (acc, cat) => {
+      acc[cat] = notes.filter((n) => n.category === cat);
+      return acc;
+    },
+    {},
+  );
 
-              {adminUser ? (
-                <Link
-                  href="/admin/notes"
-                  className="inline-flex items-center rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                >
-                  <SiteIcon name="settings" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
-                  Manage Notes
-                </Link>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Content */}
+  return (
+    <div className="pt-20 pb-20">
+      <div className="mx-auto max-w-4xl px-4 md:px-6">
+        {/* ── Header ── */}
+        <div className="mb-10 flex flex-wrap items-start justify-between gap-4 border-b border-[var(--color-border)] pb-6">
           <div>
-            {formattedNotes.length > 0 ? (
-              <div className="space-y-16">
-                {/* Favorites Section */}
-                {formattedNotes.filter((n) => n.isFavorite).length > 0 && (
-                  <section>
-                    <div className="mb-6 border-b border-[var(--color-border)] pb-2 flex items-center justify-between">
-                      <h2 className="text-xl font-semibold text-[var(--color-text)] flex items-center gap-2">
-                         <span className="text-xl">⭐</span> Favorite Notes
-                      </h2>
-                    </div>
-
-                    <div className="grid gap-6 sm:grid-cols-2">
-                      {formattedNotes
-                        .filter((n) => n.isFavorite)
-                        .map((note) => (
-                          <NoteCard key={note.id} note={note} />
-                        ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* By Category */}
-                {categories.map(
-                  (category) =>
-                    groupedNotes[category]?.length > 0 && (
-                      <section key={category}>
-                        <div className="mb-6 border-b border-[var(--color-border)] pb-2">
-                          <NoteCategories category={category} count={groupedNotes[category].length} />
-                        </div>
-
-                        <div className="grid gap-6 sm:grid-cols-2">
-                          {groupedNotes[category].map((note) => (
-                            <NoteCard key={note.id} note={note} />
-                          ))}
-                        </div>
-                      </section>
-                    )
-                )}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-20 text-center">
-                <p className="text-sm text-[var(--color-text-secondary)]">No notes available yet.</p>
-              </div>
+            <h1
+              className="text-2xl font-semibold text-[var(--color-text)] md:text-4xl"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
+              My Notes
+            </h1>
+            {!fetchError && (
+              <p className="mt-1.5 text-xs text-[var(--color-text-tertiary)]">
+                {notes.length} note{notes.length !== 1 ? "s" : ""}
+                {favorites.length > 0
+                  ? ` · ${favorites.length} favourite${favorites.length !== 1 ? "s" : ""}`
+                  : ""}
+              </p>
             )}
           </div>
+
+          {adminUser && (
+            <Link
+              href="/admin/notes"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            >
+              <SiteIcon name="settings" alt="" className="h-3.5 w-3.5" />
+              Manage
+            </Link>
+          )}
         </div>
+
+        {/* ── Error state ── */}
+        {fetchError && (
+          <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-10 text-center text-sm text-[var(--color-text-secondary)]">
+            Could not load notes — database unavailable.
+          </div>
+        )}
+
+        {/* ── Empty state ── */}
+        {!fetchError && notes.length === 0 && (
+          <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-16 text-center text-sm text-[var(--color-text-secondary)]">
+            No notes yet.
+          </div>
+        )}
+
+        {/* ── Content ── */}
+        {notes.length > 0 && (
+          <div className="space-y-12">
+            {/* Favourites */}
+            {favorites.length > 0 && (
+              <section>
+                <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-[var(--color-text)]">
+                  <span aria-hidden="true">⭐</span> Favourites
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {favorites.map((note) => (
+                    <NoteCard key={note.id} note={note} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* By category */}
+            {CATEGORIES.map((cat) => {
+              const items = grouped[cat];
+              if (!items || items.length === 0) return null;
+              return (
+                <section key={cat}>
+                  <h2 className="mb-5 flex items-center justify-between border-b border-[var(--color-border)] pb-2 text-base font-semibold text-[var(--color-text)]">
+                    <span>{CATEGORY_LABELS[cat]}</span>
+                    <span className="text-xs font-normal text-[var(--color-text-tertiary)]">
+                      {items.length}
+                    </span>
+                  </h2>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {items.map((note) => (
+                      <NoteCard key={note.id} note={note} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
       </div>
-    );
-  } catch (error) {
-    console.error('Error fetching notes:', error);
-    return (
-      <div className="pt-20 pb-20 max-w-5xl mx-auto px-4 md:px-6 text-center">
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-20 text-center">
-          <p className="text-sm text-[var(--color-text-secondary)]">Failed to load notes.</p>
-        </div>
-      </div>
-    );
-  }
+    </div>
+  );
 }
