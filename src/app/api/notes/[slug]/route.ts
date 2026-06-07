@@ -1,142 +1,156 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { Note } from '@/lib/models/note';
-import { requireAdminApi } from '@/lib/admin';
-import { checkRateLimit } from '@/lib/security';
-import { slugify } from '@/lib/utils';
+import { NextRequest, NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Note } from "@/lib/models/note";
+import { requireAdminApi } from "@/lib/admin";
+import { checkRateLimit } from "@/lib/security";
+import { slugify } from "@/lib/utils";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+type RouteContext = { params: Promise<{ slug: string }> };
+
+/* ─── GET ──────────────────────────────────────────────────────────────── */
+
+export async function GET(_request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
     await connectToDatabase();
 
-    const note = await Note.findOne({ slug: slug, published: true }).lean();
-
+    const note = await Note.findOne({ slug, published: true }).lean();
     if (!note) {
-      return NextResponse.json({ success: false, error: 'Note not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Note not found" },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          ...note,
-          id: note._id,
-          _id: undefined,
-        },
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      success: true,
+      data: { ...note, id: String(note._id), _id: undefined },
+    });
   } catch (error) {
-    console.error('Error fetching note:', error);
+    console.error("Note GET error:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch note' },
-      { status: 500 }
+      { success: false, error: "Failed to fetch note" },
+      { status: 500 },
     );
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+/* ─── PUT ──────────────────────────────────────────────────────────────── */
+
+export async function PUT(request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
-    const rateLimitResponse = checkRateLimit(request, 'notes:update', 10);
-    if (rateLimitResponse) {
-      return rateLimitResponse;
-    }
+
+    const rateLimitResponse = checkRateLimit(request, "notes:update", 10);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const adminResponse = await requireAdminApi();
-    if (adminResponse) {
-      return adminResponse;
-    }
+    if (adminResponse) return adminResponse;
+
     await connectToDatabase();
 
-    const body = await request.json();
-    const { title, content, category, tags, difficulty, isFavorite, preview, references } = body;
-
-    const note = await Note.findOne({ slug: slug });
-
+    /* Find by original slug — no published filter so drafts can also be edited */
+    const note = await Note.findOne({ slug });
     if (!note) {
-      return NextResponse.json({ success: false, error: 'Note not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Note not found" },
+        { status: 404 },
+      );
     }
 
-    // Update fields
-    if (title?.trim()) {
+    const body = (await request.json()) as Record<string, unknown>;
+    const {
+      title,
+      content,
+      category,
+      tags,
+      difficulty,
+      isFavorite,
+      preview,
+      references,
+    } = body;
+
+    /* Title + slug update */
+    if (typeof title === "string" && title.trim()) {
       note.title = title.trim();
-      const newSlug = slugify(title);
+      const newSlug = slugify(title.trim());
       if (newSlug !== note.slug) {
-        const existing = await Note.findOne({ slug: newSlug });
-        if (existing && existing._id.toString() !== note._id.toString()) {
+        const conflict = await Note.findOne({ slug: newSlug });
+        if (conflict && String(conflict._id) !== String(note._id)) {
           return NextResponse.json(
-            { success: false, error: 'A note with this title already exists' },
-            { status: 400 }
+            { success: false, error: "A note with this title already exists" },
+            { status: 400 },
           );
         }
         note.slug = newSlug;
       }
     }
 
-    if (content?.trim()) note.content = content.trim();
-    if (category) note.category = category;
-    if (Array.isArray(tags)) note.tags = tags.filter((t: any) => typeof t === 'string').map((t: string) => t.trim());
-    if (difficulty) note.difficulty = difficulty;
-    if (typeof isFavorite === 'boolean') note.isFavorite = isFavorite;
-    if (preview?.trim()) note.preview = preview.trim();
-    if (Array.isArray(references)) note.references = references.filter((r: any) => typeof r === 'string');
+    if (typeof content === "string" && content.trim())
+      note.content = content.trim();
+    if (typeof category === "string" && category) note.category = category;
+    if (typeof difficulty === "string" && difficulty)
+      note.difficulty = difficulty;
+    if (typeof preview === "string" && preview.trim())
+      note.preview = preview.trim();
+    if (typeof isFavorite === "boolean") note.isFavorite = isFavorite;
+
+    if (Array.isArray(tags)) {
+      note.tags = (tags as string[])
+        .filter((t) => typeof t === "string")
+        .map((t) => t.trim());
+    }
+    if (Array.isArray(references)) {
+      note.references = (references as string[]).filter(
+        (r) => typeof r === "string",
+      );
+    }
 
     await note.save();
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          ...note.toObject(),
-          id: note._id,
-          _id: undefined,
-        },
-      },
-      { status: 200 }
-    );
-  } catch (error: any) {
-    console.error('Error updating note:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error?.message || 'Failed to update note',
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: true,
+      data: { ...note.toObject(), id: String(note._id), _id: undefined },
+    });
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to update note";
+    console.error("Note PUT error:", error);
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+/* ─── DELETE ───────────────────────────────────────────────────────────── */
+
+export async function DELETE(request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
-    const rateLimitResponse = checkRateLimit(request, 'notes:delete', 10);
-    if (rateLimitResponse) {
-      return rateLimitResponse;
-    }
+
+    const rateLimitResponse = checkRateLimit(request, "notes:delete", 10);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const adminResponse = await requireAdminApi();
-    if (adminResponse) {
-      return adminResponse;
-    }
+    if (adminResponse) return adminResponse;
+
     await connectToDatabase();
 
-    const result = await Note.deleteOne({ slug: slug });
-
+    const result = await Note.deleteOne({ slug });
     if (result.deletedCount === 0) {
-      return NextResponse.json({ success: false, error: 'Note not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Note not found" },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json(
-      { success: true, message: 'Note deleted successfully' },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      success: true,
+      message: "Note deleted successfully",
+    });
   } catch (error) {
-    console.error('Error deleting note:', error);
+    console.error("Note DELETE error:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete note' },
-      { status: 500 }
+      { success: false, error: "Failed to delete note" },
+      { status: 500 },
     );
   }
 }
