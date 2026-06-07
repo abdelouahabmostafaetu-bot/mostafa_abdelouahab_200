@@ -55,8 +55,6 @@ export default async function NotesPage() {
                   My Notes & Theorems
                 </h1>
                 <p className="max-w-2xl text-[12px] md:text-sm leading-6 md:leading-7 text-[var(--color-text-secondary)]">
-                  A carefully curated collection of elegant theorems, definitions, and mathematical insights. Each note is crafted with precision.
-                  <br />
                   {formattedNotes.length} note{formattedNotes.length !== 1 ? 's' : ''} &middot; {formattedNotes.filter((n) => n.isFavorite).length} favorites
                 </p>
               </div>

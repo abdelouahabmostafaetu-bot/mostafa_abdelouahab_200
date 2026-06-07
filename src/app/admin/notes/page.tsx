@@ -30,23 +30,9 @@ export default async function AdminNotesPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Header */}
-      <div className="border-b border-gray-700 bg-black/50 backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 p-3">
-              <span className="text-2xl">📚</span>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">My Notes Management</h1>
-              <p className="mt-2 text-gray-400">Add, edit, or remove theorems and notes</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Action Cards */}
-      <div className="mx-auto max-w-7xl px-6 py-12">
+      <div className="mx-auto max-w-7xl px-6 py-12 pt-24">
+        <h1 className="text-3xl font-bold text-white mb-8 text-center" style={{ fontFamily: 'var(--font-serif)' }}>Manage Notes</h1>
         <div className="grid gap-6 md:grid-cols-3">
           {actions.map((action) => (
             <a
@@ -83,15 +69,8 @@ export default async function AdminNotesPage() {
         </div>
       </div>
 
-      {/* Info Section */}
-      <div className="mx-auto max-w-7xl px-6 pb-12">
-        <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-6">
-          <h2 className="text-lg font-semibold text-white mb-3">About Notes</h2>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            Organize and showcase your favorite theorems, definitions, lemmas, and mathematical notes. Each note supports rich formatting with LaTeX, can be tagged for easy discovery, and marked as favorites for quick access.
-          </p>
-        </div>
-      </div>
-    </main>
+      </main>
   );
 }
+
+

@@ -525,22 +525,6 @@ export default function AdminMarkdownEditor({
         >
           <Code2 size={16} />
         </button>
-        <button
-          type="button"
-          onClick={() => insertSnippet('$', '$', 'x^2+1')}
-          className="rounded px-1.5 py-1 font-mono text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg)]"
-          title="Inline Math"
-        >
-          $
-        </button>
-        <button
-          type="button"
-          onClick={() => insertSnippet('$$\n', '\n$$', '\\int_0^1 f(x)\\,dx')}
-          className="rounded px-1.5 py-1 font-mono text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg)]"
-          title="Display Math"
-        >
-          $$
-        </button>
         <div className="mx-1 h-4 w-px bg-[var(--color-border)]" />
         <button
           type="button"
@@ -714,3 +698,4 @@ export default function AdminMarkdownEditor({
     </div>
   );
 }
+
