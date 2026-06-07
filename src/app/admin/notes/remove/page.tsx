@@ -1,187 +1,174 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
+
+type NoteItem = {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  isFavorite: boolean;
+};
 
 export default function RemoveNotePage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [searching, setSearching] = useState(false);
-  const [notes, setNotes] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [notes, setNotes] = useState<NoteItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadErr, setLoadErr] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(
+    null,
+  ); /* slug being deleted */
+  const [confirm, setConfirm] = useState<string | null>(
+    null,
+  ); /* slug pending confirm */
+  const [deleteErr, setDeleteErr] = useState("");
 
-  const searchNotes = async (query: string) => {
-    if (!query.trim()) {
-      setNotes([]);
-      return;
-    }
-
-    setSearching(true);
-    try {
-      const response = await fetch(`/api/notes?search=${encodeURIComponent(query)}&limit=50&admin=1`);
-      const data = await response.json();
-
-      if (data.success) {
-        setNotes(data.data || []);
-      }
-    } catch (error) {
-      console.error('Error searching notes:', error);
-      toast.error('Failed to search notes');
-    } finally {
-      setSearching(false);
-    }
-  };
+  useEffect(() => {
+    fetch("/api/notes?limit=100")
+      .then((r) => r.json())
+      .then((d: { success?: boolean; data?: NoteItem[] }) => {
+        setNotes(d.data ?? []);
+      })
+      .catch(() => setLoadErr("Could not load notes."))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleDelete = async (slug: string) => {
-    setLoading(true);
+    setDeleting(slug);
+    setDeleteErr("");
 
     try {
-      const response = await fetch(`/api/notes/${slug}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ admin: 1 }),
+      const res = await fetch(`/api/notes/${slug}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
       });
 
-      const data = await response.json();
+      const data = (await res.json()) as { success?: boolean; error?: string };
+      if (!res.ok || !data.success)
+        throw new Error(data.error ?? "Failed to delete.");
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete note');
-      }
-
-      toast.success('Note deleted successfully');
       setNotes((prev) => prev.filter((n) => n.slug !== slug));
-      setConfirmDelete(null);
-      router.refresh();
-    } catch (error: any) {
-      console.error('Error:', error);
-      toast.error(error.message || 'Failed to delete note');
+      setConfirm(null);
+    } catch (err) {
+      setDeleteErr(err instanceof Error ? err.message : "Delete failed.");
     } finally {
-      setLoading(false);
+      setDeleting(null);
     }
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Header */}
-      <div className="border-b border-gray-700 bg-black/50 backdrop-blur-sm">
-        <div className="mx-auto max-w-6xl px-6 py-8">
-          <a href="/admin/notes" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
-            <span>←</span> Back
-          </a>
-          <h1 className="text-3xl font-bold text-white">Remove Note</h1>
-          <p className="mt-2 text-gray-400">Delete notes from your collection</p>
+    <div className="min-h-screen pt-20 pb-20">
+      <div className="mx-auto max-w-3xl px-4 md:px-6">
+        {/* Header */}
+        <div className="mb-8 border-b border-[var(--color-border)] pb-6">
+          <Link
+            href="/admin/notes"
+            className="mb-4 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors"
+          >
+            <ArrowLeft size={13} />
+            Back
+          </Link>
+          <h1
+            className="text-2xl font-semibold text-[var(--color-text)]"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            Remove Note
+          </h1>
+          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            Deletion is permanent and cannot be undone.
+          </p>
         </div>
-      </div>
 
-      {/* Warning Banner */}
-      <div className="mx-auto max-w-6xl px-6 py-6">
-        <div className="rounded-lg border border-red-700/30 bg-red-900/20 p-4 flex gap-3">
-          <span className="text-xl flex-shrink-0">⚠️</span>
-          <div>
-            <p className="text-sm font-semibold text-red-200">Permanent Action</p>
-            <p className="text-xs text-red-300 mt-1">
-              Deleting a note is permanent and cannot be undone. Please proceed with caution.
-            </p>
+        {/* Error from delete */}
+        {deleteErr && (
+          <p className="mb-5 rounded-lg border border-red-500/30 bg-red-950/15 px-4 py-2.5 text-sm text-red-300">
+            {deleteErr}
+          </p>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="flex items-center gap-2 py-10 text-sm text-[var(--color-text-secondary)]">
+            <Loader2 size={14} className="animate-spin" />
+            Loading notes…
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Content */}
-      <div className="mx-auto max-w-6xl px-6 pb-12">
-        <div className="space-y-6">
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-semibold text-white mb-2">Search Notes to Delete</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  searchNotes(e.target.value);
-                }}
-                placeholder="Search by title or content..."
-                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white placeholder-gray-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
-              />
-              {searching && <span className="absolute right-4 top-3 text-red-400">⟳</span>}
-            </div>
-          </div>
+        {/* Load error */}
+        {loadErr && !loading && (
+          <p className="py-8 text-sm text-red-400">{loadErr}</p>
+        )}
 
-          {/* Notes List */}
-          {notes.length > 0 && (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-400">Found {notes.length} results</p>
+        {/* Empty */}
+        {!loading && !loadErr && notes.length === 0 && (
+          <p className="py-10 text-center text-sm text-[var(--color-text-secondary)]">
+            No notes yet.
+          </p>
+        )}
 
-              {notes.map((note) => (
-                <div
-                  key={note.id}
-                  className="rounded-lg border border-gray-700 bg-gray-800/50 p-4 hover:border-gray-600 transition-all"
+        {/* Notes list */}
+        <div className="space-y-2">
+          {notes.map((note) => (
+            <div
+              key={note.id}
+              className="flex items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
+            >
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+                  {note.category}
+                  {note.isFavorite ? " ⭐" : ""}
+                </p>
+                <p
+                  className="truncate text-sm font-medium text-[var(--color-text)]"
+                  style={{ fontFamily: "var(--font-serif)" }}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-white">{note.title}</h3>
-                      <p className="mt-1 text-sm text-gray-400 line-clamp-2">{note.preview}</p>
-                      <div className="mt-2 flex gap-2 flex-wrap">
-                        <span className="text-xs px-2 py-1 rounded bg-gray-700 text-gray-300">
-                          {note.category}
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded bg-gray-700 text-gray-300">
-                          {note.difficulty}
-                        </span>
-                        {note.isFavorite && (
-                          <span className="text-xs px-2 py-1 rounded bg-yellow-900/50 text-yellow-200">
-                            ⭐ Favorite
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                  {note.title}
+                </p>
+              </div>
 
-                    {confirmDelete === note.slug ? (
-                      <div className="flex gap-2 flex-shrink-0">
-                        <button
-                          onClick={() => handleDelete(note.slug)}
-                          disabled={loading}
-                          className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {loading ? 'Deleting...' : 'Confirm Delete'}
-                        </button>
-                        <button
-                          onClick={() => setConfirmDelete(null)}
-                          disabled={loading}
-                          className="px-4 py-2 rounded-lg border border-gray-700 text-white text-sm font-semibold hover:bg-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+              {/* Actions */}
+              {confirm === note.slug ? (
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(note.slug)}
+                    disabled={deleting === note.slug}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-600/90 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  >
+                    {deleting === note.slug ? (
+                      <Loader2 size={12} className="animate-spin" />
                     ) : (
-                      <button
-                        onClick={() => setConfirmDelete(note.slug)}
-                        className="flex-shrink-0 px-4 py-2 rounded-lg bg-red-900/30 hover:bg-red-900/50 text-red-300 hover:text-red-200 text-sm font-semibold transition-all border border-red-700/50 hover:border-red-700"
-                      >
-                        🗑️ Delete
-                      </button>
+                      <Trash2 size={12} />
                     )}
-                  </div>
+                    {deleting === note.slug ? "Deleting…" : "Confirm"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirm(null)}
+                    disabled={deleting === note.slug}
+                    className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
                 </div>
-              ))}
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirm(note.slug);
+                    setDeleteErr("");
+                  }}
+                  className="shrink-0 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:border-red-500/50 hover:text-red-400"
+                >
+                  Delete
+                </button>
+              )}
             </div>
-          )}
-
-          {searchQuery && notes.length === 0 && !searching && (
-            <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-8 text-center">
-              <p className="text-gray-400">No notes found matching your search</p>
-            </div>
-          )}
-
-          {!searchQuery && (
-            <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-8 text-center">
-              <p className="text-gray-400">Start typing to search for notes to delete</p>
-            </div>
-          )}
+          ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 }
