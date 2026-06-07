@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { Mail } from 'lucide-react';
-import SiteIcon from '@/components/ui/SiteIcon';
+import Link from "next/link";
+import { Mail } from "lucide-react";
+import SiteIcon from "@/components/ui/SiteIcon";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -14,7 +14,8 @@ export default function Footer() {
               Abdelouahab Mostafa
             </p>
             <p className="max-w-sm text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm sm:leading-6">
-              Notes, articles, and research-oriented writing in mathematics from Mila, Algeria.
+              Notes, articles, and research-oriented writing in mathematics from
+              Mila, Algeria.
             </p>
           </div>
 
@@ -24,6 +25,12 @@ export default function Footer() {
               className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
             >
               Blog
+            </Link>
+            <Link
+              href="/cv"
+              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
+            >
+              CV
             </Link>
             <Link
               href="/contact"
@@ -46,7 +53,11 @@ export default function Footer() {
               className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-2.5 py-1.5 text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] sm:gap-2 sm:rounded-lg sm:px-3 sm:py-2"
               aria-label="GitHub"
             >
-              <SiteIcon name="github" alt="" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <SiteIcon
+                name="github"
+                alt=""
+                className="h-3.5 w-3.5 sm:h-4 sm:w-4"
+              />
               GitHub
             </a>
           </div>
