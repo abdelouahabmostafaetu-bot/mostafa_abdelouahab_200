@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { connectDB } from '@/lib/mongodb';
+import { connectToDatabase } from '@/lib/mongodb';
 import { Note } from '@/lib/models/note';
 import MDXContent from '@/components/MDXContent';
 import Link from 'next/link';
@@ -12,7 +12,7 @@ interface NotePageProps {
 }
 
 export async function generateMetadata({ params }: NotePageProps): Promise<Metadata> {
-  await connectDB();
+  await connectToDatabase();
   const note = await Note.findOne({ slug: params.slug, published: true }).lean();
 
   if (!note) {
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: NotePageProps): Promise<Metad
 }
 
 export default async function NoteDetailPage({ params }: NotePageProps) {
-  await connectDB();
+  await connectToDatabase();
   const note = await Note.findOne({ slug: params.slug, published: true }).lean();
 
   if (!note) {
@@ -133,7 +133,7 @@ export default async function NoteDetailPage({ params }: NotePageProps) {
           <div className="mb-12">
             <h3 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wide">Tags</h3>
             <div className="flex flex-wrap gap-2">
-              {note.tags.map((tag) => (
+              {note.tags.map((tag: string) => (
                 <span
                   key={tag}
                   className="inline-flex items-center gap-1 rounded-full border border-gray-700 bg-gray-800/50 px-3 py-1 text-sm text-gray-300 hover:border-blue-500 hover:text-blue-300 transition-all"
@@ -150,7 +150,7 @@ export default async function NoteDetailPage({ params }: NotePageProps) {
           <div className="mb-12">
             <h3 className="text-lg font-semibold text-white mb-4">References</h3>
             <ul className="space-y-2">
-              {note.references.map((ref, idx) => (
+              {note.references.map((ref: string, idx: number) => (
                 <li key={idx} className="flex items-start gap-3">
                   <span className="text-gray-500 mt-1">•</span>
                   <span className="text-gray-300">{ref}</span>

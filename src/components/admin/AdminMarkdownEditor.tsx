@@ -41,7 +41,7 @@ type UploadResponse = {
 };
 
 type AdminMarkdownEditorProps = {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -456,9 +456,11 @@ export default function AdminMarkdownEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">
-          {label}
-        </span>
+        {label && (
+          <span className="text-sm font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">
+            {label}
+          </span>
+        )}
         <div className="flex items-center gap-2">
           <button
             type="button"

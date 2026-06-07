@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { connectDB } from '@/lib/mongodb';
+import { connectToDatabase } from '@/lib/mongodb';
 import { Note } from '@/lib/models/note';
 import NoteCard from '@/components/notes/NoteCard';
 import NoteCategories from '@/components/notes/NoteCategories';
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NotesPage() {
-  await connectDB();
+  await connectToDatabase();
 
   try {
     // Fetch all published notes sorted by favorites first, then by date

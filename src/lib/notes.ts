@@ -1,6 +1,6 @@
 import { INote } from '@/lib/models/note';
 
-export function mapNoteSummary(note: INote & { _id: any }): any {
+export function mapNoteSummary(note: any): any {
   return {
     id: note._id?.toString?.() || note.id,
     title: note.title,
@@ -15,7 +15,7 @@ export function mapNoteSummary(note: INote & { _id: any }): any {
   };
 }
 
-export function mapNoteDetail(note: INote & { _id: any }): any {
+export function mapNoteDetail(note: any): any {
   return {
     id: note._id?.toString?.() || note.id,
     title: note.title,

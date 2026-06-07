@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { requireAdmin } from '@/lib/security';
+import { requireAdmin } from '@/lib/admin';
 
 export default async function AdminNotesPage() {
   await requireAdmin();

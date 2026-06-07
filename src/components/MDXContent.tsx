@@ -1,11 +1,12 @@
 import React from 'react';
-import { marked } from 'marked';
 
 interface MDXContentProps {
   content: string;
 }
 
 async function renderMarkdown(content: string): Promise<string> {
+  // Dynamic import to handle marked module
+  const { marked } = await import('marked');
   return marked(content || '', {
     breaks: true,
     gfm: true,

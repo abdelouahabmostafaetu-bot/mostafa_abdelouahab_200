@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
+import { connectToDatabase } from '@/lib/mongodb';
 import { Note } from '@/lib/models/note';
-import { requireAdminApi } from '@/lib/security';
-import { checkRateLimit } from '@/lib/admin';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit } from '@/lib/security';
 import { slugify } from '@/lib/utils';
 
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    await connectDB();
+    const { slug } = await params;
+    await connectToDatabase();
 
-    const note = await Note.findOne({ slug: params.slug, published: true }).lean();
+    const note = await Note.findOne({ slug: slug, published: true }).lean();
 
     if (!note) {
       return NextResponse.json({ success: false, error: 'Note not found' }, { status: 404 });
@@ -35,22 +36,24 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    if (!checkRateLimit(request)) {
-      return NextResponse.json(
-        { success: false, error: 'Too many requests' },
-        { status: 429 }
-      );
+    const { slug } = await params;
+    const rateLimitResponse = checkRateLimit(request, 'notes:update', 10);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
-    await requireAdminApi(request);
-    await connectDB();
+    const adminResponse = await requireAdminApi();
+    if (adminResponse) {
+      return adminResponse;
+    }
+    await connectToDatabase();
 
     const body = await request.json();
     const { title, content, category, tags, difficulty, isFavorite, preview, references } = body;
 
-    const note = await Note.findOne({ slug: params.slug });
+    const note = await Note.findOne({ slug: slug });
 
     if (!note) {
       return NextResponse.json({ success: false, error: 'Note not found' }, { status: 404 });
@@ -105,19 +108,21 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    if (!checkRateLimit(request)) {
-      return NextResponse.json(
-        { success: false, error: 'Too many requests' },
-        { status: 429 }
-      );
+    const { slug } = await params;
+    const rateLimitResponse = checkRateLimit(request, 'notes:delete', 10);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
-    await requireAdminApi(request);
-    await connectDB();
+    const adminResponse = await requireAdminApi();
+    if (adminResponse) {
+      return adminResponse;
+    }
+    await connectToDatabase();
 
-    const result = await Note.deleteOne({ slug: params.slug });
+    const result = await Note.deleteOne({ slug: slug });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ success: false, error: 'Note not found' }, { status: 404 });

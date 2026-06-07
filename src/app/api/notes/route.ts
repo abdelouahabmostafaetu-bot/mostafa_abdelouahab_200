@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
+import { connectToDatabase } from '@/lib/mongodb';
 import { Note } from '@/lib/models/note';
-import { requireAdminApi } from '@/lib/security';
-import { checkRateLimit } from '@/lib/admin';
+import { requireAdminApi } from '@/lib/admin';
+import { checkRateLimit } from '@/lib/security';
 import { slugify } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
 
-    await connectDB();
+    await connectToDatabase();
 
     let query: any = { published };
     if (favorite) query.isFavorite = true;
@@ -63,15 +63,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!checkRateLimit(request)) {
-      return NextResponse.json(
-        { success: false, error: 'Too many requests' },
-        { status: 429 }
-      );
+    const rateLimitResponse = checkRateLimit(request, 'notes:create', 10);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
-    await requireAdminApi(request);
-    await connectDB();
+    const adminResponse = await requireAdminApi();
+    if (adminResponse) {
+      return adminResponse;
+    }
+    await connectToDatabase();
 
     const body = await request.json();
     const { title, content, category, tags, difficulty, isFavorite, preview, references } = body;
