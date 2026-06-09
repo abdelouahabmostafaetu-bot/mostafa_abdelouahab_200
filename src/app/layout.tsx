@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Serif_Display, Inter } from 'next/font/google';
+import { DM_Serif_Display, Inter, Caveat } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import 'katex/dist/katex.min.css';
 import '@/styles/globals.css';
@@ -10,51 +10,58 @@ import BirthdayCelebration from '@/components/BirthdayCelebration';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const dmSerif = DM_Serif_Display({
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  display: 'swap',
-  variable: '--font-dm-serif',
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-dm-serif",
 });
 
 const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-caveat",
 });
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
-  themeColor: '#0f0e0d',
+  themeColor: "#0f0e0d",
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.mostafaabdelouahab.me'),
+  metadataBase: new URL("https://www.mostafaabdelouahab.me"),
   title: {
-    default: 'Abdelouahab Mostafa — Mathematics Researcher',
-    template: '%s | Abdelouahab Mostafa',
+    default: "Abdelouahab Mostafa — Mathematics Researcher",
+    template: "%s | Abdelouahab Mostafa",
   },
   description:
     "Personal academic website of Abdelouahab Mostafa, Master student in Fundamental Mathematics at the University of Mila, Algeria. Research in dynamical systems, analysis, and topology.",
   keywords: [
-    'mathematics',
-    'dynamical systems',
-    'topology',
-    'analysis',
-    'University of Mila',
-    'Algeria',
-    'research',
+    "mathematics",
+    "dynamical systems",
+    "topology",
+    "analysis",
+    "University of Mila",
+    "Algeria",
+    "research",
   ],
-  authors: [{ name: 'Abdelouahab Mostafa' }],
+  authors: [{ name: "Abdelouahab Mostafa" }],
   openGraph: {
-    title: 'Abdelouahab Mostafa — Mathematics Researcher',
+    title: "Abdelouahab Mostafa — Mathematics Researcher",
     description:
       "Personal academic website of Abdelouahab Mostafa, Master student in Fundamental Mathematics.",
-    url: 'https://www.mostafaabdelouahab.me',
-    siteName: 'Abdelouahab Mostafa',
-    locale: 'en_US',
-    type: 'website',
+    url: "https://www.mostafaabdelouahab.me",
+    siteName: "Abdelouahab Mostafa",
+    locale: "en_US",
+    type: "website",
   },
 };
 
@@ -66,7 +73,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSerif.variable} ${inter.variable}`}
+      className={`${dmSerif.variable} ${inter.variable} ${caveat.variable}`}
       suppressHydrationWarning
     >
       <head>

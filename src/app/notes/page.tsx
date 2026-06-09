@@ -10,9 +10,9 @@ import { Plus } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "My Notebooks",
+  title: "Research Journal",
   description:
-    "A collection of mathematical notebooks covering real analysis, algebra, topology and more.",
+    "A personal collection of PhD research notebooks — theories, theorems, definitions, and observations in mathematics.",
 };
 
 type NotebookWithCount = {
@@ -53,48 +53,46 @@ async function getNotebooks(): Promise<NotebookWithCount[]> {
 function NotebookCard({ notebook }: { notebook: NotebookWithCount }) {
   return (
     <Link
-      href={`/notes/${notebook.slug}`}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] transition-all duration-200 hover:border-[var(--color-accent)]/40 hover:shadow-lg hover:shadow-black/20"
+      href={`/notes/notebook/${notebook.slug}`}
+      className="notebook-cover-card group"
     >
-      {/* Colored spine */}
+      {/* Colored accent strip at top */}
       <div
-        className="h-2 w-full"
-        style={{ backgroundColor: notebook.color }}
+        style={{
+          height: '3px',
+          background: `linear-gradient(90deg, transparent 18px, ${notebook.color} 18px, ${notebook.color} 100%)`,
+        }}
         aria-hidden="true"
       />
 
       {/* Cover content */}
-      <div className="flex flex-1 flex-col p-5">
+      <div className="notebook-cover-content">
         {/* Subject badge */}
-        <p className="mb-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-tertiary)]">
+        <p className="notebook-cover-subject">
           {notebook.subject}
         </p>
 
         {/* Title */}
-        <h2
-          className="flex-1 text-base font-semibold leading-snug text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:text-lg"
-          style={{ fontFamily: "var(--font-serif)" }}
-        >
+        <h2 className="notebook-cover-title">
           {notebook.title}
         </h2>
 
         {/* Description */}
         {notebook.description && (
-          <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--color-text-secondary)]">
+          <p className="notebook-cover-description">
             {notebook.description}
           </p>
         )}
+      </div>
 
-        {/* Footer */}
-        <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
-          <span className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-tertiary)]">
-            <SiteIcon name="document" alt="" className="h-3 w-3" />
-            {notebook.pageCount} page{notebook.pageCount !== 1 ? "s" : ""}
-          </span>
-          <span className="text-[10px] text-[var(--color-text-tertiary)] transition-colors group-hover:text-[var(--color-accent)]">
-            Open →
-          </span>
-        </div>
+      {/* Footer */}
+      <div className="notebook-cover-footer">
+        <span className="notebook-cover-pages">
+          {notebook.pageCount} page{notebook.pageCount !== 1 ? "s" : ""}
+        </span>
+        <span className="notebook-cover-open">
+          Open →
+        </span>
       </div>
     </Link>
   );
@@ -113,16 +111,16 @@ export default async function NotesPage() {
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--color-border)] pb-6">
           <div>
             <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-              Study Collection
+              PhD Research Collection
             </p>
             <h1
               className="text-2xl font-semibold text-[var(--color-text)] md:text-4xl"
-              style={{ fontFamily: "var(--font-serif)" }}
+              style={{ fontFamily: "var(--font-handwritten)" }}
             >
-              My Notebooks
+              My Research Journal
             </h1>
-            <p className="mt-1.5 text-xs text-[var(--color-text-tertiary)]">
-              {notebooks.length} notebook{notebooks.length !== 1 ? "s" : ""}
+            <p className="mt-1.5 text-xs text-[var(--color-text-tertiary)]" style={{ fontFamily: "var(--font-handwritten)", fontSize: '14px' }}>
+              Theories, theorems &amp; observations — {notebooks.length} notebook{notebooks.length !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -145,8 +143,8 @@ export default async function NotesPage() {
               alt=""
               className="mx-auto mb-3 h-8 w-8 opacity-40"
             />
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              No notebooks yet.
+            <p className="text-sm text-[var(--color-text-secondary)]" style={{ fontFamily: "var(--font-handwritten)", fontSize: '16px' }}>
+              No notebooks yet. Your research journey begins here.
             </p>
             {adminUser && (
               <Link
@@ -159,7 +157,7 @@ export default async function NotesPage() {
             )}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {notebooks.map((nb) => (
               <NotebookCard key={nb.id} notebook={nb} />
             ))}
@@ -168,9 +166,10 @@ export default async function NotesPage() {
               <Link
                 href="/notes/admin/create"
                 className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--color-border)] p-8 text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                style={{ minHeight: '200px' }}
               >
                 <Plus size={22} />
-                <span className="text-xs font-medium">New Notebook</span>
+                <span className="text-xs font-medium" style={{ fontFamily: "var(--font-handwritten)", fontSize: '15px' }}>New Notebook</span>
               </Link>
             )}
           </div>

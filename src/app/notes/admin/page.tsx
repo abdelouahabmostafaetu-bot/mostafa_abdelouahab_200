@@ -39,7 +39,7 @@ export default async function NotebooksAdminPage() {
           <Link href="/notes" className="mb-4 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors">
             ← Back to Notebooks
           </Link>
-          <h1 className="text-2xl font-semibold text-[var(--color-text)] md:text-3xl" style={{ fontFamily: 'var(--font-serif)' }}>
+          <h1 className="text-2xl font-semibold text-[var(--color-text)] md:text-3xl" style={{ fontFamily: 'var(--font-handwritten)', fontSize: '28px' }}>
             Notebooks Admin
           </h1>
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">

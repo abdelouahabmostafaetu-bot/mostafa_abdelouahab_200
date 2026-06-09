@@ -86,7 +86,7 @@ export default async function ManageNotebookPage({ params }: PageProps) {
               </div>
               <h1
                 className="text-2xl font-semibold text-[var(--color-text)]"
-                style={{ fontFamily: "var(--font-serif)" }}
+                style={{ fontFamily: "var(--font-handwritten)", fontSize: "28px" }}
               >
                 {notebook.title}
               </h1>

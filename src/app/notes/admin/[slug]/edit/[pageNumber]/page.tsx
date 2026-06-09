@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import AdminMarkdownEditor from '@/components/admin/AdminMarkdownEditor';
+import InstructionBox from '@/components/notebooks/InstructionBox';
 
 type SaveState = 'idle' | 'saving' | 'done' | 'error';
 
@@ -70,7 +71,7 @@ export default function EditNotebookPagePage() {
           <Link href={`/notes/admin/${slug}`} className="mb-4 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors">
             <ArrowLeft size={13} /> Back
           </Link>
-          <h1 className="text-2xl font-semibold text-[var(--color-text)]" style={{ fontFamily: 'var(--font-serif)' }}>
+          <h1 className="text-2xl font-semibold text-[var(--color-text)]" style={{ fontFamily: 'var(--font-handwritten)', fontSize: '28px' }}>
             Edit Page {pageNumber}
           </h1>
         </div>
@@ -84,6 +85,17 @@ export default function EditNotebookPagePage() {
         {loadState === 'error' && (
           <p className="py-8 text-sm text-red-400">Could not load page data.</p>
         )}
+
+        <InstructionBox
+          title="Editing Your Research Page"
+          storageKey="nb-edit-page-instructions"
+          items={[
+            'Review and refine your mathematical arguments',
+            'LaTeX: $\\sum_{n=1}^{\\infty}$ inline, $$\\lim_{x\\to 0}$$ display',
+            'Use --- for horizontal rules between sections',
+            'Preview your changes before saving',
+          ]}
+        />
 
         {loadState === 'ready' && (
           <form onSubmit={handleSubmit} className="space-y-6">

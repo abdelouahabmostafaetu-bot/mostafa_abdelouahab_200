@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
+import InstructionBox from '@/components/notebooks/InstructionBox';
 
 type SaveState = 'idle' | 'saving' | 'done' | 'error';
 
@@ -63,10 +64,22 @@ export default function CreateNotebookPage() {
           <Link href="/notes/admin" className="mb-4 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors">
             <ArrowLeft size={13} /> Back
           </Link>
-          <h1 className="text-2xl font-semibold text-[var(--color-text)]" style={{ fontFamily: 'var(--font-serif)' }}>
+          <h1 className="text-2xl font-semibold text-[var(--color-text)]" style={{ fontFamily: 'var(--font-handwritten)', fontSize: '28px' }}>
             Create Notebook
           </h1>
         </div>
+
+        <InstructionBox
+          title="Creating a Research Notebook"
+          storageKey="nb-create-instructions"
+          items={[
+            'Give your notebook a clear title (e.g., "Real Analysis — Year 1")',
+            'Choose a subject area to keep your research organized',
+            'Add a short description of what this notebook covers',
+            'Pick a cover color to distinguish your notebooks',
+            'After creating, you can add pages with your theories and theorems',
+          ]}
+        />
 
         <form onSubmit={handleSubmit} className="space-y-6">
 

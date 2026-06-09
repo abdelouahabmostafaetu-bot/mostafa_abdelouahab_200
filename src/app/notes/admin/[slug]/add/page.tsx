@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import AdminMarkdownEditor from '@/components/admin/AdminMarkdownEditor';
+import InstructionBox from '@/components/notebooks/InstructionBox';
 
 type SaveState = 'idle' | 'saving' | 'done' | 'error';
 
@@ -54,13 +55,26 @@ export default function AddNotebookPagePage() {
           <Link href={`/notes/admin/${slug}`} className="mb-4 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors">
             <ArrowLeft size={13} /> Back
           </Link>
-          <h1 className="text-2xl font-semibold text-[var(--color-text)]" style={{ fontFamily: 'var(--font-serif)' }}>
+          <h1 className="text-2xl font-semibold text-[var(--color-text)]" style={{ fontFamily: 'var(--font-handwritten)', fontSize: '28px' }}>
             Add Page
           </h1>
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
             Page number will be assigned automatically.
           </p>
         </div>
+
+        <InstructionBox
+          title="Writing Tips for Your Research"
+          storageKey="nb-add-page-instructions"
+          items={[
+            'Use Markdown for formatting — **bold**, *italic*, ## headings',
+            'LaTeX is fully supported: $f(x)=x^2$ inline, $$\\int_a^b f(x)dx$$ display',
+            'Document your theorems, lemmas, definitions and proofs clearly',
+            'Add references with > blockquote formatting',
+            'Insert images to illustrate your ideas and diagrams',
+            'Each page appears as a separate page in your research booklet',
+          ]}
+        />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
