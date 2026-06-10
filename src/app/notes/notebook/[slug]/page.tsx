@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { connectToDatabase } from '@/lib/mongodb';
 import { NotebookModel } from '@/lib/models/notebook';
 import { NotebookPageModel } from '@/lib/models/notebook-page';
+import { renderMDX } from '@/lib/mdx';
 import NotebookBooklet, {
   type BookletPage,
 } from '@/components/notebooks/NotebookBooklet';
@@ -65,11 +66,13 @@ export default async function NotebookViewerPage({ params }: PageProps) {
       .sort({ pageNumber: 1 })
       .lean();
 
-    pages = rawPages.map((p) => ({
-      pageNumber: p.pageNumber,
-      title: p.title,
-      content: p.content,
-    }));
+    pages = await Promise.all(
+      rawPages.map(async (p) => ({
+        pageNumber: p.pageNumber,
+        title: p.title,
+        content: await renderMDX(p.content),
+      }))
+    );
   } catch {
     notFound();
   }

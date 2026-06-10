@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import MDXContent from '@/components/MDXContent';
 
 export type BookletPage = {
   pageNumber: number;
   title: string;
-  content: string;
+  content: ReactNode;
 };
 
 type NotebookBookletProps = {
@@ -191,7 +191,7 @@ export default function NotebookBooklet({
               <h2 className="notebook-page-title">{pageData.title}</h2>
             )}
             <div className="notebook-content">
-              <MDXContent content={pageData.content} />
+              {pageData.content}
             </div>
           </div>
         ) : null}
