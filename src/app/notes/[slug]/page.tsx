@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star } from "lucide-react";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/lib/models/note";
 import MDXContent from "@/components/MDXContent";
@@ -86,9 +86,11 @@ export default async function NoteDetailPage({ params }: PageProps) {
                 </span>
               )}
               {note.isFavorite && (
-                <span className="text-[12px]" aria-label="Favourite">
-                  ⭐
-                </span>
+                <Star
+                  size={13}
+                  className="fill-[var(--color-accent)] text-[var(--color-accent)]"
+                  aria-label="Favourite"
+                />
               )}
               <time
                 dateTime={new Date(note.createdAt).toISOString()}
