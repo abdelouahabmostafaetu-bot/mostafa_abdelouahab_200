@@ -6,9 +6,10 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { NotebookModel } from '@/lib/models/notebook';
 import { NotebookPageModel } from '@/lib/models/notebook-page';
 import { renderMDX } from '@/lib/mdx';
-import NotebookBooklet, {
-  type BookletPage,
-} from '@/components/notebooks/NotebookBooklet';
+import NotebookReader, {
+  type ReaderSection,
+} from '@/components/notebooks/NotebookReader';
+import NotebookDownloadButton from '@/components/notebooks/NotebookDownloadButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,7 @@ export default async function NotebookViewerPage({ params }: PageProps) {
     color: string;
   } | null = null;
 
-  let pages: BookletPage[] = [];
+  let sections: ReaderSection[] = [];
 
   try {
     await connectToDatabase();
@@ -66,7 +67,7 @@ export default async function NotebookViewerPage({ params }: PageProps) {
       .sort({ pageNumber: 1 })
       .lean();
 
-    pages = await Promise.all(
+    sections = await Promise.all(
       rawPages.map(async (p) => ({
         pageNumber: p.pageNumber,
         title: p.title,
@@ -80,36 +81,26 @@ export default async function NotebookViewerPage({ params }: PageProps) {
   if (!notebook) notFound();
 
   return (
-    <div className="min-h-screen pt-20 pb-20">
-      <div className="mx-auto max-w-3xl px-4 md:px-6">
+    <main className="min-h-screen pt-20 pb-20">
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
         {/* Back link */}
         <Link
           href="/notes"
-          className="mb-6 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
+          className="mb-8 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)] print:hidden"
         >
           <ArrowLeft size={13} aria-hidden="true" />
           All Notebooks
         </Link>
 
-        {/* Booklet */}
-        <NotebookBooklet
+        <NotebookReader
           title={notebook.title}
           subject={notebook.subject}
           description={notebook.description}
-          pages={pages}
+          color={notebook.color}
+          sections={sections}
+          actions={<NotebookDownloadButton notebookTitle={notebook.title} />}
         />
-
-        {/* Back link at bottom */}
-        <div className="mt-10 text-center">
-          <Link
-            href="/notes"
-            className="inline-flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
-          >
-            <ArrowLeft size={14} />
-            Back to all notebooks
-          </Link>
-        </div>
       </div>
-    </div>
+    </main>
   );
 }

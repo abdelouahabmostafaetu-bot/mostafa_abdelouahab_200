@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin";
 import { connectToDatabase } from "@/lib/mongodb";
 import { NotebookModel } from "@/lib/models/notebook";
 import { NotebookPageModel } from "@/lib/models/notebook-page";
-import NotebookAdminActions from "@/components/ui/NotebookAdminActions";
+import NotebookAdminActions from "@/components/notebooks/NotebookAdminActions";
 
 export const dynamic = "force-dynamic";
 
@@ -84,10 +84,7 @@ export default async function ManageNotebookPage({ params }: PageProps) {
                   {notebook.subject}
                 </p>
               </div>
-              <h1
-                className="text-2xl font-semibold text-[var(--color-text)]"
-                style={{ fontFamily: "var(--font-handwritten)", fontSize: "28px" }}
-              >
+              <h1 className="font-serif text-2xl text-[var(--color-text)]">
                 {notebook.title}
               </h1>
               <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
@@ -96,7 +93,7 @@ export default async function ManageNotebookPage({ params }: PageProps) {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Link
-                href={`/notes/${slug}`}
+                href={`/notes/notebook/${slug}`}
                 className="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
                 View
