@@ -7,6 +7,7 @@
   :root {
     --font-sans: var(--font-inter), system-ui, sans-serif;
     --font-serif: var(--font-dm-serif), 'Georgia', serif;
+    --font-reading: var(--font-source-serif), 'Georgia', serif;
 
         /* Site palette */
         --bg-main: #202124;
@@ -153,6 +154,143 @@
         font-family: var(--font-serif);
         font-size: clamp(1.35rem, 3.8vw, 1.85rem);
         line-height: 1.16;
+    }
+
+    /* ===== Notes Reading Styles ===== */
+    .notes-reading {
+        color: var(--color-text-secondary);
+        font-family: var(--font-reading);
+        font-size: 17px;
+        line-height: 1.85;
+        overflow-wrap: anywhere;
+        letter-spacing: 0.01em;
+    }
+
+    @screen md {
+        .notes-reading {
+            font-size: 19px;
+        }
+    }
+
+    .notes-reading h1 {
+        @apply font-normal mb-6 text-[var(--color-text)];
+        font-family: var(--font-reading);
+        font-size: clamp(2rem, 5vw, 2.75rem);
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+    }
+
+    .notes-reading h2 {
+        @apply font-normal mt-10 md:mt-12 mb-4 text-[var(--color-text)];
+        font-family: var(--font-reading);
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+    }
+
+    .notes-reading h2::after {
+        content: none;
+    }
+
+    .notes-reading h3 {
+        @apply font-normal mt-8 md:mt-10 mb-3 text-[var(--color-text)];
+        font-family: var(--font-reading);
+        font-size: clamp(1.25rem, 3.5vw, 1.6rem);
+        line-height: 1.25;
+    }
+
+    .notes-reading p {
+        @apply mb-5 md:mb-6 text-[var(--color-text-secondary)];
+        line-height: 1.85;
+    }
+
+    .notes-reading a {
+        color: var(--color-accent);
+        text-decoration: underline;
+        text-decoration-color: rgba(243, 107, 22, 0.4);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+        transition: color 0.15s ease, text-decoration-color 0.15s ease;
+    }
+
+    .notes-reading a:hover {
+        color: var(--color-accent-hover);
+        text-decoration-color: currentColor;
+    }
+
+    .notes-reading ul,
+    .notes-reading ol {
+        @apply mb-6 pl-5 md:pl-6 text-[var(--color-text-secondary)];
+    }
+
+    .notes-reading ul {
+        @apply list-disc;
+    }
+
+    .notes-reading ol {
+        @apply list-decimal;
+    }
+
+    .notes-reading li {
+        @apply mb-2;
+        line-height: 1.75;
+    }
+
+    .notes-reading li::marker {
+        color: var(--color-accent);
+    }
+
+    .notes-reading blockquote {
+        @apply my-7 md:my-8 rounded-r-lg border-l-[2px] px-5 py-4 md:px-6 md:py-5 italic text-[var(--color-text-secondary)];
+        border-color: rgba(243, 107, 22, 0.5);
+        background: rgba(243, 107, 22, 0.03);
+    }
+
+    .notes-reading code {
+        @apply rounded px-1.5 py-0.5 font-mono text-[0.88em] text-[var(--color-text)];
+        background: rgba(243, 107, 22, 0.08);
+        border: 1px solid rgba(243, 107, 22, 0.15);
+    }
+
+    .notes-reading pre {
+        @apply my-7 md:my-8 overflow-x-auto rounded-lg p-4 text-sm leading-relaxed md:rounded-xl md:p-5;
+        background: #121417;
+        color: #e4e7eb;
+        border: 1px solid rgba(243, 107, 22, 0.12);
+    }
+
+    .notes-reading pre code {
+        @apply bg-transparent p-0;
+        border: none;
+    }
+
+    .notes-reading img {
+        @apply mx-auto my-7 rounded-lg md:my-9;
+        display: block;
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .notes-reading hr {
+        @apply my-10 md:my-12;
+        border: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .notes-reading table {
+        @apply my-7 block w-full overflow-x-auto rounded-lg border border-[var(--color-border)] md:my-8;
+        border-collapse: collapse;
+    }
+
+    .notes-reading th {
+        @apply border border-[var(--color-border)] px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)];
+        background: rgba(243, 107, 22, 0.06);
+    }
+
+    .notes-reading td {
+        @apply border border-[var(--color-border)] px-4 py-3 text-sm;
     }
 
     .prose-academic p {
@@ -677,6 +815,45 @@
         font-size: 12px;
     }
 
+    .notes-reading {
+        font-size: 16px;
+        line-height: 1.8;
+    }
+
+    .notes-reading h1 {
+        font-size: clamp(1.75rem, 8vw, 2.1rem);
+        line-height: 1.12;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .notes-reading h2 {
+        font-size: clamp(1.4rem, 6.5vw, 1.7rem);
+        line-height: 1.15;
+        margin-top: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .notes-reading h3 {
+        font-size: clamp(1.15rem, 5.5vw, 1.4rem);
+        line-height: 1.2;
+        margin-top: 1.5rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .notes-reading p,
+    .notes-reading li {
+        line-height: 1.75;
+    }
+
+    .notes-reading pre {
+        max-width: 100%;
+        overflow-x: auto;
+        padding: 0.85rem;
+        border-radius: 0.75rem;
+        font-size: 12px;
+    }
+
     .blog-content img {
         margin: 1rem auto;
         border-radius: 10px;
@@ -896,6 +1073,30 @@
     width: max-content;
     max-width: none;
     white-space: nowrap;
+}
+
+.notes-reading .katex-display {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+.notes-reading mjx-container,
+.notes-reading .katex-display {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 1.25rem auto;
+    overflow-x: auto;
+    overflow-y: visible;
+    text-align: center;
+    -webkit-overflow-scrolling: touch;
+}
+
+.notes-reading mjx-container[display="true"] {
+    display: block;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .problem-card {

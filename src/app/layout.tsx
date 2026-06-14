@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Serif_Display, Inter } from 'next/font/google';
+import { DM_Serif_Display, Inter, Source_Serif_4 } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import 'katex/dist/katex.min.css';
 import '@/styles/globals.css';
@@ -21,6 +21,12 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
+});
+
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-source-serif",
 });
 
 export const viewport: Viewport = {
@@ -66,7 +72,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSerif.variable} ${inter.variable} bg-[var(--color-bg)]`}
+      className={`${dmSerif.variable} ${inter.variable} ${sourceSerif.variable} bg-[var(--color-bg)]`}
       suppressHydrationWarning
     >
       <head>

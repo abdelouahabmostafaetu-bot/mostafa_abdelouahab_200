@@ -45,6 +45,7 @@ const config: Config = {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
         serif: ['var(--font-dm-serif)', 'Georgia', 'serif'],
         heading: ['var(--font-dm-serif)', 'Georgia', 'serif'],
+        reading: ['var(--font-source-serif)', 'Georgia', 'serif'],
       },
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }],
