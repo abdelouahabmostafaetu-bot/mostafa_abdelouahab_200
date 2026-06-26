@@ -55,7 +55,7 @@ export default function NavigationFeedback() {
         isNavigating ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      <div className="h-full w-1/2 animate-[navigation-progress_900ms_ease-in-out_infinite] bg-[var(--color-accent)] shadow-[0_0_18px_rgba(243,107,22,0.55)]" />
+      <div className="h-full w-1/2 animate-[navigation-progress_900ms_ease-in-out_infinite] bg-[var(--color-accent)] shadow-[0_0_18px_rgba(15,76,92,0.35)]" />
     </div>
   );
 }

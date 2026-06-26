@@ -11,78 +11,88 @@ const interests = ['Analysis', 'Topology', 'Dynamical systems', 'Mathematical wr
 
 export default function ProfileSection() {
   return (
-    <section className="relative overflow-hidden border-b border-[var(--color-border)] pt-28 md:pt-36">
-      <div className="university-container pb-14 md:pb-24">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-          <div>
-            <p className="university-kicker mb-5">
-              <span className="h-px w-8 bg-[var(--color-accent)]" />
-              Personal academic website
+    <section className="relative overflow-hidden py-12 md:py-20">
+      <div className="academic-shell">
+        <div className="grid gap-8 lg:grid-cols-[1.35fr_0.65fr] lg:items-stretch">
+          <div className="academic-card rounded-[2rem] p-6 sm:p-8 md:p-12">
+            <p className="academic-kicker mb-5">
+              <SiteIcon name="research" alt="" className="h-4 w-4" />
+              Academic profile
             </p>
 
-            <h1 className="university-title max-w-4xl text-[clamp(3rem,8vw,6.6rem)]">
+            <h1 className="academic-title max-w-3xl text-[clamp(2.6rem,8vw,5.6rem)] leading-[0.95]">
               Abdelouahab Mostafa
             </h1>
 
-            <p className="university-body mt-6 max-w-2xl text-base md:text-xl">
-              Master&apos;s student in fundamental mathematics at the University of Mila,
-              focused on clear mathematical exposition, research notes, and problem solving.
+            <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--color-text-secondary)] md:text-lg">
+              Master&apos;s student in Fundamental Mathematics at the University of Mila.
+              This website collects research-oriented notes, mathematical problems,
+              articles, and learning resources in a calm academic format.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/cv" className="university-button-primary">
-                View Curriculum Vitae
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/cv"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-accent-hover)]"
+              >
+                View CV
               </Link>
-              <Link href="/notes" className="university-button-secondary">
-                Read mathematical notes
+              <Link
+                href="/notes"
+                className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-5 py-3 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                Read notes
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-full border border-transparent px-5 py-3 text-sm font-semibold text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
+              >
+                Contact
               </Link>
             </div>
           </div>
 
-          <div className="university-card rounded-[2rem] p-5 md:p-7">
-            <div className="flex items-start justify-between gap-5 border-b border-[var(--color-border)] pb-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-                  Research profile
-                </p>
-                <h2 className="mt-2 font-serif text-2xl font-normal text-[var(--color-text)]">
-                  Mathematics, notes, and academic work
-                </h2>
-              </div>
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#172033] font-serif text-lg text-[#f7f3ea]">
-                AM
-              </div>
+          <aside className="academic-card rounded-[2rem] p-6 sm:p-8">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <p className="academic-kicker">
+                <SiteIcon name="document" alt="" className="h-4 w-4" />
+                Details
+              </p>
+              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-1 text-xs font-semibold text-[var(--color-text-tertiary)]">
+                Mathematics
+              </span>
             </div>
 
-            <div className="mt-5 grid gap-4">
+            <div className="space-y-5">
               {profileFacts.map((item) => (
-                <div key={item.label} className="flex items-start gap-3">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-muted)]">
+                <div key={item.label} className="border-b border-[var(--color-border)] pb-5 last:border-b-0 last:pb-0">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
                     <SiteIcon name={item.icon} alt="" className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="block text-xs font-bold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
-                      {item.label}
-                    </span>
-                    <span className="mt-0.5 block text-sm font-semibold text-[var(--color-text)] md:text-base">
-                      {item.value}
-                    </span>
-                  </span>
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-[var(--color-text)]">
+                    {item.value}
+                  </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-2">
-              {interests.map((interest) => (
-                <span
-                  key={interest}
-                  className="rounded-full border border-[var(--color-border)] bg-white/60 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]"
-                >
-                  {interest}
-                </span>
-              ))}
+            <div className="mt-8">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
+                Interests
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {interests.map((interest) => (
+                  <span
+                    key={interest}
+                    className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)]"
+                  >
+                    {interest}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
     </section>
