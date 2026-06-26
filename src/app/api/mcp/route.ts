@@ -22,7 +22,11 @@
 
 import { NextRequest } from "next/server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+// WebStandardStreamableHTTPServerTransport is the correct transport for
+// Web Standard environments (Next.js App Router, Cloudflare Workers, Deno, Bun).
+// StreamableHTTPServerTransport is the Node.js HTTP wrapper — it expects
+// (IncomingMessage, ServerResponse) and is incompatible with NextRequest.
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
 
 /* ─── Vercel runtime configuration ───────────────────────────────────────── */
@@ -79,7 +83,7 @@ function createMcpServer(): McpServer {
           },
         ],
       };
-    }
+    },
   );
 
   /* ── Tool: hello_world ──────────────────────────────────────────────────
@@ -113,7 +117,7 @@ function createMcpServer(): McpServer {
           },
         ],
       };
-    }
+    },
   );
 
   return server;
@@ -128,11 +132,7 @@ function createMcpServer(): McpServer {
  * @param message Human-readable error message
  * @param data    Optional additional data (omitted in production)
  */
-function jsonRpcError(
-  code: number,
-  message: string,
-  data?: unknown
-): string {
+function jsonRpcError(code: number, message: string, data?: unknown): string {
   return JSON.stringify({
     jsonrpc: "2.0",
     id: null,
@@ -166,7 +166,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     /* Create a stateless transport.
      * sessionIdGenerator: undefined → no session cookie is issued.
      * This is the correct mode for serverless: each POST is self-contained. */
-    const transport = new StreamableHTTPServerTransport({
+    // WebStandardStreamableHTTPServerTransport.handleRequest() signature:
+    //   handleRequest(req: Request, options?: HandleRequestOptions): Promise<Response>
+    // NextRequest extends Request — fully compatible.
+    const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
 
@@ -189,12 +192,12 @@ export async function POST(req: NextRequest): Promise<Response> {
         "Internal server error",
         error instanceof Error
           ? { message: error.message, stack: error.stack }
-          : { message: String(error) }
+          : { message: String(error) },
       ),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } finally {
     /* Always close the server to free resources (important in serverless). */
@@ -219,7 +222,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   let server: McpServer | undefined;
 
   try {
-    const transport = new StreamableHTTPServerTransport({
+    const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
 
@@ -237,7 +240,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } finally {
     if (server) {
@@ -257,7 +260,7 @@ export async function DELETE(req: NextRequest): Promise<Response> {
   let server: McpServer | undefined;
 
   try {
-    const transport = new StreamableHTTPServerTransport({
+    const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
 
