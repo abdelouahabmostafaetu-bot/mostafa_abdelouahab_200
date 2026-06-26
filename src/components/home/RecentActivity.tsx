@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SiteIcon from '@/components/ui/SiteIcon';
 import { getCurrentAdminUser } from '@/lib/admin';
 import { getBlogPosts } from '@/lib/content';
 import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
@@ -26,76 +27,91 @@ export default async function RecentActivity() {
     : null;
 
   return (
-    <section className="py-14 md:py-20">
-      <div className="academic-shell">
-        <div className="mb-8 flex flex-col gap-4 border-b border-[var(--color-border)] pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <section className="py-12 sm:py-16 lg:py-20">
+      <div className="university-container">
+        <div className="mb-8 flex flex-col gap-3 border-b border-[var(--color-border)] pb-5 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="academic-kicker">Current work</p>
-            <h2 className="academic-title mt-3 text-3xl md:text-4xl">
-              Notes, writing, and problems
+            <p className="university-eyebrow mb-3">
+              <SiteIcon name="notebook" alt="" className="h-4 w-4" />
+              Academic work
+            </p>
+            <h2 className="university-heading text-3xl sm:text-4xl">
+              Recent writing and problems
             </h2>
           </div>
-          <Link href="/blog" className="academic-button w-fit">
-            Browse writing
+          <Link
+            href="/library"
+            className="text-sm font-bold text-[var(--color-accent)] underline-offset-4 hover:underline"
+          >
+            Browse full library
           </Link>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-2">
-          {postsWithHtml.length > 0 ? (
-            postsWithHtml.map((post) => (
-              <article key={post.slug} className="academic-card group p-6 transition-transform duration-150 hover:-translate-y-0.5 md:p-7">
-                <Link href={`/blog/${post.slug}`} prefetch className="block">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-                    {post.category}
-                  </p>
-                  <h3
-                    className="blog-card-title mt-3 text-2xl font-semibold transition-colors group-hover:text-[var(--color-accent)]"
-                    dangerouslySetInnerHTML= __html: post.titleHtml 
-                  />
-                  <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--color-text-secondary)] md:text-base">
-                    {post.excerpt}
-                  </p>
-                  <span className="mt-5 inline-flex text-sm font-semibold text-[var(--color-accent)]">
-                    Read article →
-                  </span>
-                </Link>
-              </article>
-            ))
-          ) : (
-            <div className="academic-card p-6 md:p-7">
-              <p className="text-[var(--color-text-secondary)]">No publications yet.</p>
-              {adminUser ? (
-                <Link href="/blog/admin" className="academic-button mt-4">
-                  Write the first post
-                </Link>
-              ) : null}
-            </div>
-          )}
-
-          {latestProblem && latestProblemHtml ? (
-            <article className="academic-card group p-6 transition-transform duration-150 hover:-translate-y-0.5 md:p-7">
-              <Link href={`/problems-with-coffee/${latestProblem.slug}`} prefetch className="block">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-                  Latest problem
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="space-y-5 lg:col-span-2">
+            {postsWithHtml.length > 0 ? (
+              postsWithHtml.map((post) => (
+                <article key={post.slug} className="university-card group rounded-2xl p-6 transition-transform duration-150 hover:-translate-y-0.5">
+                  <Link href={`/blog/${post.slug}`} prefetch className="block">
+                    <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+                      <SiteIcon name="document" alt="" className="h-4 w-4" />
+                      <span>{post.category}</span>
+                    </div>
+                    <h3
+                      className="blog-card-title font-serif text-2xl leading-tight text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)]"
+                      dangerouslySetInnerHTML= __html: post.titleHtml 
+                    />
+                    <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
+                      {post.excerpt}
+                    </p>
+                  </Link>
+                </article>
+              ))
+            ) : (
+              <div className="university-card rounded-2xl p-6">
+                <p className="inline-flex items-center gap-2 text-[var(--color-text-secondary)]">
+                  <SiteIcon name="document" alt="" className="h-4 w-4" />
+                  No publications yet.
                 </p>
+                {adminUser ? (
+                  <Link
+                    href="/blog/admin"
+                    className="university-button-secondary mt-4 px-4 py-2 text-sm"
+                  >
+                    Write the first post
+                  </Link>
+                ) : null}
+              </div>
+            )}
+          </div>
+
+          <aside className="university-card rounded-2xl p-6">
+            <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
+              <SiteIcon name="math" alt="" className="h-4 w-4" />
+              Latest problem
+            </div>
+
+            {latestProblem && latestProblemHtml ? (
+              <Link href={`/problems-with-coffee/${latestProblem.slug}`} prefetch className="group block">
                 <h3
-                  className="latest-problem-title mt-3 text-2xl font-semibold transition-colors group-hover:text-[var(--color-accent)]"
+                  className="latest-problem-title font-serif text-2xl leading-tight text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)]"
                   dangerouslySetInnerHTML= __html: latestProblemHtml.title 
                 />
-                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-text-tertiary)]">
-                  <span>{latestProblem.tags[0] ?? latestProblem.difficulty}</span>
-                  {latestProblem.estimatedTime ? <span>· {latestProblem.estimatedTime}</span> : null}
-                </div>
                 <p
-                  className="latest-problem-summary mt-4 line-clamp-3 text-sm leading-7 text-[var(--color-text-secondary)] md:text-base"
+                  className="latest-problem-summary mt-4 line-clamp-5 text-sm leading-7 text-[var(--color-text-secondary)]"
                   dangerouslySetInnerHTML= __html: latestProblemHtml.shortDescription 
                 />
-                <span className="mt-5 inline-flex text-sm font-semibold text-[var(--color-accent)]">
-                  Open problem →
-                </span>
+                <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-[var(--color-text-tertiary)]">
+                  {latestProblem.tags[0] ? <span>{latestProblem.tags[0]}</span> : null}
+                  {latestProblem.estimatedTime ? <span>{latestProblem.estimatedTime}</span> : null}
+                </div>
               </Link>
-            </article>
-          ) : null}
+            ) : (
+              <p className="text-sm leading-7 text-[var(--color-text-secondary)]">
+                Mathematical problems will appear here when published.
+              </p>
+            )}
+          </aside>
         </div>
       </div>
     </section>
