@@ -1,98 +1,68 @@
 import Link from 'next/link';
-import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
 
 const profileFacts = [
-  { label: 'Institution', value: 'University of Mila', icon: 'research' },
-  { label: 'Program', value: 'Fundamental Mathematics', icon: 'math' },
-  { label: 'Location', value: 'Mila, Algeria', icon: 'home' },
-] satisfies Array<{ label: string; value: string; icon: SiteIconName }>;
+  { label: 'Institution', value: 'University of Mila' },
+  { label: 'Program', value: 'Fundamental Mathematics' },
+  { label: 'Location', value: 'Mila, Algeria' },
+];
 
-const interests = ['Analysis', 'Topology', 'Dynamical systems', 'Mathematical writing'];
+const researchAreas = ['Analysis', 'Topology', 'Dynamical systems', 'Mathematical writing'];
 
 export default function ProfileSection() {
   return (
-    <section className="relative overflow-hidden py-12 md:py-20">
-      <div className="academic-shell">
-        <div className="grid gap-8 lg:grid-cols-[1.35fr_0.65fr] lg:items-stretch">
-          <div className="academic-card rounded-[2rem] p-6 sm:p-8 md:p-12">
-            <p className="academic-kicker mb-5">
-              <SiteIcon name="research" alt="" className="h-4 w-4" />
-              Academic profile
-            </p>
-
-            <h1 className="academic-title max-w-3xl text-[clamp(2.6rem,8vw,5.6rem)] leading-[0.95]">
+    <section className="border-b border-[var(--color-border)] pt-28 sm:pt-32">
+      <div className="academic-shell pb-14 md:pb-20">
+        <div className="grid gap-10 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
+          <div>
+            <p className="academic-kicker mb-5">Personal academic website</p>
+            <h1 className="academic-title max-w-4xl text-[clamp(2.6rem,8vw,5.8rem)]">
               Abdelouahab Mostafa
             </h1>
-
-            <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--color-text-secondary)] md:text-lg">
-              Master&apos;s student in Fundamental Mathematics at the University of Mila.
-              This website collects research-oriented notes, mathematical problems,
-              articles, and learning resources in a calm academic format.
+            <p className="academic-subtitle mt-6 max-w-2xl">
+              Master&apos;s student in fundamental mathematics at the University of Mila,
+              Algeria. This website gathers notes, mathematical problems, reading
+              material, and research-oriented writing.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/cv"
-                className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-accent-hover)]"
-              >
+              <Link href="/cv" className="academic-button academic-button-primary">
                 View CV
               </Link>
-              <Link
-                href="/notes"
-                className="inline-flex items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-5 py-3 text-sm font-semibold text-[var(--color-text)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-              >
+              <Link href="/notes" className="academic-button">
                 Read notes
               </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-full border border-transparent px-5 py-3 text-sm font-semibold text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
-              >
+              <Link href="/contact" className="academic-button">
                 Contact
               </Link>
             </div>
           </div>
 
-          <aside className="academic-card rounded-[2rem] p-6 sm:p-8">
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <p className="academic-kicker">
-                <SiteIcon name="document" alt="" className="h-4 w-4" />
-                Details
-              </p>
-              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-1 text-xs font-semibold text-[var(--color-text-tertiary)]">
-                Mathematics
-              </span>
-            </div>
-
-            <div className="space-y-5">
+          <aside className="academic-card p-6 md:p-7">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">
+              Academic profile
+            </p>
+            <div className="mt-5 space-y-4">
               {profileFacts.map((item) => (
-                <div key={item.label} className="border-b border-[var(--color-border)] pb-5 last:border-b-0 last:pb-0">
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-                    <SiteIcon name={item.icon} alt="" className="h-4 w-4" />
+                <div key={item.label} className="border-t border-[var(--color-border)] pt-4 first:border-t-0 first:pt-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
                     {item.label}
                   </p>
-                  <p className="mt-2 text-base font-semibold text-[var(--color-text)]">
-                    {item.value}
-                  </p>
+                  <p className="mt-1 font-medium text-[var(--color-text)]">{item.value}</p>
                 </div>
               ))}
             </div>
-
-            <div className="mt-8">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-                Interests
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {interests.map((interest) => (
-                  <span
-                    key={interest}
-                    className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)]"
-                  >
-                    {interest}
-                  </span>
-                ))}
-              </div>
-            </div>
           </aside>
+        </div>
+
+        <div className="mt-10 grid gap-3 border-t border-[var(--color-border)] pt-6 sm:grid-cols-2 lg:grid-cols-4">
+          {researchAreas.map((area) => (
+            <div
+              key={area}
+              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm font-semibold text-[var(--color-text)] shadow-sm"
+            >
+              {area}
+            </div>
+          ))}
         </div>
       </div>
     </section>
