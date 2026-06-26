@@ -3,10 +3,10 @@ import { DM_Serif_Display, Inter, Source_Serif_4 } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import 'katex/dist/katex.min.css';
 import '@/styles/globals.css';
+import '@/styles/university-theme.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import NavigationFeedback from '@/components/layout/NavigationFeedback';
-import BirthdayCelebration from '@/components/BirthdayCelebration';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const dmSerif = DM_Serif_Display({
@@ -32,31 +32,31 @@ const sourceSerif = Source_Serif_4({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#f7f5ef',
+  themeColor: '#f7f3ea',
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.mostafaabdelouahab.me'),
   title: {
-    default: 'Abdelouahab Mostafa — Mathematics Student',
+    default: 'Abdelouahab Mostafa — Mathematics Researcher',
     template: '%s | Abdelouahab Mostafa',
   },
   description:
-    'Personal academic website of Abdelouahab Mostafa, Master student in Fundamental Mathematics at the University of Mila, Algeria.',
+    'Personal academic website of Abdelouahab Mostafa, Master student in Fundamental Mathematics at the University of Mila, Algeria. Research in dynamical systems, analysis, and topology.',
   keywords: [
     'mathematics',
-    'analysis',
-    'topology',
     'dynamical systems',
+    'topology',
+    'analysis',
     'University of Mila',
     'Algeria',
-    'academic website',
+    'research',
   ],
   authors: [{ name: 'Abdelouahab Mostafa' }],
   openGraph: {
-    title: 'Abdelouahab Mostafa — Mathematics Student',
+    title: 'Abdelouahab Mostafa — Mathematics Researcher',
     description:
-      'Notes, writing, and resources from a mathematics student at the University of Mila.',
+      'Personal academic website of Abdelouahab Mostafa, Master student in Fundamental Mathematics.',
     url: 'https://www.mostafaabdelouahab.me',
     siteName: 'Abdelouahab Mostafa',
     locale: 'en_US',
@@ -72,23 +72,22 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSerif.variable} ${inter.variable} ${sourceSerif.variable}`}
+      className={`${dmSerif.variable} ${inter.variable} ${sourceSerif.variable} bg-[var(--color-bg)]`}
       suppressHydrationWarning
     >
       <head>
         <link
           rel="icon"
-          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23244f8f'/><text x='50' y='64' font-family='Georgia,serif' font-size='42' font-weight='700' fill='%23fffdf8' text-anchor='middle'>AM</text></svg>"
+          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23153e66'/><text x='50' y='64' font-family='Georgia,serif' font-size='42' fill='%23fffdf8' text-anchor='middle'>AM</text></svg>"
           type="image/svg+xml"
         />
       </head>
-      <body className="flex min-h-svh flex-col">
+      <body className="min-h-svh overflow-x-hidden flex flex-col">
         <ClerkProvider>
           <NavigationFeedback />
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pt-16">{children}</main>
           <Footer />
-          <BirthdayCelebration />
           <SpeedInsights />
         </ClerkProvider>
       </body>

@@ -1,68 +1,93 @@
 import Link from 'next/link';
+import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
 
 const profileFacts = [
-  { label: 'Institution', value: 'University of Mila' },
-  { label: 'Program', value: 'Fundamental Mathematics' },
-  { label: 'Location', value: 'Mila, Algeria' },
-];
+  { label: 'Institution', value: 'University of Mila', icon: 'research' },
+  { label: 'Program', value: 'Fundamental Mathematics', icon: 'math' },
+  { label: 'Location', value: 'Mila, Algeria', icon: 'home' },
+] satisfies Array<{ label: string; value: string; icon: SiteIconName }>;
 
 const researchAreas = ['Analysis', 'Topology', 'Dynamical systems', 'Mathematical writing'];
 
 export default function ProfileSection() {
   return (
-    <section className="border-b border-[var(--color-border)] pt-28 sm:pt-32">
-      <div className="academic-shell pb-14 md:pb-20">
-        <div className="grid gap-10 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
+    <section className="relative overflow-hidden border-b border-[var(--color-border)] py-12 sm:py-16 lg:py-24">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_20%,rgba(167,111,43,0.12),transparent_26rem)]" />
+
+      <div className="university-container">
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
-            <p className="academic-kicker mb-5">Personal academic website</p>
-            <h1 className="academic-title max-w-4xl text-[clamp(2.6rem,8vw,5.8rem)]">
+            <p className="university-eyebrow mb-5">
+              <SiteIcon name="document" alt="" className="h-4 w-4" />
+              Academic profile
+            </p>
+
+            <h1 className="university-heading max-w-4xl text-4xl leading-[1.05] sm:text-5xl lg:text-6xl">
               Abdelouahab Mostafa
             </h1>
-            <p className="academic-subtitle mt-6 max-w-2xl">
-              Master&apos;s student in fundamental mathematics at the University of Mila,
-              Algeria. This website gathers notes, mathematical problems, reading
-              material, and research-oriented writing.
+
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--color-text-secondary)] sm:text-xl">
+              Master&apos;s student in fundamental mathematics, building a clean academic space for research notes, mathematical problems, and university-oriented writing.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/cv" className="academic-button academic-button-primary">
+              <Link href="/cv" className="university-button-primary px-5 py-3 text-sm">
                 View CV
               </Link>
-              <Link href="/notes" className="academic-button">
-                Read notes
+              <Link href="/blog" className="university-button-secondary px-5 py-3 text-sm">
+                Read articles
               </Link>
-              <Link href="/contact" className="academic-button">
-                Contact
+              <Link href="/notes" className="university-button-secondary px-5 py-3 text-sm">
+                Study notes
               </Link>
             </div>
           </div>
 
-          <aside className="academic-card p-6 md:p-7">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-              Academic profile
-            </p>
-            <div className="mt-5 space-y-4">
+          <aside className="university-card rounded-3xl p-6 sm:p-8">
+            <div className="flex items-center gap-4 border-b border-[var(--color-border)] pb-6">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-accent)] font-serif text-2xl text-white shadow-sm">
+                AM
+              </div>
+              <div>
+                <p className="font-serif text-2xl text-[var(--color-text)]">Mathematics</p>
+                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Research & learning portfolio</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4">
               {profileFacts.map((item) => (
-                <div key={item.label} className="border-t border-[var(--color-border)] pt-4 first:border-t-0 first:pt-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
-                    {item.label}
-                  </p>
-                  <p className="mt-1 font-medium text-[var(--color-text)]">{item.value}</p>
+                <div key={item.label} className="flex gap-3">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-muted)] text-[var(--color-accent)]">
+                    <SiteIcon name={item.icon} alt="" className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
+                      {item.label}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">
+                      {item.value}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
-          </aside>
-        </div>
 
-        <div className="mt-10 grid gap-3 border-t border-[var(--color-border)] pt-6 sm:grid-cols-2 lg:grid-cols-4">
-          {researchAreas.map((area) => (
-            <div
-              key={area}
-              className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm font-semibold text-[var(--color-text)] shadow-sm"
-            >
-              {area}
+            <div className="mt-7 border-t border-[var(--color-border)] pt-6">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
+                Focus areas
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {researchAreas.map((area) => (
+                  <span
+                    key={area}
+                    className="rounded-full border border-[var(--color-border)] bg-white/60 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]"
+                  >
+                    {area}
+                  </span>
+                ))}
+              </div>
             </div>
-          ))}
+          </aside>
         </div>
       </div>
     </section>
