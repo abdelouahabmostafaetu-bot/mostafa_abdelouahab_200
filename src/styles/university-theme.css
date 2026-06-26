@@ -1,163 +1,162 @@
 /* Professional university-style design overrides.
-   Kept separate from globals.css so existing math, notes, and admin styles stay stable. */
+   Kept separate from globals.css so existing math, notes, and admin styles stay stable.
+   Important: this file intentionally does NOT use Tailwind @layer because Next/Vercel
+   processes imported CSS files separately and Tailwind can fail when @layer appears
+   without @tailwind directives in the same file. */
 
-@layer base {
-  :root {
-    --bg-main: #f7f3ea;
-    --bg-card: #fffdf8;
-    --border: #ded6c8;
-    --text-main: #172033;
-    --text-muted: #667085;
-    --accent-orange: #153e66;
+:root {
+  --bg-main: #f7f3ea;
+  --bg-card: #fffdf8;
+  --border: #ded6c8;
+  --text-main: #172033;
+  --text-muted: #667085;
+  --accent-orange: #153e66;
 
-    --color-primary: #172033;
-    --color-accent: #153e66;
-    --color-accent-hover: #0f2f50;
-    --color-accent-light: #2d5f8e;
-    --color-surface: #fffdf8;
-    --color-bg: #f7f3ea;
-    --color-bg-muted: #efe8dc;
-    --color-bg-elevated: #ffffff;
-    --color-text: #172033;
-    --color-text-secondary: #667085;
-    --color-text-tertiary: #8a7f70;
-    --color-border: #ded6c8;
-    --color-border-light: #e9e1d4;
-    --color-hover: #efe8dc;
-    --color-gold: #a76f2b;
-    --color-gold-muted: #8d5f26;
-    --article-bg: #fffdf8;
-    --article-bg-soft: #f3ede3;
-    --article-accent: #153e66;
-    --article-accent-soft: rgba(21, 62, 102, 0.08);
-    --article-gold: #a76f2b;
-    --shadow-soft: 0 1px 2px rgba(23, 32, 51, 0.06);
-    --shadow-card: 0 18px 45px rgba(23, 32, 51, 0.08), 0 1px 2px rgba(23, 32, 51, 0.04);
+  --color-primary: #172033;
+  --color-accent: #153e66;
+  --color-accent-hover: #0f2f50;
+  --color-accent-light: #2d5f8e;
+  --color-surface: #fffdf8;
+  --color-bg: #f7f3ea;
+  --color-bg-muted: #efe8dc;
+  --color-bg-elevated: #ffffff;
+  --color-text: #172033;
+  --color-text-secondary: #667085;
+  --color-text-tertiary: #8a7f70;
+  --color-border: #ded6c8;
+  --color-border-light: #e9e1d4;
+  --color-hover: #efe8dc;
+  --color-gold: #a76f2b;
+  --color-gold-muted: #8d5f26;
+  --article-bg: #fffdf8;
+  --article-bg-soft: #f3ede3;
+  --article-accent: #153e66;
+  --article-accent-soft: rgba(21, 62, 102, 0.08);
+  --article-gold: #a76f2b;
+  --shadow-soft: 0 1px 2px rgba(23, 32, 51, 0.06);
+  --shadow-card: 0 18px 45px rgba(23, 32, 51, 0.08), 0 1px 2px rgba(23, 32, 51, 0.04);
 
-    --tag-bg: #fffdf8;
-    --tag-border: #ded6c8;
-    --tag-text: #667085;
-    --tag-bg-hover: #efe8dc;
-    --tag-border-hover: #cbbda8;
-    --tag-text-hover: #172033;
-    --tag-bg-active: rgba(21, 62, 102, 0.08);
-    --tag-border-active: #153e66;
-    --tag-text-active: #172033;
-  }
-
-  html {
-    background: var(--color-bg);
-    color-scheme: light;
-  }
-
-  body {
-    background:
-      radial-gradient(circle at top left, rgba(167, 111, 43, 0.10), transparent 30rem),
-      linear-gradient(180deg, #fbf8f2 0%, var(--color-bg) 38%, #f4eee4 100%);
-    color: var(--color-text);
-  }
-
-  ::selection {
-    background-color: rgba(21, 62, 102, 0.18);
-  }
+  --tag-bg: #fffdf8;
+  --tag-border: #ded6c8;
+  --tag-text: #667085;
+  --tag-bg-hover: #efe8dc;
+  --tag-border-hover: #cbbda8;
+  --tag-text-hover: #172033;
+  --tag-bg-active: rgba(21, 62, 102, 0.08);
+  --tag-border-active: #153e66;
+  --tag-text-active: #172033;
 }
 
-@layer components {
-  .university-container {
-    width: min(100% - 2rem, 1120px);
-    margin-inline: auto;
-  }
+html {
+  background: var(--color-bg);
+  color-scheme: light;
+}
 
-  .university-card {
-    border: 1px solid var(--color-border);
-    background: rgba(255, 253, 248, 0.86);
-    box-shadow: var(--shadow-card);
-    backdrop-filter: blur(10px);
-  }
+body {
+  background:
+    radial-gradient(circle at top left, rgba(167, 111, 43, 0.10), transparent 30rem),
+    linear-gradient(180deg, #fbf8f2 0%, var(--color-bg) 38%, #f4eee4 100%);
+  color: var(--color-text);
+}
 
-  .university-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-gold);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    line-height: 1;
-    text-transform: uppercase;
-  }
+::selection {
+  background-color: rgba(21, 62, 102, 0.18);
+}
 
-  .university-heading {
-    color: var(--color-text);
-    font-family: var(--font-serif);
-    font-weight: 400;
-    letter-spacing: -0.025em;
-  }
+.university-container {
+  width: min(100% - 2rem, 1120px);
+  margin-inline: auto;
+}
 
-  .university-button-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    background: var(--color-accent);
-    color: #fffdf8;
-    font-weight: 700;
-    box-shadow: 0 12px 28px rgba(21, 62, 102, 0.18);
-    transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
-  }
+.university-card {
+  border: 1px solid var(--color-border);
+  background: rgba(255, 253, 248, 0.86);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
+}
 
-  .university-button-primary:hover {
-    background: var(--color-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 16px 34px rgba(21, 62, 102, 0.22);
-  }
+.university-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
 
-  .university-button-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    background: rgba(255, 253, 248, 0.72);
-    color: var(--color-text);
-    font-weight: 700;
-    transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
-  }
+.university-heading {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
 
-  .university-button-secondary:hover {
-    border-color: var(--color-accent);
-    background: rgba(21, 62, 102, 0.06);
-    color: var(--color-accent);
-  }
+.university-button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fffdf8;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(21, 62, 102, 0.18);
+  transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
 
-  .prose-academic,
-  .notes-reading,
-  .notebook-reader-content,
-  .problem-article-content,
-  .markdown-content,
-  .solution-content {
-    color: var(--color-text-secondary);
-  }
+.university-button-primary:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(21, 62, 102, 0.22);
+}
 
-  .prose-academic h1,
-  .prose-academic h2,
-  .prose-academic h3,
-  .notes-reading h1,
-  .notes-reading h2,
-  .notes-reading h3,
-  .problem-detail-title,
-  .problem-list-title,
-  .blog-card-title,
-  .latest-problem-title {
-    color: var(--color-text);
-  }
+.university-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.72);
+  color: var(--color-text);
+  font-weight: 700;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
 
-  .katex {
-    color: var(--color-text);
-  }
+.university-button-secondary:hover {
+  border-color: var(--color-accent);
+  background: rgba(21, 62, 102, 0.06);
+  color: var(--color-accent);
+}
 
-  .katex-display {
-    background: rgba(21, 62, 102, 0.045);
-    border-color: rgba(21, 62, 102, 0.10);
-  }
+.prose-academic,
+.notes-reading,
+.notebook-reader-content,
+.problem-article-content,
+.markdown-content,
+.solution-content {
+  color: var(--color-text-secondary);
+}
+
+.prose-academic h1,
+.prose-academic h2,
+.prose-academic h3,
+.notes-reading h1,
+.notes-reading h2,
+.notes-reading h3,
+.problem-detail-title,
+.problem-list-title,
+.blog-card-title,
+.latest-problem-title {
+  color: var(--color-text);
+}
+
+.katex {
+  color: var(--color-text);
+}
+
+.katex-display {
+  background: rgba(21, 62, 102, 0.045);
+  border-color: rgba(21, 62, 102, 0.10);
 }
