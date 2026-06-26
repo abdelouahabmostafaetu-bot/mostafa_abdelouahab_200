@@ -2,7 +2,6 @@ import Link from 'next/link';
 import SiteIcon from '@/components/ui/SiteIcon';
 import { getCurrentAdminUser } from '@/lib/admin';
 import { getBlogPosts } from '@/lib/content';
-import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import { getLatestPublishedProblem } from '@/lib/problems';
 
 export default async function RecentActivity() {
@@ -11,20 +10,6 @@ export default async function RecentActivity() {
     getLatestPublishedProblem(),
   ]);
   const adminUser = await getCurrentAdminUser();
-  const postsWithHtml = await Promise.all(
-    posts.map(async (post) => ({
-      ...post,
-      titleHtml: await renderInlineMarkdownPreviewToHtml(post.title),
-    })),
-  );
-  const latestProblemHtml = latestProblem
-    ? {
-        title: await renderInlineMarkdownPreviewToHtml(latestProblem.title),
-        shortDescription: await renderInlineMarkdownPreviewToHtml(
-          latestProblem.shortDescription,
-        ),
-      }
-    : null;
 
   return (
     <section className="py-12 sm:py-16 lg:py-20">
@@ -49,18 +34,17 @@ export default async function RecentActivity() {
 
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="space-y-5 lg:col-span-2">
-            {postsWithHtml.length > 0 ? (
-              postsWithHtml.map((post) => (
+            {posts.length > 0 ? (
+              posts.map((post) => (
                 <article key={post.slug} className="university-card group rounded-2xl p-6 transition-transform duration-150 hover:-translate-y-0.5">
                   <Link href={`/blog/${post.slug}`} prefetch className="block">
                     <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-gold)]">
                       <SiteIcon name="document" alt="" className="h-4 w-4" />
                       <span>{post.category}</span>
                     </div>
-                    <h3
-                      className="blog-card-title font-serif text-2xl leading-tight text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)]"
-                      dangerouslySetInnerHTML= __html: post.titleHtml 
-                    />
+                    <h3 className="blog-card-title font-serif text-2xl leading-tight text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)]">
+                      {post.title}
+                    </h3>
                     <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--color-text-secondary)] sm:text-base">
                       {post.excerpt}
                     </p>
@@ -91,16 +75,14 @@ export default async function RecentActivity() {
               Latest problem
             </div>
 
-            {latestProblem && latestProblemHtml ? (
+            {latestProblem ? (
               <Link href={`/problems-with-coffee/${latestProblem.slug}`} prefetch className="group block">
-                <h3
-                  className="latest-problem-title font-serif text-2xl leading-tight text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)]"
-                  dangerouslySetInnerHTML= __html: latestProblemHtml.title 
-                />
-                <p
-                  className="latest-problem-summary mt-4 line-clamp-5 text-sm leading-7 text-[var(--color-text-secondary)]"
-                  dangerouslySetInnerHTML= __html: latestProblemHtml.shortDescription 
-                />
+                <h3 className="latest-problem-title font-serif text-2xl leading-tight text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)]">
+                  {latestProblem.title}
+                </h3>
+                <p className="latest-problem-summary mt-4 line-clamp-5 text-sm leading-7 text-[var(--color-text-secondary)]">
+                  {latestProblem.shortDescription}
+                </p>
                 <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-[var(--color-text-tertiary)]">
                   {latestProblem.tags[0] ? <span>{latestProblem.tags[0]}</span> : null}
                   {latestProblem.estimatedTime ? <span>{latestProblem.estimatedTime}</span> : null}
