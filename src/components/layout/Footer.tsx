@@ -1,70 +1,75 @@
-import Link from "next/link";
-import { Mail } from "lucide-react";
-import SiteIcon from "@/components/ui/SiteIcon";
+import Link from 'next/link';
+import { Mail } from 'lucide-react';
+import SiteIcon from '@/components/ui/SiteIcon';
+
+const footerLinks = [
+  { href: '/blog', label: 'Writing' },
+  { href: '/notes', label: 'Notes' },
+  { href: '/library', label: 'Library' },
+  { href: '/cv', label: 'CV' },
+  { href: '/contact', label: 'Contact' },
+];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-[var(--color-border)] bg-[var(--color-bg)]">
-      <div className="max-w-5xl mx-auto px-4 py-7 sm:px-6 sm:py-12">
-        <div className="flex flex-col gap-5 sm:gap-8 sm:flex-row sm:items-start sm:justify-between">
+    <footer className="mt-auto border-t border-[var(--color-border)] bg-[#172033] text-[#f7f3ea]">
+      <div className="university-container py-10 md:py-14">
+        <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-start">
           <div>
-            <p className="text-sm font-semibold text-[var(--color-text)] mb-1.5 tracking-tight sm:text-base sm:mb-2">
-              Abdelouahab Mostafa
-            </p>
-            <p className="max-w-sm text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm sm:leading-6">
-              Notes, articles, and research-oriented writing in mathematics from
-              Mila, Algeria.
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/10 font-serif text-sm font-semibold">
+                AM
+              </span>
+              <div>
+                <p className="text-base font-bold">Abdelouahab Mostafa</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-white/55">
+                  Mathematics · University of Mila
+                </p>
+              </div>
+            </div>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/68">
+              A personal academic website for mathematical notes, research-oriented writing,
+              problem solving, and references.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-3 sm:text-sm">
-            <Link
-              href="/blog"
-              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/cv"
-              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
-            >
-              CV
-            </Link>
-            <Link
-              href="/contact"
-              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
-            >
-              Contact
-            </Link>
+          <div className="flex flex-wrap gap-2 md:justify-end">
+            {footerLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-full border border-white/12 px-3 py-2 text-sm font-semibold text-white/70 transition-colors hover:border-white/30 hover:text-white"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-9 flex flex-col gap-4 border-t border-white/12 pt-6 text-xs text-white/55 sm:flex-row sm:items-center sm:justify-between">
+          <span>&copy; {currentYear} Abdelouahab Mostafa. All rights reserved.</span>
+          <div className="flex flex-wrap gap-2">
             <a
               href="mailto:mostafaabdelouahab.etu@centre-univ-mila.dz"
-              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-2.5 py-1.5 text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] sm:gap-2 sm:rounded-lg sm:px-3 sm:py-2"
+              className="inline-flex items-center gap-2 rounded-full border border-white/12 px-3 py-2 font-semibold text-white/70 transition-colors hover:border-white/30 hover:text-white"
               aria-label="Email"
             >
-              <Mail size={15} />
+              <Mail size={14} />
               Email
             </a>
             <a
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-2.5 py-1.5 text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] sm:gap-2 sm:rounded-lg sm:px-3 sm:py-2"
+              className="inline-flex items-center gap-2 rounded-full border border-white/12 px-3 py-2 font-semibold text-white/70 transition-colors hover:border-white/30 hover:text-white"
               aria-label="GitHub"
             >
-              <SiteIcon
-                name="github"
-                alt=""
-                className="h-3.5 w-3.5 sm:h-4 sm:w-4"
-              />
+              <SiteIcon name="github" alt="" className="h-3.5 w-3.5 invert" />
               GitHub
             </a>
           </div>
-        </div>
-
-        <div className="mt-5 pt-4 border-t border-[var(--color-border)] flex flex-col gap-2 text-[11px] text-[var(--color-text-tertiary)] sm:mt-8 sm:pt-6 sm:gap-3 sm:text-xs sm:flex-row sm:items-center sm:justify-between">
-          <span>&copy; {currentYear} Abdelouahab Mostafa</span>
         </div>
       </div>
     </footer>

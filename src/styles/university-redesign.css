@@ -1,0 +1,216 @@
+/*
+ * Professional University Redesign
+ * A calm, stable academic design layer for a personal professor-style website.
+ * Imported after globals.css so it safely overrides the old visual system without
+ * removing math, MDX, notebook, and problem-reading support.
+ */
+
+@layer base {
+  :root {
+    --bg-main: #f7f3ea;
+    --bg-card: #ffffff;
+    --border: #ded7c8;
+    --text-main: #172033;
+    --text-muted: #5f6878;
+    --accent-orange: #8b5e2b;
+
+    --color-primary: #172033;
+    --color-accent: #8b5e2b;
+    --color-accent-hover: #6f451b;
+    --color-accent-light: #b78645;
+    --color-surface: #ffffff;
+    --color-bg: #f7f3ea;
+    --color-bg-muted: #efe8da;
+    --color-bg-elevated: #ffffff;
+    --color-text: #172033;
+    --color-text-secondary: #5f6878;
+    --color-text-tertiary: #8c7f6d;
+    --color-border: #ded7c8;
+    --color-border-light: #e9e1d3;
+    --color-hover: #f0e7d8;
+    --color-gold: #8b5e2b;
+    --color-gold-muted: #a87b43;
+
+    --article-bg: #ffffff;
+    --article-bg-soft: #f4eee3;
+    --article-accent: #8b5e2b;
+    --article-accent-soft: rgba(139, 94, 43, 0.1);
+    --article-gold: #a87b43;
+
+    --shadow-soft: 0 1px 2px rgba(23, 32, 51, 0.05);
+    --shadow-card: 0 12px 30px rgba(23, 32, 51, 0.08);
+
+    --tag-bg: #ffffff;
+    --tag-border: #ded7c8;
+    --tag-text: #5f6878;
+    --tag-bg-hover: #f0e7d8;
+    --tag-border-hover: #cdbfaa;
+    --tag-text-hover: #172033;
+    --tag-bg-active: rgba(139, 94, 43, 0.1);
+    --tag-border-active: #8b5e2b;
+    --tag-text-active: #172033;
+  }
+
+  html {
+    background: var(--color-bg);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 16% 0%, rgba(139, 94, 43, 0.08), transparent 30rem),
+      linear-gradient(180deg, #fbf8f1 0%, var(--color-bg) 28rem);
+    color: var(--color-text);
+  }
+
+  ::selection {
+    background-color: rgba(139, 94, 43, 0.22);
+  }
+}
+
+@layer components {
+  .university-container {
+    width: min(100% - 2rem, 1120px);
+    margin-inline: auto;
+  }
+
+  .university-card {
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(10px);
+  }
+
+  .university-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .university-title {
+    color: var(--color-text);
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+  }
+
+  .university-body {
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+  }
+
+  .university-button-primary,
+  .university-button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    border-radius: 999px;
+    padding: 0.72rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .university-button-primary {
+    border: 1px solid #172033;
+    background: #172033;
+    color: #fffaf0;
+    box-shadow: 0 10px 20px rgba(23, 32, 51, 0.14);
+  }
+
+  .university-button-primary:hover {
+    transform: translateY(-1px);
+    background: #24314a;
+    border-color: #24314a;
+  }
+
+  .university-button-secondary {
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--color-text);
+  }
+
+  .university-button-secondary:hover {
+    transform: translateY(-1px);
+    border-color: var(--color-accent);
+    color: var(--color-accent-hover);
+  }
+
+  .prose-academic,
+  .notes-reading,
+  .notebook-reader-content,
+  .problem-article-content {
+    color: var(--color-text-secondary);
+  }
+
+  .prose-academic h1,
+  .prose-academic h2,
+  .prose-academic h3,
+  .notes-reading h1,
+  .notes-reading h2,
+  .notes-reading h3,
+  .notebook-reader-content h1,
+  .notebook-reader-content h2,
+  .notebook-reader-content h3,
+  .problem-article-content h2,
+  .problem-article-content h3 {
+    color: var(--color-text);
+  }
+
+  .katex,
+  .problem-list-title,
+  .blog-card-title,
+  .latest-problem-title {
+    color: var(--color-text);
+  }
+
+  .katex-display,
+  .notes-reading code,
+  .prose-academic code,
+  .notebook-reader-content code {
+    background: rgba(139, 94, 43, 0.075);
+    border-color: rgba(139, 94, 43, 0.18);
+  }
+
+  .prose-academic pre,
+  .notes-reading pre,
+  .notebook-reader-content pre,
+  .problem-article-content pre {
+    background: #172033;
+    color: #f9f5ec;
+    border-color: rgba(23, 32, 51, 0.18);
+  }
+
+  .problem-list-item,
+  .problem-list-item:first-child,
+  .problem-detail-header,
+  .solution-section,
+  .problem-detail-actions {
+    border-color: var(--color-border);
+  }
+
+  .open-problem-button,
+  .problem-card-actions {
+    display: none !important;
+  }
+}
+
+@layer utilities {
+  .academic-rule {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+  }
+}

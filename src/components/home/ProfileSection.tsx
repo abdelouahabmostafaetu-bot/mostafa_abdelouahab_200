@@ -1,43 +1,85 @@
-import React from 'react';
+import Link from 'next/link';
 import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
 
 const profileFacts = [
   { label: 'Institution', value: 'University of Mila', icon: 'research' },
-  { label: 'Department', value: 'Fundamental Mathematics', icon: 'math' },
+  { label: 'Program', value: 'Fundamental Mathematics', icon: 'math' },
   { label: 'Location', value: 'Mila, Algeria', icon: 'home' },
 ] satisfies Array<{ label: string; value: string; icon: SiteIconName }>;
 
+const interests = ['Analysis', 'Topology', 'Dynamical systems', 'Mathematical writing'];
+
 export default function ProfileSection() {
   return (
-    <section className="py-10 md:py-20 border-b border-[var(--color-border)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6">
-        <div className="text-center md:text-left">
-          <p className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-accent)] md:mb-3 md:gap-2 md:text-xs md:tracking-[0.2em]">
-            <SiteIcon name="document" alt="" className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            Curriculum Vitae
-          </p>
-          <h1
-            className="mb-3 text-[clamp(1.75rem,9vw,2.25rem)] font-bold text-[var(--color-text)] md:mb-6 md:text-5xl"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
-            Abdelouahab Mostafa
-          </h1>
-          <p className="mx-auto line-clamp-2 max-w-2xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:mx-0 md:line-clamp-none md:text-lg md:leading-relaxed">
-            Master&apos;s student in fundamental mathematics, interested in analysis and topology.
-          </p>
+    <section className="relative overflow-hidden border-b border-[var(--color-border)] pt-28 md:pt-36">
+      <div className="university-container pb-14 md:pb-24">
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+          <div>
+            <p className="university-kicker mb-5">
+              <span className="h-px w-8 bg-[var(--color-accent)]" />
+              Personal academic website
+            </p>
 
-          <div className="mt-6 border-t border-[var(--color-border)] pt-5 md:mt-10 md:pt-8">
-            <div className="grid grid-cols-3 gap-3 text-left md:gap-8">
+            <h1 className="university-title max-w-4xl text-[clamp(3rem,8vw,6.6rem)]">
+              Abdelouahab Mostafa
+            </h1>
+
+            <p className="university-body mt-6 max-w-2xl text-base md:text-xl">
+              Master&apos;s student in fundamental mathematics at the University of Mila,
+              focused on clear mathematical exposition, research notes, and problem solving.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/cv" className="university-button-primary">
+                View Curriculum Vitae
+              </Link>
+              <Link href="/notes" className="university-button-secondary">
+                Read mathematical notes
+              </Link>
+            </div>
+          </div>
+
+          <div className="university-card rounded-[2rem] p-5 md:p-7">
+            <div className="flex items-start justify-between gap-5 border-b border-[var(--color-border)] pb-5">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">
+                  Research profile
+                </p>
+                <h2 className="mt-2 font-serif text-2xl font-normal text-[var(--color-text)]">
+                  Mathematics, notes, and academic work
+                </h2>
+              </div>
+              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#172033] font-serif text-lg text-[#f7f3ea]">
+                AM
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4">
               {profileFacts.map((item) => (
-                <div key={item.label}>
-                  <p className="inline-flex items-center gap-1 text-[8px] font-medium uppercase tracking-[0.12em] text-[var(--color-text-tertiary)] md:gap-2 md:text-[10px] md:tracking-[0.2em]">
-                    <SiteIcon name={item.icon} alt="" className="h-3 w-3 md:h-3.5 md:w-3.5" />
-                    {item.label}
-                  </p>
-                  <p className="mt-1 text-[11px] font-medium leading-4 text-[var(--color-text)] md:mt-1.5 md:text-base md:leading-normal">
-                    {item.value}
-                  </p>
+                <div key={item.label} className="flex items-start gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-muted)]">
+                    <SiteIcon name={item.icon} alt="" className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-xs font-bold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
+                      {item.label}
+                    </span>
+                    <span className="mt-0.5 block text-sm font-semibold text-[var(--color-text)] md:text-base">
+                      {item.value}
+                    </span>
+                  </span>
                 </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              {interests.map((interest) => (
+                <span
+                  key={interest}
+                  className="rounded-full border border-[var(--color-border)] bg-white/60 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)]"
+                >
+                  {interest}
+                </span>
               ))}
             </div>
           </div>

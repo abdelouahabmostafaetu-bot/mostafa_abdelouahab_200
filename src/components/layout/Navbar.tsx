@@ -4,21 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
-import {
-  Show,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from '@clerk/nextjs';
+import { Show, SignInButton, UserButton } from '@clerk/nextjs';
 import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
 
 const navLinks = [
   { href: '/', label: 'About', icon: 'home' },
-  { href: '/blog', label: 'Blog', icon: 'blog' },
-  { href: '/notes', label: 'My Notes', icon: 'equation' },
+  { href: '/blog', label: 'Writing', icon: 'blog' },
+  { href: '/notes', label: 'Notes', icon: 'notebook' },
   { href: '/problems-with-coffee', label: 'Problems', icon: 'equation' },
-  { href: '/search', label: 'Search', icon: 'search' },
-  { href: '/library', label: 'My Library', icon: 'library' },
+  { href: '/library', label: 'Library', icon: 'library' },
+  { href: '/cv', label: 'CV', icon: 'document' },
 ] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
 
 export default function Navbar() {
@@ -44,149 +39,130 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)] transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${
         scrolled
-          ? 'md:border-[var(--color-border)] md:bg-[var(--color-bg)]/95 md:backdrop-blur-md'
-          : 'md:border-transparent md:bg-transparent'
+          ? 'border-[var(--color-border)] bg-[var(--color-bg)]/92 shadow-[0_8px_24px_rgba(23,32,51,0.06)] backdrop-blur-xl'
+          : 'border-transparent bg-[var(--color-bg)]/72 backdrop-blur-md'
       }`}
     >
-      <nav className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="flex h-14 items-center justify-between md:h-16">
-          <Link href="/" className="group flex flex-col leading-none">
-            <span className="text-sm font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)] sm:text-base">
-              Abdelouahab Mostafa
+      <nav className="university-container">
+        <div className="flex h-16 items-center justify-between gap-4 md:h-20">
+          <Link href="/" className="group flex min-w-0 items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--color-border)] bg-[#172033] font-serif text-sm font-semibold text-[#f7f3ea] shadow-sm md:h-11 md:w-11">
+              AM
             </span>
-            <span className="hidden sm:block mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
-              Mathematics Notes
+            <span className="min-w-0 leading-tight">
+              <span className="block truncate text-sm font-bold tracking-tight text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] md:text-base">
+                Abdelouahab Mostafa
+              </span>
+              <span className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-tertiary)] sm:block">
+                Mathematics · University of Mila
+              </span>
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-2">
-            <div className="flex items-center gap-1">
+          <div className="hidden items-center gap-3 lg:flex">
+            <div className="flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-white/58 p-1 shadow-sm">
               {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-lg px-3 py-2 text-sm transition-all duration-150 ${
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-full px-3.5 py-2 text-sm font-semibold transition-all duration-150 ${
                     isActive(link.href)
-                      ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text)] font-medium'
+                      ? 'bg-[#172033] text-[#f7f3ea] shadow-sm'
                       : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
                   }`}
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <SiteIcon name={link.icon} alt="" className="h-4 w-4" />
                   {link.label}
-                  </span>
                 </Link>
               ))}
             </div>
 
-            <div className="ml-2 flex items-center gap-2">
-              <Show when="signed-out">
-                <SignInButton mode="redirect">
-                  <button
-                    type="button"
-                    className="rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                  >
-                    Sign in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="redirect">
-                  <button
-                    type="button"
-                    className="rounded-lg bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
-                  >
-                    Sign up
-                  </button>
-                </SignUpButton>
-              </Show>
+            <Show when="signed-out">
+              <SignInButton mode="redirect">
+                <button type="button" className="university-button-secondary min-h-0 px-4 py-2 text-sm">
+                  Sign in
+                </button>
+              </SignInButton>
+            </Show>
 
-              <Show when="signed-in">
-                <UserButton />
-              </Show>
-            </div>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
           </div>
 
-          <div className="md:hidden flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsOpen(!isOpen)}
-              className="rounded-md border border-[var(--color-border)] p-1.5 text-[var(--color-text-secondary)] transition-colors duration-150 hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? <X size={16} /> : <Menu size={16} />}
-            </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="inline-flex rounded-full border border-[var(--color-border)] bg-white/70 p-2.5 text-[var(--color-text)] shadow-sm transition-colors hover:bg-[var(--color-bg-muted)] lg:hidden"
+            aria-label="Toggle menu"
+          >
+            {isOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+      </nav>
+
+      <div
+        className={`fixed inset-0 z-40 bg-[#172033]/35 backdrop-blur-sm transition-opacity duration-200 lg:hidden ${
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+      />
+
+      <aside
+        className={`fixed bottom-0 right-0 top-0 z-50 w-[min(21rem,88vw)] border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-2xl transition-transform duration-300 lg:hidden ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex h-16 items-center justify-between border-b border-[var(--color-border)] px-5">
+          <div>
+            <p className="text-sm font-bold text-[var(--color-text)]">Menu</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">Academic navigation</p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="rounded-full border border-[var(--color-border)] p-2 text-[var(--color-text-secondary)]"
+            aria-label="Close menu"
+          >
+            <X size={16} />
+          </button>
         </div>
 
-        <div
-          className={`md:hidden fixed inset-0 z-40 bg-black/70 transition-opacity duration-300 ${
-            isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="flex flex-col gap-2 p-4">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                isActive(link.href)
+                  ? 'bg-[#172033] text-[#f7f3ea]'
+                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              <SiteIcon name={link.icon} alt="" className="h-4 w-4" />
+              {link.label}
+            </Link>
+          ))}
 
-        <aside
-          className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-[min(17rem,82vw)] border-r border-[var(--color-border)] bg-[#080808] shadow-2xl transform transition-transform duration-300 ease-in-out ${
-            isOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <div className="flex h-14 items-center px-4 border-b border-[var(--color-border)]">
-            <span className="text-sm font-semibold text-[var(--color-text)]">
-              Menu
-            </span>
+          <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+            <Show when="signed-out">
+              <SignInButton mode="redirect">
+                <button type="button" className="university-button-primary w-full">
+                  Sign in
+                </button>
+              </SignInButton>
+            </Show>
+            <Show when="signed-in">
+              <div className="flex items-center justify-between rounded-2xl border border-[var(--color-border)] bg-white/60 px-4 py-3">
+                <span className="text-sm font-semibold text-[var(--color-text-secondary)]">Account</span>
+                <UserButton />
+              </div>
+            </Show>
           </div>
-          <div className="flex flex-col p-3 gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`block rounded-md px-3 py-2 text-xs transition-colors duration-150 ${
-                  isActive(link.href)
-                    ? 'bg-[var(--color-bg-elevated)] font-medium text-[var(--color-text)]'
-                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]'
-                }`}
-              >
-                <span className="inline-flex items-center gap-2.5">
-                  <SiteIcon name={link.icon} alt="" className="h-3.5 w-3.5" />
-                {link.label}
-                </span>
-              </Link>
-            ))}
-
-            <div className="mt-4 border-t border-[var(--color-border)] pt-4">
-              <Show when="signed-out">
-                <div className="flex flex-col gap-2">
-                  <SignInButton mode="redirect">
-                    <button
-                      type="button"
-                      className="w-full rounded-md border border-[var(--color-border)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                    >
-                      Sign in
-                    </button>
-                  </SignInButton>
-                  <SignUpButton mode="redirect">
-                    <button
-                      type="button"
-                      className="w-full rounded-md bg-[var(--color-accent)] px-3 py-2 text-xs font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
-                    >
-                      Sign up
-                    </button>
-                  </SignUpButton>
-                </div>
-              </Show>
-
-              <Show when="signed-in">
-                <div className="flex items-center justify-between rounded-md border border-[var(--color-border)] px-3 py-2">
-                  <span className="text-xs text-[var(--color-text-secondary)]">Account</span>
-                  <UserButton />
-                </div>
-              </Show>
-            </div>
-          </div>
-        </aside>
-      </nav>
+        </div>
+      </aside>
     </header>
   );
 }
