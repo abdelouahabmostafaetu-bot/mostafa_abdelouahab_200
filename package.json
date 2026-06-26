@@ -45,7 +45,8 @@
     "remark-rehype": "^11.1.2",
     "shiki": "^1.22.2",
     "sonner": "^2.0.7",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
