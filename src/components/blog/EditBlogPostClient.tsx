@@ -80,6 +80,10 @@ function createImageMarkdown(url: string, altText: string) {
   return `![${altText.trim() || 'Blog image'}](${url})`;
 }
 
+function createMarkup(html: string) {
+  return { __html: html };
+}
+
 async function requestPreviewHtml(content: string) {
   const response = await fetch('/api/blog-preview', {
     method: 'POST',
@@ -929,7 +933,7 @@ export default function EditBlogPostClient({ postId }: { postId: string }) {
             ) : (
               <div
                 className="blog-content markdown-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
-                dangerouslySetInnerHTML= __html: previewHtml 
+                dangerouslySetInnerHTML={createMarkup(previewHtml)}
               />
             )}
           </div>
