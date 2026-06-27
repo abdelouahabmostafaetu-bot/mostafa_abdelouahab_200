@@ -12,6 +12,7 @@ import {
   rehypeWrapDisplayMath,
   renderMarkdownPreviewToHtml,
 } from '@/lib/mdx-preview';
+import { remarkVideo } from '@/lib/remark-video';
 import { sanitizeMarkdownSource } from '@/lib/security';
 
 export async function renderMDX(source: string) {
@@ -26,6 +27,7 @@ export async function renderMDX(source: string) {
           remarkPlugins: [
             remarkMath,
             remarkGfm,
+            remarkVideo,
             createRemarkNormalizeKatexMath(referenceLabels),
           ],
           rehypePlugins: [
