@@ -21,6 +21,7 @@ import {
   Quote,
   Redo2,
   Undo2,
+  Video,
 } from 'lucide-react';
 import type { BlogPost } from '@/types/blog';
 
@@ -121,6 +122,8 @@ export default function AddBlogPostClient() {
   const [imageUploadFile, setImageUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isVideoPopoverOpen, setIsVideoPopoverOpen] = useState(false);
+  const [videoUrlInput, setVideoUrlInput] = useState('');
   const [historyControls, setHistoryControls] = useState({
     canUndo: false,
     canRedo: false,
@@ -274,6 +277,32 @@ export default function AddBlogPostClient() {
     setImageAltInput('Blog image');
     setImageUploadFile(null);
     setIsImagePopoverOpen(false);
+  };
+
+  const insertVideoEmbed = (url: string) => {
+    const safeUrl = url.trim();
+    if (!safeUrl) {
+      showToast('error', 'Add a video URL first.');
+      return;
+    }
+
+    if (!/^https?:\/\//i.test(safeUrl)) {
+      showToast('error', 'Enter a valid video URL starting with https://');
+      return;
+    }
+
+    const fence = '```';
+    const markdown = `\n${fence}video\n${safeUrl}\n${fence}\n`;
+    const textarea = editorRef.current;
+    if (!textarea) {
+      applyEditorContent(`${form.content}${markdown}`);
+    } else {
+      insertBlock(markdown);
+    }
+
+    setVideoUrlInput('');
+    setIsVideoPopoverOpen(false);
+    showToast('success', 'Video embedded.');
   };
 
   const handleEditorChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -678,6 +707,40 @@ export default function AddBlogPostClient() {
                   </div>
                 )}
               </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsVideoPopoverOpen(!isVideoPopoverOpen)}
+                  className="rounded p-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg)]"
+                  title="Insert Video"
+                >
+                  <Video size={16} />
+                </button>
+                {isVideoPopoverOpen && (
+                  <div
+                    className="fixed inset-x-3 top-28 z-50 max-h-[calc(100svh-8rem)] overflow-y-auto rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] p-3 shadow-lg sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-1 sm:w-80 sm:p-4"
+                  >
+                    <p className="mb-3 text-xs text-[var(--color-text-secondary)]">
+                      Paste a YouTube, Vimeo, or direct video (.mp4) link.
+                    </p>
+                    <div className="space-y-3">
+                      <input
+                        value={videoUrlInput}
+                        onChange={(e) => setVideoUrlInput(e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        className={inputClasses}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => insertVideoEmbed(videoUrlInput)}
+                        className="w-full rounded-md bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-[#0f0e0d] transition hover:opacity-90"
+                      >
+                        Insert Video
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {mode === 'write' ? (
@@ -712,7 +775,7 @@ export default function AddBlogPostClient() {
             ) : (
               <div
                 className="blog-content markdown-content min-h-[400px] rounded-b-md border border-t-0 border-[var(--color-border)] bg-[var(--color-bg)] p-4 prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
+                dangerouslySetInnerHTML= __html: previewHtml 
               />
             )}
           </div>
