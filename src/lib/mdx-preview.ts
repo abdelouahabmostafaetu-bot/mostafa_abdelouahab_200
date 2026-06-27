@@ -6,6 +6,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeKatex from 'rehype-katex';
 import rehypeSlug from 'rehype-slug';
 import rehypeStringify from 'rehype-stringify';
+import { remarkVideo } from '@/lib/remark-video';
 import { sanitizeMarkdownSource } from '@/lib/security';
 
 type HtmlNode = {
@@ -289,6 +290,7 @@ export async function renderMarkdownPreviewToHtml(source: string) {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkMath)
+    .use(remarkVideo)
     .use(createRemarkNormalizeKatexMath(referenceLabels))
     .use(remarkRehype)
     .use(rehypeKatex, { strict: false, throwOnError: false })
