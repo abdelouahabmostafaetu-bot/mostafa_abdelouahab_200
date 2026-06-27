@@ -1,17 +1,11 @@
 /**
- * remark-video — converts a fenced code block tagged as `video` (or `youtube`/`vimeo`)
+ * remark-video — converts a fenced code block tagged as video (or youtube/vimeo)
  * into an embedded player.
  *
- * It rewrites the mdast `code` node using `data.hName` / `data.hProperties` /
- * `data.hChildren`, which are honored by both `mdast-util-to-hast` (remark-rehype,
- * used by the preview pipeline) and `@mdx-js/mdx` (used by the live blog page). This
+ * It rewrites the mdast code node using data.hName / data.hProperties /
+ * data.hChildren, which are honored by both mdast-util-to-hast (remark-rehype,
+ * used by the preview pipeline) and @mdx-js/mdx (used by the live blog page). This
  * keeps the rendered output consistent between the editor preview and the published post.
- *
- * Usage inside a post:
- *
- *   ```video
- *   https://www.youtube.com/watch?v=VIDEO_ID
- *   ```
  *
  * Supports YouTube, Vimeo, and direct video files (e.g. .mp4 / .webm).
  */
@@ -66,8 +60,8 @@ function buildEmbed(rawUrl: string): GenericNode | null {
 
   if (youTubeId || vimeoId) {
     const embedSrc = youTubeId
-      ? `https://www.youtube.com/embed/${youTubeId}`
-      : `https://player.vimeo.com/video/${vimeoId}`;
+      ? 'https://www.youtube.com/embed/' + youTubeId
+      : 'https://player.vimeo.com/video/' + String(vimeoId);
 
     const iframe: GenericNode = {
       type: 'element',
