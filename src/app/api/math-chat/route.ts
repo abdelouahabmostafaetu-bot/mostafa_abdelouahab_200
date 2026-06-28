@@ -77,12 +77,12 @@ export async function POST(req: NextRequest) {
     image = parsed;
   }
 
+  // Pick the model. Images are ALWAYS read by Gemini, no matter what is selected.
   let modelId = typeof body.model === 'string' && body.model ? body.model : DEFAULT_MODEL_ID;
   if (image) {
-    const chosen = getModelById(modelId);
-    if (!chosen || !chosen.vision) {
-      modelId = VISION_FALLBACK_MODEL_ID;
-    }
+    modelId = VISION_FALLBACK_MODEL_ID;
+  } else if (!getModelById(modelId)) {
+    modelId = DEFAULT_MODEL_ID;
   }
 
   const deep = body.deep === true;
@@ -91,7 +91,10 @@ export async function POST(req: NextRequest) {
     let systemPrompt = MATH_AI_SYSTEM_PROMPT;
     let sources: KnowledgeSource[] = [];
 
-    if (deep && !image) {
+    // Search-first: for every text question we look things up BEFORE answering
+    // (Math StackExchange, the web via Firecrawl/You.com, research papers and
+    // Wolfram|Alpha). Image questions skip this and go straight to Gemini vision.
+    if (!image) {
       const lastUser = [...messages].reverse().find((m) => m.role === 'user');
       const question = lastUser ? lastUser.content.slice(0, 600) : '';
 
@@ -150,9 +153,9 @@ export async function POST(req: NextRequest) {
             '\n\n==================================================================\n' +
             'SECTION 15 — LIVE REFERENCE MATERIAL (retrieved for THIS question)\n' +
             '==================================================================\n' +
-            'The app retrieved the material below (Wolfram|Alpha, Math StackExchange,\n' +
-            'research papers from arXiv, Semantic Scholar and OpenAlex, and a live web\n' +
-            'search) to help you answer more accurately.\n' +
+            'The app searched the material below FIRST (Math StackExchange, a live web\n' +
+            'search, research papers from arXiv, Semantic Scholar and OpenAlex, and\n' +
+            'Wolfram|Alpha) to help you answer more accurately.\n' +
             '- Trust the Wolfram|Alpha computation for the numeric/symbolic result, but still\n' +
             '  show the full human reasoning and explanation.\n' +
             '- When you use a discussion, paper, or web page, cite it inline as a Markdown\n' +
@@ -165,6 +168,7 @@ export async function POST(req: NextRequest) {
 
     let reply = await runChat(modelId, systemPrompt, messages, image);
 
+    // Deep mode adds a second, strict self-verification pass.
     if (deep) {
       const verifyMessages: ProviderMessage[] = [
         ...messages,

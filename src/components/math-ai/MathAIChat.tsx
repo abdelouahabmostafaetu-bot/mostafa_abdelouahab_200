@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Send, Loader2, Paperclip, X, Sparkles, Brain, ExternalLink } from 'lucide-react';
+import { Send, Loader2, Paperclip, X, Sparkles, Brain, ExternalLink, Globe } from 'lucide-react';
 import MathText from './MathText';
 import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
 
@@ -96,6 +96,12 @@ export default function MathAIChat() {
     }
   }
 
+  const loadingText = image
+    ? 'Reading the image…'
+    : deep
+      ? 'Researching & verifying…'
+      : 'Searching & solving…';
+
   return (
     <div className="flex flex-col h-[calc(100dvh-9rem)] min-h-[460px]">
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 space-y-8">
@@ -109,6 +115,9 @@ export default function MathAIChat() {
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)]">
               Type a problem below, or attach a photo of one.
+            </p>
+            <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
+              <Globe className="h-3.5 w-3.5" /> Searches Math StackExchange, the web & research papers automatically
             </p>
           </div>
         ) : (
@@ -163,8 +172,7 @@ export default function MathAIChat() {
               <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
             </div>
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] pt-1.5">
-              <Loader2 className="h-4 w-4 animate-spin" />{' '}
-              {deep ? 'Researching & verifying…' : 'Thinking…'}
+              <Loader2 className="h-4 w-4 animate-spin" /> {loadingText}
             </div>
           </div>
         )}
@@ -176,6 +184,7 @@ export default function MathAIChat() {
           <div className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-2 py-1 text-xs text-[var(--color-text-secondary)]">
             <Paperclip className="h-3 w-3" />
             <span className="max-w-[150px] truncate">{image.name}</span>
+            <span className="text-[var(--color-text-tertiary)]">· read by Gemini</span>
             <button type="button" onClick={() => setImage(null)} className="hover:text-[var(--color-text)]">
               <X className="h-3 w-3" />
             </button>
@@ -191,7 +200,7 @@ export default function MathAIChat() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            title="Attach an image"
+            title="Attach an image (read by Gemini)"
             className="shrink-0 rounded-lg p-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
           >
             <Paperclip className="h-5 w-5" />
@@ -228,6 +237,7 @@ export default function MathAIChat() {
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
+            title="Choose the math model"
             className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-xs text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-accent)]"
           >
             {AI_MODELS.map((m) => (
@@ -239,7 +249,7 @@ export default function MathAIChat() {
           <button
             type="button"
             onClick={() => setDeep((v) => !v)}
-            title="Deep mode: research the web, Wolfram, Math StackExchange, arXiv, Semantic Scholar and OpenAlex, then double-check the answer"
+            title="Deep mode double-checks (verifies) the answer with a second strict pass. The web & papers are always searched either way."
             className={
               'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ' +
               (deep
@@ -249,11 +259,9 @@ export default function MathAIChat() {
           >
             <Brain className="h-3.5 w-3.5" /> Deep mode
           </button>
-          {deep && (
-            <span className="text-[11px] text-[var(--color-text-tertiary)]">
-              Searches the web & papers, then verifies — slower but more accurate
-            </span>
-          )}
+          <span className="text-[11px] text-[var(--color-text-tertiary)]">
+            {deep ? 'Double-checks every answer — slower but most accurate' : 'Verifies the answer with a second pass'}
+          </span>
         </div>
       </div>
     </div>

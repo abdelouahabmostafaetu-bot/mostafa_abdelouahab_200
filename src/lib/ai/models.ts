@@ -3,19 +3,17 @@
  * SAFE for the browser: contains NO secrets, only labels and the NAME of the
  * environment variable each provider needs.
  *
+ * Only strong mathematics models are listed here. Weak models were removed on
+ * purpose so every choice gives good, reliable math.
+ *
  * vision:    model can read uploaded images (photos of problems).
+ *            NOTE: image reading is always handled by Gemini regardless of the
+ *            selected model, so only Gemini is marked vision-capable here.
  * reasoning: model "thinks" step by step before answering — best for hard,
  *            advanced math (slower, but much more accurate).
  */
 
-export type AiProvider =
-  | 'gemini'
-  | 'groq'
-  | 'cerebras'
-  | 'openrouter'
-  | 'mistral'
-  | 'nvidia'
-  | 'openai';
+export type AiProvider = 'gemini' | 'openrouter' | 'mistral' | 'openai';
 
 export type AiModel = {
   id: string;
@@ -30,36 +28,15 @@ export type AiModel = {
 export const AI_MODELS: AiModel[] = [
   {
     id: 'gemini-flash',
-    label: 'Gemini 2.5 Flash (Google)',
+    label: 'Gemini 2.5 Flash — fast & reliable (reads images)',
     provider: 'gemini',
     model: 'gemini-2.5-flash',
     envKey: 'GEMINI_API_KEY',
     vision: true,
   },
   {
-    id: 'groq-llama',
-    label: 'Llama 3.3 70B (Groq, very fast)',
-    provider: 'groq',
-    model: 'llama-3.3-70b-versatile',
-    envKey: 'GROQ_API_KEY',
-  },
-  {
-    id: 'cerebras-llama',
-    label: 'Llama 3.3 70B (Cerebras, very fast)',
-    provider: 'cerebras',
-    model: 'llama-3.3-70b',
-    envKey: 'CEREBRAS_API_KEY',
-  },
-  {
-    id: 'openrouter-deepseek',
-    label: 'DeepSeek V3 (OpenRouter)',
-    provider: 'openrouter',
-    model: 'deepseek/deepseek-chat',
-    envKey: 'OPENROUTER_API_KEY',
-  },
-  {
     id: 'openrouter-deepseek-r1',
-    label: 'DeepSeek R1 — deep thinking (OpenRouter)',
+    label: 'DeepSeek R1 — deep reasoning (best for hard math)',
     provider: 'openrouter',
     model: 'deepseek/deepseek-r1',
     envKey: 'OPENROUTER_API_KEY',
@@ -67,33 +44,32 @@ export const AI_MODELS: AiModel[] = [
   },
   {
     id: 'openrouter-qwq',
-    label: 'Qwen QwQ 32B — reasoning (OpenRouter)',
+    label: 'Qwen QwQ 32B — step-by-step reasoning',
     provider: 'openrouter',
     model: 'qwen/qwq-32b',
     envKey: 'OPENROUTER_API_KEY',
     reasoning: true,
   },
   {
+    id: 'openrouter-deepseek',
+    label: 'DeepSeek V3 — strong & fast',
+    provider: 'openrouter',
+    model: 'deepseek/deepseek-chat',
+    envKey: 'OPENROUTER_API_KEY',
+  },
+  {
     id: 'mistral-large',
-    label: 'Mistral Large',
+    label: 'Mistral Large — strong all-round',
     provider: 'mistral',
     model: 'mistral-large-latest',
     envKey: 'MISTRAL_API_KEY',
   },
   {
-    id: 'nvidia-nemotron',
-    label: 'Nemotron 70B (NVIDIA)',
-    provider: 'nvidia',
-    model: 'nvidia/llama-3.1-nemotron-70b-instruct',
-    envKey: 'NVIDIA_API_KEY',
-  },
-  {
     id: 'openai-gpt',
-    label: 'GPT-4o mini (OpenAI)',
+    label: 'GPT-4o (OpenAI)',
     provider: 'openai',
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     envKey: 'OPENAI_API_KEY',
-    vision: true,
   },
 ];
 
