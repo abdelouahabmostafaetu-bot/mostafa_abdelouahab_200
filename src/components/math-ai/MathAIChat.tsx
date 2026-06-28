@@ -11,6 +11,13 @@ type Message = { role: Role; content: string; image?: string; sources?: Source[]
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+const SOURCE_LABELS: Record<string, string> = {
+  arxiv: 'arXiv',
+  stackexchange: 'Math.SE',
+  semanticscholar: 'Semantic Scholar',
+  openalex: 'OpenAlex',
+};
+
 export default function MathAIChat() {
   const [model, setModel] = useState(DEFAULT_MODEL_ID);
   const [deep, setDeep] = useState(false);
@@ -136,7 +143,7 @@ export default function MathAIChat() {
                           className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-text)]"
                         >
                           <span className="font-medium text-[var(--color-accent)]">
-                            {s.kind === 'arxiv' ? 'arXiv' : 'Math.SE'}
+                            {SOURCE_LABELS[s.kind] || 'Source'}
                           </span>
                           <span className="max-w-[180px] truncate">{s.title}</span>
                           <ExternalLink className="h-3 w-3" />
@@ -231,7 +238,7 @@ export default function MathAIChat() {
           <button
             type="button"
             onClick={() => setDeep((v) => !v)}
-            title="Deep mode: research on Wolfram, Math StackExchange and arXiv, then double-check the answer"
+            title="Deep mode: research on Wolfram, Math StackExchange, arXiv, Semantic Scholar and OpenAlex, then double-check the answer"
             className={
               'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ' +
               (deep

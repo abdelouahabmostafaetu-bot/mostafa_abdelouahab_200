@@ -1,9 +1,12 @@
 /**
  * Live math knowledge retrieval for the Math AI "Deep mode".
  *
- * - Math StackExchange via the free Stack Exchange API. No key is required for
- *   light use; an optional STACKEXCHANGE_KEY raises the daily quota.
- * - arXiv math papers via the public Atom API.
+ * - Math StackExchange via the free Stack Exchange API (no key needed).
+ * - arXiv math papers via the public Atom API (no key needed).
+ * - Semantic Scholar (200M+ papers, AI relevance) via its free Graph API.
+ *   No key required; an optional SEMANTIC_SCHOLAR_API_KEY raises the quota.
+ * - OpenAlex (470M+ works + citations) via its free API. No key required;
+ *   set OPENALEX_MAILTO to join the faster "polite pool".
  *
  * Each function returns a compact text "context" block to feed the model, plus
  * a list of clickable sources to show the user. Nothing here ever throws.
@@ -12,7 +15,7 @@
 export type KnowledgeSource = {
   title: string;
   url: string;
-  kind: 'stackexchange' | 'arxiv';
+  kind: 'stackexchange' | 'arxiv' | 'semanticscholar' | 'openalex';
 };
 
 export type KnowledgeResult = {
@@ -112,7 +115,7 @@ export async function searchMathStackExchange(query: string, max = 3): Promise<K
   }
 }
 
-export async function searchArxiv(query: string, max = 3): Promise<KnowledgeResult> {
+export async function searchArxiv(query: string, max = 2): Promise<KnowledgeResult> {
   const q = query.trim();
   if (!q) return { context: '', sources: [] };
 
@@ -161,6 +164,143 @@ export async function searchArxiv(query: string, max = 3): Promise<KnowledgeResu
     const blocks = papers.map(
       (p, i) => '[' + String(i + 1) + '] ' + p.title + ' (' + p.link + ')\n' + p.summary.slice(0, 500),
     );
+
+    return { context: blocks.join('\n\n'), sources };
+  } catch {
+    return { context: '', sources: [] };
+  }
+}
+
+type S2Author = { name?: string };
+type S2Paper = {
+  paperId?: string;
+  title?: string;
+  abstract?: string | null;
+  url?: string;
+  year?: number;
+  authors?: S2Author[];
+};
+type S2Resp = { data?: S2Paper[] };
+
+export async function searchSemanticScholar(query: string, max = 3): Promise<KnowledgeResult> {
+  const q = query.trim();
+  if (!q) return { context: '', sources: [] };
+
+  const url =
+    'https://api.semanticscholar.org/graph/v1/paper/search?limit=' +
+    String(max) +
+    '&fields=title,abstract,url,year,authors&query=' +
+    encodeURIComponent(q);
+
+  const headers: Record<string, string> = { 'User-Agent': 'mostafaabdelouahab.me math-ai' };
+  if (process.env.SEMANTIC_SCHOLAR_API_KEY) {
+    headers['x-api-key'] = process.env.SEMANTIC_SCHOLAR_API_KEY;
+  }
+
+  try {
+    const res = await fetch(url, { headers });
+    if (!res.ok) return { context: '', sources: [] };
+    const data = (await res.json()) as S2Resp;
+    const papers = (data.data || []).filter((p) => p.title && p.url).slice(0, max);
+    if (papers.length === 0) return { context: '', sources: [] };
+
+    const sources: KnowledgeSource[] = papers.map((p) => ({
+      title: String(p.title),
+      url: String(p.url),
+      kind: 'semanticscholar',
+    }));
+
+    const blocks = papers.map((p, i) => {
+      const yr = p.year ? ' (' + String(p.year) + ')' : '';
+      const abs = (p.abstract || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+      return (
+        '[' + String(i + 1) + '] ' + p.title + yr + ' (' + p.url + ')\n' + (abs || 'No abstract available.')
+      );
+    });
+
+    return { context: blocks.join('\n\n'), sources };
+  } catch {
+    return { context: '', sources: [] };
+  }
+}
+
+type OaLocation = { landing_page_url?: string };
+type OaWork = {
+  id?: string;
+  title?: string | null;
+  doi?: string | null;
+  publication_year?: number;
+  primary_location?: OaLocation | null;
+  abstract_inverted_index?: Record<string, number[]> | null;
+};
+type OaResp = { results?: OaWork[] };
+
+function abstractFromInverted(inv?: Record<string, number[]> | null): string {
+  if (!inv) return '';
+  const words: string[] = [];
+  for (const key of Object.keys(inv)) {
+    for (const pos of inv[key]) {
+      words[pos] = key;
+    }
+  }
+  return words.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+export async function searchOpenAlex(query: string, max = 2): Promise<KnowledgeResult> {
+  const q = query.trim();
+  if (!q) return { context: '', sources: [] };
+
+  const mailto = process.env.OPENALEX_MAILTO
+    ? '&mailto=' + encodeURIComponent(process.env.OPENALEX_MAILTO)
+    : '';
+  const url =
+    'https://api.openalex.org/works?per_page=' +
+    String(max) +
+    '&search=' +
+    encodeURIComponent(q) +
+    mailto;
+
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'mostafaabdelouahab.me math-ai' } });
+    if (!res.ok) return { context: '', sources: [] };
+    const data = (await res.json()) as OaResp;
+    const works = (data.results || []).slice(0, max);
+    if (works.length === 0) return { context: '', sources: [] };
+
+    const picked = works
+      .map((w) => {
+        const link = w.primary_location?.landing_page_url || w.doi || w.id || '';
+        return {
+          title: (w.title || '').trim(),
+          year: w.publication_year,
+          link,
+          abstract: abstractFromInverted(w.abstract_inverted_index),
+        };
+      })
+      .filter((w) => w.title && w.link);
+
+    if (picked.length === 0) return { context: '', sources: [] };
+
+    const sources: KnowledgeSource[] = picked.map((w) => ({
+      title: w.title,
+      url: w.link,
+      kind: 'openalex',
+    }));
+
+    const blocks = picked.map((w, i) => {
+      const yr = w.year ? ' (' + String(w.year) + ')' : '';
+      return (
+        '[' +
+        String(i + 1) +
+        '] ' +
+        w.title +
+        yr +
+        ' (' +
+        w.link +
+        ')\n' +
+        (w.abstract ? w.abstract.slice(0, 400) : 'No abstract available.')
+      );
+    });
 
     return { context: blocks.join('\n\n'), sources };
   } catch {

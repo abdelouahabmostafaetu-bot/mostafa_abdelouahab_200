@@ -5,7 +5,14 @@ import { runChat, getModelById, type ProviderMessage, type ChatImage } from '@/l
 import { DEFAULT_MODEL_ID, VISION_FALLBACK_MODEL_ID } from '@/lib/ai/models';
 import { checkDailyLimit } from '@/lib/ai/daily-limit';
 import { queryWolfram } from '@/lib/ai/wolfram';
-import { searchMathStackExchange, searchArxiv, type KnowledgeSource } from '@/lib/ai/knowledge';
+import {
+  searchMathStackExchange,
+  searchArxiv,
+  searchSemanticScholar,
+  searchOpenAlex,
+  type KnowledgeResult,
+  type KnowledgeSource,
+} from '@/lib/ai/knowledge';
 
 export const runtime = 'nodejs';
 
@@ -26,6 +33,10 @@ function parseDataUrl(dataUrl: string): ChatImage | null {
   const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
   if (!match) return null;
   return { mimeType: match[1], dataBase64: match[2], dataUrl };
+}
+
+function settledKnowledge(r: PromiseSettledResult<KnowledgeResult>): KnowledgeResult {
+  return r.status === 'fulfilled' ? r.value : { context: '', sources: [] };
 }
 
 export async function POST(req: NextRequest) {
@@ -84,10 +95,12 @@ export async function POST(req: NextRequest) {
       const question = lastUser ? lastUser.content.slice(0, 600) : '';
 
       if (question) {
-        const [wolframRes, seRes, axRes] = await Promise.allSettled([
+        const [wolframRes, seRes, axRes, s2Res, oaRes] = await Promise.allSettled([
           queryWolfram(question),
           searchMathStackExchange(question),
           searchArxiv(question),
+          searchSemanticScholar(question),
+          searchOpenAlex(question),
         ]);
 
         const parts: string[] = [];
@@ -98,13 +111,29 @@ export async function POST(req: NextRequest) {
               wolframRes.value,
           );
         }
-        if (seRes.status === 'fulfilled' && seRes.value.context) {
-          parts.push('MATH STACKEXCHANGE DISCUSSIONS:\n' + seRes.value.context);
-          sources = sources.concat(seRes.value.sources);
+
+        const se = settledKnowledge(seRes);
+        if (se.context) {
+          parts.push('MATH STACKEXCHANGE DISCUSSIONS:\n' + se.context);
+          sources = sources.concat(se.sources);
         }
-        if (axRes.status === 'fulfilled' && axRes.value.context) {
-          parts.push('ARXIV MATH PAPERS:\n' + axRes.value.context);
-          sources = sources.concat(axRes.value.sources);
+
+        const ax = settledKnowledge(axRes);
+        if (ax.context) {
+          parts.push('ARXIV MATH PAPERS:\n' + ax.context);
+          sources = sources.concat(ax.sources);
+        }
+
+        const s2 = settledKnowledge(s2Res);
+        if (s2.context) {
+          parts.push('SEMANTIC SCHOLAR PAPERS:\n' + s2.context);
+          sources = sources.concat(s2.sources);
+        }
+
+        const oa = settledKnowledge(oaRes);
+        if (oa.context) {
+          parts.push('OPENALEX PAPERS:\n' + oa.context);
+          sources = sources.concat(oa.sources);
         }
 
         if (parts.length > 0) {
@@ -113,11 +142,13 @@ export async function POST(req: NextRequest) {
             '\n\n==================================================================\n' +
             'SECTION 15 — LIVE REFERENCE MATERIAL (retrieved for THIS question)\n' +
             '==================================================================\n' +
-            'The app retrieved the material below to help you answer more accurately.\n' +
+            'The app retrieved the material below (Wolfram|Alpha, Math StackExchange, and\n' +
+            'research papers from arXiv, Semantic Scholar and OpenAlex) to help you answer\n' +
+            'more accurately.\n' +
             '- Trust the Wolfram|Alpha computation for the numeric/symbolic result, but still\n' +
             '  show the full human reasoning and explanation.\n' +
-            '- When you use a Math StackExchange discussion or an arXiv paper, cite it inline as\n' +
-            '  a Markdown link, for example [source](URL).\n' +
+            '- When you use a discussion or a paper, cite it inline as a Markdown link, for\n' +
+            '  example [source](URL).\n' +
             '- If a reference is irrelevant, simply ignore it. Never invent references.\n\n' +
             parts.join('\n\n');
         }
