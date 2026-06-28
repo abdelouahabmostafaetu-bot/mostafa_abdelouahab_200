@@ -1,8 +1,9 @@
 'use client';
 
+import { type ReactNode } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.css';
-import { renderPlotSvg } from '@/lib/math/plot';
+import InteractivePlot from './InteractivePlot';
 
 /**
  * Renders an assistant answer that mixes Markdown, fenced code, math, and graphs.
@@ -10,10 +11,11 @@ import { renderPlotSvg } from '@/lib/math/plot';
  * Strategy:
  *   1. Pull out fenced code blocks and every math span first, render them, and
  *      leave tiny placeholders behind (so Markdown never mangles them).
- *      A fenced block tagged `plot` (or `graph`) becomes a real SVG graph.
+ *      A fenced block tagged `plot` (or `graph`) becomes a real INTERACTIVE
+ *      graph (pan / zoom / hover) rendered as a React component.
  *   2. Render the remaining text as Markdown: headings, lists, bold/italic,
  *      inline code, dividers, paragraphs.
- *   3. Put the rendered code, graphs, and math back in.
+ *   3. Put the rendered code and math back in, and interleave the graphs.
  */
 
 function escapeHtml(input: string): string {
@@ -45,11 +47,12 @@ function renderInline(s: string): string {
   return out;
 }
 
-type Extracted = { text: string; blocks: string[]; inlines: string[] };
+type Extracted = { text: string; blocks: string[]; inlines: string[]; plots: string[][] };
 
 function extractMath(input: string): Extracted {
   const blocks: string[] = [];
   const inlines: string[] = [];
+  const plots: string[][] = [];
   let out = input;
 
   const pushBlockHtml = (htmlValue: string): string => {
@@ -64,7 +67,7 @@ function extractMath(input: string): Extracted {
   };
 
   // Fenced code blocks first (so math/markdown inside them stays literal).
-  // A `plot`/`graph` block is turned into a real function graph instead.
+  // A `plot`/`graph` block becomes an interactive graph instead.
   out = out.replace(/```([\w-]*)\n?([\s\S]*?)```/g, (_m, lang, code) => {
     const language = String(lang || '').toLowerCase();
     if (language === 'plot' || language === 'graph') {
@@ -73,11 +76,9 @@ function extractMath(input: string): Extracted {
         .map((line) => line.trim())
         .filter((line) => line.length > 0 && !line.startsWith('#'));
       if (funcs.length > 0) {
-        try {
-          return pushBlockHtml(renderPlotSvg(funcs));
-        } catch {
-          // fall through to plain code rendering
-        }
+        const idx = plots.length;
+        plots.push(funcs);
+        return '\n\u0001P' + idx + '\u0001\n';
       }
     }
     const body = escapeHtml(String(code).replace(/\n$/, ''));
@@ -97,7 +98,7 @@ function extractMath(input: string): Extracted {
   out = out.replace(/\$([^$\n]+?)\$/g, (_m, tex) => pushInline(tex));
   out = out.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => pushInline(tex));
 
-  return { text: out, blocks, inlines };
+  return { text: out, blocks, inlines, plots };
 }
 
 function renderMarkdown(text: string, blocks: string[]): string {
@@ -121,6 +122,14 @@ function renderMarkdown(text: string, blocks: string[]): string {
     if (blockMatch) {
       flushPara();
       html.push(blocks[Number(blockMatch[1])] || '');
+      i++;
+      continue;
+    }
+
+    const plotMatch = t.match(/^\u0001P(\d+)\u0001$/);
+    if (plotMatch) {
+      flushPara();
+      html.push('\u0001P' + plotMatch[1] + '\u0001');
       i++;
       continue;
     }
@@ -186,16 +195,26 @@ function renderMarkdown(text: string, blocks: string[]): string {
 }
 
 export default function MathText({ text }: { text: string }) {
-  const { text: stripped, blocks, inlines } = extractMath(text || '');
+  const { text: stripped, blocks, inlines, plots } = extractMath(text || '');
   let html = renderMarkdown(stripped, blocks);
   html = html.replace(/\u0001I(\d+)\u0001/g, (_m, n) => inlines[Number(n)] || '');
   html = html.replace(/\u0001B(\d+)\u0001/g, (_m, n) => blocks[Number(n)] || '');
 
-  const htmlProp = { __html: html };
+  const segments = html.split(/\u0001P(\d+)\u0001/);
+  const nodes: ReactNode[] = [];
+  for (let s = 0; s < segments.length; s++) {
+    if (s % 2 === 1) {
+      const idx = Number(segments[s]);
+      nodes.push(<InteractivePlot key={'plot-' + s} expressions={plots[idx] || []} />);
+    } else if (segments[s]) {
+      const htmlProp = { __html: segments[s] };
+      nodes.push(<div key={'html-' + s} dangerouslySetInnerHTML={htmlProp} />);
+    }
+  }
+
   return (
-    <div
-      className="text-[15px] leading-7 text-[var(--color-text)] [&_.katex-display]:my-3"
-      dangerouslySetInnerHTML={htmlProp}
-    />
+    <div className="text-[15px] leading-7 text-[var(--color-text)] [&_.katex-display]:my-3">
+      {nodes}
+    </div>
   );
 }

@@ -1,6 +1,9 @@
 // Dependency-free single-variable math expression evaluator + SVG plotter.
 // Used to draw real function graphs from `plot` code blocks in chat answers.
 // No external packages, no API keys.
+//
+// compileExpr() + evalAt() are also reused by the interactive graph component
+// (components/math-ai/InteractivePlot.tsx) so the math engine lives in one place.
 
 type Token = { type: string; value: string };
 
@@ -211,6 +214,18 @@ export function compileExpr(expr: string): Compiled {
   return { expr: cleaned, rpn };
 }
 
+export type CompiledExpr = Compiled;
+
+// Evaluate a compiled expression at x. Returns NaN on any error.
+export function evalAt(compiled: Compiled, x: number): number {
+  try {
+    const y = evalRPN(compiled.rpn, x);
+    return typeof y === 'number' ? y : NaN;
+  } catch {
+    return NaN;
+  }
+}
+
 function escapeXml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -327,87 +342,46 @@ export function renderPlotSvg(
       '"/></clipPath></defs>',
   );
 
-  // Grid + tick labels.
   const xStep = niceStep((xMax - xMin) / 10);
   const yStep = niceStep((yMax - yMin) / 8);
   for (let gx = Math.ceil(xMin / xStep) * xStep; gx <= xMax + 1e-9; gx += xStep) {
     const X = r1(mapX(gx));
     parts.push(
-      '<line x1="' +
-        X +
-        '" y1="' +
-        pad +
-        '" x2="' +
-        X +
-        '" y2="' +
-        (H - pad) +
+      '<line x1="' + X + '" y1="' + pad + '" x2="' + X + '" y2="' + (H - pad) +
         '" stroke="currentColor" stroke-opacity="0.10"/>',
     );
     parts.push(
-      '<text x="' +
-        X +
-        '" y="' +
-        (H - pad + 13) +
-        '" font-size="9" text-anchor="middle" fill="currentColor" fill-opacity="0.5">' +
-        fmt(gx) +
-        '</text>',
+      '<text x="' + X + '" y="' + (H - pad + 13) +
+        '" font-size="9" text-anchor="middle" fill="currentColor" fill-opacity="0.5">' + fmt(gx) + '</text>',
     );
   }
   for (let gy = Math.ceil(yMin / yStep) * yStep; gy <= yMax + 1e-9; gy += yStep) {
     const Y = r1(mapY(gy));
     parts.push(
-      '<line x1="' +
-        pad +
-        '" y1="' +
-        Y +
-        '" x2="' +
-        (W - pad) +
-        '" y2="' +
-        Y +
+      '<line x1="' + pad + '" y1="' + Y + '" x2="' + (W - pad) + '" y2="' + Y +
         '" stroke="currentColor" stroke-opacity="0.10"/>',
     );
     parts.push(
-      '<text x="' +
-        (pad - 5) +
-        '" y="' +
-        (Y + 3) +
-        '" font-size="9" text-anchor="end" fill="currentColor" fill-opacity="0.5">' +
-        fmt(gy) +
-        '</text>',
+      '<text x="' + (pad - 5) + '" y="' + (Y + 3) +
+        '" font-size="9" text-anchor="end" fill="currentColor" fill-opacity="0.5">' + fmt(gy) + '</text>',
     );
   }
 
-  // Axes.
   if (yMin < 0 && yMax > 0) {
     const Y0 = r1(mapY(0));
     parts.push(
-      '<line x1="' +
-        pad +
-        '" y1="' +
-        Y0 +
-        '" x2="' +
-        (W - pad) +
-        '" y2="' +
-        Y0 +
+      '<line x1="' + pad + '" y1="' + Y0 + '" x2="' + (W - pad) + '" y2="' + Y0 +
         '" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"/>',
     );
   }
   if (xMin < 0 && xMax > 0) {
     const X0 = r1(mapX(0));
     parts.push(
-      '<line x1="' +
-        X0 +
-        '" y1="' +
-        pad +
-        '" x2="' +
-        X0 +
-        '" y2="' +
-        (H - pad) +
+      '<line x1="' + X0 + '" y1="' + pad + '" x2="' + X0 + '" y2="' + (H - pad) +
         '" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"/>',
     );
   }
 
-  // Curves (clipped so asymptotes do not escape the frame).
   parts.push('<g clip-path="url(#' + clipId + ')">');
   for (let s = 0; s < series.length; s++) {
     const color = PALETTE[s % PALETTE.length];
@@ -431,27 +405,17 @@ export function renderPlotSvg(
       penDown = true;
       prevPix = Y;
     }
-    parts.push(
-      '<path d="' + d.trim() + '" fill="none" stroke="' + color + '" stroke-width="2.2"/>',
-    );
+    parts.push('<path d="' + d.trim() + '" fill="none" stroke="' + color + '" stroke-width="2.2"/>');
   }
   parts.push('</g>');
 
-  // Legend.
   for (let s = 0; s < compiled.length; s++) {
     const color = PALETTE[s % PALETTE.length];
     const ly = pad + 4 + s * 16;
+    parts.push('<rect x="' + (pad + 6) + '" y="' + ly + '" width="11" height="11" rx="2" fill="' + color + '"/>');
     parts.push(
-      '<rect x="' + (pad + 6) + '" y="' + ly + '" width="11" height="11" rx="2" fill="' + color + '"/>',
-    );
-    parts.push(
-      '<text x="' +
-        (pad + 22) +
-        '" y="' +
-        (ly + 9.5) +
-        '" font-size="11" fill="currentColor" fill-opacity="0.8">' +
-        escapeXml('y = ' + compiled[s].expr) +
-        '</text>',
+      '<text x="' + (pad + 22) + '" y="' + (ly + 9.5) +
+        '" font-size="11" fill="currentColor" fill-opacity="0.8">' + escapeXml('y = ' + compiled[s].expr) + '</text>',
     );
   }
 
