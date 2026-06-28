@@ -10,6 +10,7 @@ import {
   searchArxiv,
   searchSemanticScholar,
   searchOpenAlex,
+  searchWeb,
   type KnowledgeResult,
   type KnowledgeSource,
 } from '@/lib/ai/knowledge';
@@ -95,12 +96,13 @@ export async function POST(req: NextRequest) {
       const question = lastUser ? lastUser.content.slice(0, 600) : '';
 
       if (question) {
-        const [wolframRes, seRes, axRes, s2Res, oaRes] = await Promise.allSettled([
+        const [wolframRes, seRes, axRes, s2Res, oaRes, webRes] = await Promise.allSettled([
           queryWolfram(question),
           searchMathStackExchange(question),
           searchArxiv(question),
           searchSemanticScholar(question),
           searchOpenAlex(question),
+          searchWeb(question),
         ]);
 
         const parts: string[] = [];
@@ -136,19 +138,25 @@ export async function POST(req: NextRequest) {
           sources = sources.concat(oa.sources);
         }
 
+        const web = settledKnowledge(webRes);
+        if (web.context) {
+          parts.push('LIVE WEB SEARCH RESULTS:\n' + web.context);
+          sources = sources.concat(web.sources);
+        }
+
         if (parts.length > 0) {
           systemPrompt =
             MATH_AI_SYSTEM_PROMPT +
             '\n\n==================================================================\n' +
             'SECTION 15 — LIVE REFERENCE MATERIAL (retrieved for THIS question)\n' +
             '==================================================================\n' +
-            'The app retrieved the material below (Wolfram|Alpha, Math StackExchange, and\n' +
-            'research papers from arXiv, Semantic Scholar and OpenAlex) to help you answer\n' +
-            'more accurately.\n' +
+            'The app retrieved the material below (Wolfram|Alpha, Math StackExchange,\n' +
+            'research papers from arXiv, Semantic Scholar and OpenAlex, and a live web\n' +
+            'search) to help you answer more accurately.\n' +
             '- Trust the Wolfram|Alpha computation for the numeric/symbolic result, but still\n' +
             '  show the full human reasoning and explanation.\n' +
-            '- When you use a discussion or a paper, cite it inline as a Markdown link, for\n' +
-            '  example [source](URL).\n' +
+            '- When you use a discussion, paper, or web page, cite it inline as a Markdown\n' +
+            '  link, for example [source](URL).\n' +
             '- If a reference is irrelevant, simply ignore it. Never invent references.\n\n' +
             parts.join('\n\n');
         }

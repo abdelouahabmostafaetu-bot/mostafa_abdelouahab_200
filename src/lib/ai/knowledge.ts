@@ -7,6 +7,8 @@
  *   No key required; an optional SEMANTIC_SCHOLAR_API_KEY raises the quota.
  * - OpenAlex (470M+ works + citations) via its free API. No key required;
  *   set OPENALEX_MAILTO to join the faster "polite pool".
+ * - General web search via Firecrawl (primary) or You.com (fallback). These
+ *   DO need a key: FIRECRAWL_API_KEY and/or YOU_API_KEY.
  *
  * Each function returns a compact text "context" block to feed the model, plus
  * a list of clickable sources to show the user. Nothing here ever throws.
@@ -15,7 +17,7 @@
 export type KnowledgeSource = {
   title: string;
   url: string;
-  kind: 'stackexchange' | 'arxiv' | 'semanticscholar' | 'openalex';
+  kind: 'stackexchange' | 'arxiv' | 'semanticscholar' | 'openalex' | 'web';
 };
 
 export type KnowledgeResult = {
@@ -306,4 +308,89 @@ export async function searchOpenAlex(query: string, max = 2): Promise<KnowledgeR
   } catch {
     return { context: '', sources: [] };
   }
+}
+
+type FcSearchItem = { url?: string; title?: string; description?: string; markdown?: string };
+type FcResp = { success?: boolean; data?: FcSearchItem[] };
+
+async function searchFirecrawl(query: string, max: number): Promise<KnowledgeResult> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) return { context: '', sources: [] };
+  try {
+    const res = await fetch('https://api.firecrawl.dev/v1/search', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + key,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query, limit: max }),
+    });
+    if (!res.ok) return { context: '', sources: [] };
+    const data = (await res.json()) as FcResp;
+    const items = (data.data || []).filter((d) => d.url && d.title).slice(0, max);
+    if (items.length === 0) return { context: '', sources: [] };
+
+    const sources: KnowledgeSource[] = items.map((d) => ({
+      title: String(d.title),
+      url: String(d.url),
+      kind: 'web',
+    }));
+
+    const blocks = items.map((d, i) => {
+      const body = (d.markdown || d.description || '').replace(/\s+/g, ' ').trim().slice(0, 450);
+      return '[' + String(i + 1) + '] ' + d.title + ' (' + d.url + ')\n' + (body || 'No preview available.');
+    });
+
+    return { context: blocks.join('\n\n'), sources };
+  } catch {
+    return { context: '', sources: [] };
+  }
+}
+
+type YouHit = { title?: string; url?: string; description?: string; snippets?: string[] };
+type YouResp = { hits?: YouHit[] };
+
+async function searchYou(query: string, max: number): Promise<KnowledgeResult> {
+  const key = process.env.YOU_API_KEY;
+  if (!key) return { context: '', sources: [] };
+  try {
+    const url = 'https://api.ydc-index.io/search?query=' + encodeURIComponent(query);
+    const res = await fetch(url, { headers: { 'X-API-Key': key } });
+    if (!res.ok) return { context: '', sources: [] };
+    const data = (await res.json()) as YouResp;
+    const hits = (data.hits || []).filter((h) => h.url && h.title).slice(0, max);
+    if (hits.length === 0) return { context: '', sources: [] };
+
+    const sources: KnowledgeSource[] = hits.map((h) => ({
+      title: String(h.title),
+      url: String(h.url),
+      kind: 'web',
+    }));
+
+    const blocks = hits.map((h, i) => {
+      const body = (h.snippets && h.snippets.length ? h.snippets.join(' ') : h.description || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 450);
+      return '[' + String(i + 1) + '] ' + h.title + ' (' + h.url + ')\n' + (body || 'No preview available.');
+    });
+
+    return { context: blocks.join('\n\n'), sources };
+  } catch {
+    return { context: '', sources: [] };
+  }
+}
+
+/**
+ * General web search. Tries Firecrawl first (richest content), then falls back
+ * to You.com. Returns empty if neither key is configured.
+ */
+export async function searchWeb(query: string, max = 3): Promise<KnowledgeResult> {
+  const q = query.trim();
+  if (!q) return { context: '', sources: [] };
+
+  const fc = await searchFirecrawl(q, max);
+  if (fc.sources.length > 0) return fc;
+
+  return searchYou(q, max);
 }

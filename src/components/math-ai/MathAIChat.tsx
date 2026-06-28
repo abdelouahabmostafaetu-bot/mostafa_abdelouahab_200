@@ -16,6 +16,7 @@ const SOURCE_LABELS: Record<string, string> = {
   stackexchange: 'Math.SE',
   semanticscholar: 'Semantic Scholar',
   openalex: 'OpenAlex',
+  web: 'Web',
 };
 
 export default function MathAIChat() {
@@ -238,7 +239,7 @@ export default function MathAIChat() {
           <button
             type="button"
             onClick={() => setDeep((v) => !v)}
-            title="Deep mode: research on Wolfram, Math StackExchange, arXiv, Semantic Scholar and OpenAlex, then double-check the answer"
+            title="Deep mode: research the web, Wolfram, Math StackExchange, arXiv, Semantic Scholar and OpenAlex, then double-check the answer"
             className={
               'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ' +
               (deep
@@ -250,7 +251,7 @@ export default function MathAIChat() {
           </button>
           {deep && (
             <span className="text-[11px] text-[var(--color-text-tertiary)]">
-              Researches sources & verifies — slower but more accurate
+              Searches the web & papers, then verifies — slower but more accurate
             </span>
           )}
         </div>
