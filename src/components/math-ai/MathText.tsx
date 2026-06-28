@@ -4,18 +4,22 @@ import { type ReactNode } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.css';
 import InteractivePlot from './InteractivePlot';
+import GeometryDiagram from './GeometryDiagram';
 
 /**
- * Renders an assistant answer that mixes Markdown, fenced code, math, and graphs.
+ * Renders an assistant answer that mixes Markdown, fenced code, math, graphs,
+ * and geometry diagrams.
  *
  * Strategy:
  *   1. Pull out fenced code blocks and every math span first, render them, and
  *      leave tiny placeholders behind (so Markdown never mangles them).
  *      A fenced block tagged `plot` (or `graph`) becomes a real INTERACTIVE
- *      graph (pan / zoom / hover) rendered as a React component.
+ *      graph (pan / zoom / hover); a block tagged `geometry` (or `geo`) becomes
+ *      an auto-scaled geometry diagram. Both render as React components.
  *   2. Render the remaining text as Markdown: headings, lists, bold/italic,
  *      inline code, dividers, paragraphs.
- *   3. Put the rendered code and math back in, and interleave the graphs.
+ *   3. Put the rendered code and math back in, and interleave the graphs and
+ *      diagrams.
  */
 
 function escapeHtml(input: string): string {
@@ -47,12 +51,13 @@ function renderInline(s: string): string {
   return out;
 }
 
-type Extracted = { text: string; blocks: string[]; inlines: string[]; plots: string[][] };
+type Extracted = { text: string; blocks: string[]; inlines: string[]; plots: string[][]; diagrams: string[] };
 
 function extractMath(input: string): Extracted {
   const blocks: string[] = [];
   const inlines: string[] = [];
   const plots: string[][] = [];
+  const diagrams: string[] = [];
   let out = input;
 
   const pushBlockHtml = (htmlValue: string): string => {
@@ -67,7 +72,8 @@ function extractMath(input: string): Extracted {
   };
 
   // Fenced code blocks first (so math/markdown inside them stays literal).
-  // A `plot`/`graph` block becomes an interactive graph instead.
+  // A `plot`/`graph` block becomes an interactive graph; a `geometry`/`geo`
+  // block becomes a geometry diagram.
   out = out.replace(/```([\w-]*)\n?([\s\S]*?)```/g, (_m, lang, code) => {
     const language = String(lang || '').toLowerCase();
     if (language === 'plot' || language === 'graph') {
@@ -79,6 +85,14 @@ function extractMath(input: string): Extracted {
         const idx = plots.length;
         plots.push(funcs);
         return '\n\u0001P' + idx + '\u0001\n';
+      }
+    }
+    if (language === 'geometry' || language === 'geo') {
+      const body = String(code).replace(/\n$/, '');
+      if (body.trim().length > 0) {
+        const idx = diagrams.length;
+        diagrams.push(body);
+        return '\n\u0001G' + idx + '\u0001\n';
       }
     }
     const body = escapeHtml(String(code).replace(/\n$/, ''));
@@ -98,7 +112,7 @@ function extractMath(input: string): Extracted {
   out = out.replace(/\$([^$\n]+?)\$/g, (_m, tex) => pushInline(tex));
   out = out.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => pushInline(tex));
 
-  return { text: out, blocks, inlines, plots };
+  return { text: out, blocks, inlines, plots, diagrams };
 }
 
 function renderMarkdown(text: string, blocks: string[]): string {
@@ -130,6 +144,14 @@ function renderMarkdown(text: string, blocks: string[]): string {
     if (plotMatch) {
       flushPara();
       html.push('\u0001P' + plotMatch[1] + '\u0001');
+      i++;
+      continue;
+    }
+
+    const geoMatch = t.match(/^\u0001G(\d+)\u0001$/);
+    if (geoMatch) {
+      flushPara();
+      html.push('\u0001G' + geoMatch[1] + '\u0001');
       i++;
       continue;
     }
@@ -195,20 +217,28 @@ function renderMarkdown(text: string, blocks: string[]): string {
 }
 
 export default function MathText({ text }: { text: string }) {
-  const { text: stripped, blocks, inlines, plots } = extractMath(text || '');
+  const { text: stripped, blocks, inlines, plots, diagrams } = extractMath(text || '');
   let html = renderMarkdown(stripped, blocks);
   html = html.replace(/\u0001I(\d+)\u0001/g, (_m, n) => inlines[Number(n)] || '');
   html = html.replace(/\u0001B(\d+)\u0001/g, (_m, n) => blocks[Number(n)] || '');
 
-  const segments = html.split(/\u0001P(\d+)\u0001/);
+  const segments = html.split(/\u0001([PG])(\d+)\u0001/);
   const nodes: ReactNode[] = [];
-  for (let s = 0; s < segments.length; s++) {
-    if (s % 2 === 1) {
-      const idx = Number(segments[s]);
-      nodes.push(<InteractivePlot key={'plot-' + s} expressions={plots[idx] || []} />);
-    } else if (segments[s]) {
-      const htmlProp = { __html: segments[s] };
+  for (let s = 0; s < segments.length; s += 3) {
+    const textSeg = segments[s];
+    if (textSeg) {
+      const htmlProp = { __html: textSeg };
       nodes.push(<div key={'html-' + s} dangerouslySetInnerHTML={htmlProp} />);
+    }
+    const kind = segments[s + 1];
+    const num = segments[s + 2];
+    if (kind !== undefined && num !== undefined) {
+      const idx = Number(num);
+      if (kind === 'P') {
+        nodes.push(<InteractivePlot key={'plot-' + s} expressions={plots[idx] || []} />);
+      } else if (kind === 'G') {
+        nodes.push(<GeometryDiagram key={'geo-' + s} spec={diagrams[idx] || ''} />);
+      }
     }
   }
 
