@@ -41,6 +41,15 @@ const STARTERS = [
   'Explain eigenvalues with a simple example',
 ];
 
+function decodeSources(header: string | null): Source[] {
+  if (!header) return [];
+  try {
+    return JSON.parse(decodeURIComponent(atob(header))) as Source[];
+  } catch {
+    return [];
+  }
+}
+
 export default function MathAIChat() {
   const [model, setModel] = useState(DEFAULT_MODEL_ID);
   const [deep, setDeep] = useState(false);
@@ -54,7 +63,6 @@ export default function MathAIChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Load saved conversation once.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -67,14 +75,9 @@ export default function MathAIChat() {
     }
   }, []);
 
-  // Persist conversation (without heavy image data to stay under the quota).
   useEffect(() => {
     try {
-      const slim = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-        sources: m.sources,
-      }));
+      const slim = messages.map((m) => ({ role: m.role, content: m.content, sources: m.sources }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
     } catch {
       // ignore quota errors
@@ -104,6 +107,23 @@ export default function MathAIChat() {
     e.target.value = '';
   }
 
+  function appendAssistant(content: string, sources: Source[]) {
+    setMessages((m) => [...m, { role: 'assistant', content, sources }]);
+  }
+
+  function updateLastAssistant(content: string) {
+    setMessages((m) => {
+      const copy = m.slice();
+      for (let k = copy.length - 1; k >= 0; k -= 1) {
+        if (copy[k].role === 'assistant') {
+          copy[k] = { ...copy[k], content };
+          break;
+        }
+      }
+      return copy;
+    });
+  }
+
   async function runRequest(history: Message[], attached?: string) {
     setSending(true);
     setError(null);
@@ -122,15 +142,41 @@ export default function MathAIChat() {
         }),
         signal: controller.signal,
       });
+
+      if (!res.ok) {
+        let message = 'Request failed';
+        try {
+          const data = await res.json();
+          message = data?.error || message;
+        } catch {
+          // ignore
+        }
+        throw new Error(message);
+      }
+
+      // Streaming response (normal text answers).
+      if (res.headers.get('x-stream') === '1' && res.body) {
+        const sources = decodeSources(res.headers.get('x-sources'));
+        appendAssistant('', sources);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let acc = '';
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          acc += decoder.decode(value, { stream: true });
+          updateLastAssistant(acc);
+          scrollToBottom();
+        }
+        return;
+      }
+
+      // Full JSON response (images + Deep mode).
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Request failed');
-      setMessages((m) => [
-        ...m,
-        { role: 'assistant', content: data.reply, sources: data.sources || [] },
-      ]);
+      appendAssistant(data.reply, data.sources || []);
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
-        // user stopped generation — no error toast
+        // user stopped — keep whatever streamed so far
       } else {
         setError(err instanceof Error ? err.message : 'Something went wrong');
       }
@@ -165,7 +211,6 @@ export default function MathAIChat() {
 
   function regenerate() {
     if (sending) return;
-    // Drop trailing assistant messages so we re-answer the last user turn.
     let end = messages.length;
     while (end > 0 && messages[end - 1].role === 'assistant') end -= 1;
     if (end === 0) return;
@@ -193,7 +238,7 @@ export default function MathAIChat() {
       setCopied(index);
       setTimeout(() => setCopied((c) => (c === index ? null : c)), 1500);
     } catch {
-      // clipboard not available
+      // clipboard unavailable
     }
   }
 
@@ -204,6 +249,7 @@ export default function MathAIChat() {
       : 'Searching & solving…';
 
   const lastIsAssistant = messages.length > 0 && messages[messages.length - 1].role === 'assistant';
+  const showThinking = sending && !lastIsAssistant;
 
   return (
     <div className="flex flex-col h-[calc(100dvh-9rem)] min-h-[460px]">
@@ -269,7 +315,13 @@ export default function MathAIChat() {
                   <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5 text-[15px]">
-                  <MathText text={m.content} />
+                  {m.content ? (
+                    <MathText text={m.content} />
+                  ) : (
+                    <span className="inline-flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                      <Loader2 className="h-4 w-4 animate-spin" /> {loadingText}
+                    </span>
+                  )}
                   {m.sources && m.sources.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {m.sources.map((s, j) => (
@@ -289,34 +341,35 @@ export default function MathAIChat() {
                       ))}
                     </div>
                   )}
-                  <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button
-                      type="button"
-                      onClick={() => copyAnswer(m.content, i)}
-                      title="Copy answer"
-                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
-                    >
-                      {copied === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                      {copied === i ? 'Copied' : 'Copy'}
-                    </button>
-                    {i === messages.length - 1 && (
+                  {m.content && (
+                    <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                       <button
                         type="button"
-                        onClick={regenerate}
-                        disabled={sending}
-                        title="Regenerate this answer"
-                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)] disabled:opacity-40"
+                        onClick={() => copyAnswer(m.content, i)}
+                        title="Copy answer"
+                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                       >
-                        <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+                        {copied === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied === i ? 'Copied' : 'Copy'}
                       </button>
-                    )}
-                  </div>
+                      {i === messages.length - 1 && !sending && (
+                        <button
+                          type="button"
+                          onClick={regenerate}
+                          title="Regenerate this answer"
+                          className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ),
           )
         )}
-        {sending && (
+        {showThinking && (
           <div className="flex gap-2 md:gap-3">
             <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
@@ -441,7 +494,7 @@ export default function MathAIChat() {
             <Brain className="h-3.5 w-3.5" /> Deep mode
           </button>
           <span className="text-[11px] text-[var(--color-text-tertiary)]">
-            {deep ? 'Double-checks every answer — slower but most accurate' : 'Verifies the answer with a second pass'}
+            {deep ? 'Double-checks every answer — slower but most accurate' : 'Streams the answer live as it is written'}
           </span>
         </div>
       </div>
