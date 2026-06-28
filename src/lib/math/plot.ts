@@ -4,6 +4,10 @@
 //
 // compileExpr() + evalAt() are also reused by the interactive graph component
 // (components/math-ai/InteractivePlot.tsx) so the math engine lives in one place.
+//
+// Expressions may reference single-letter PARAMETERS (e.g. a, b, c, k) besides
+// the variable x. Pass their names to compileExpr() and their values to
+// evalAt(); detectParams() finds them automatically for the slider UI.
 
 type Token = { type: string; value: string };
 
@@ -37,7 +41,30 @@ const CONSTS: Record<string, number> = {
   tau: Math.PI * 2,
 };
 
-function tokenize(src: string): Token[] {
+const KNOWN_NAMES = new Set<string>([
+  ...Object.keys(FUNCS),
+  ...Object.keys(CONSTS),
+  'x',
+  'y',
+]);
+
+// Find single-letter parameters used by an expression (anything that is not the
+// variable x/y, a known function, or a known constant). Returns lowercase names.
+export function detectParams(expr: string): string[] {
+  const cleaned = expr
+    .replace(/^\s*y\s*=\s*/i, '')
+    .replace(/^\s*f\s*\(\s*x\s*\)\s*=\s*/i, '');
+  const runs = cleaned.match(/[a-zA-Z]+/g) || [];
+  const found = new Set<string>();
+  for (const run of runs) {
+    const low = run.toLowerCase();
+    if (KNOWN_NAMES.has(low)) continue;
+    if (low.length === 1) found.add(low);
+  }
+  return Array.from(found);
+}
+
+function tokenize(src: string, paramSet?: Set<string>): Token[] {
   const tokens: Token[] = [];
   let i = 0;
   while (i < src.length) {
@@ -60,6 +87,7 @@ function tokenize(src: string): Token[] {
       if (FUNCS[name]) tokens.push({ type: 'func', value: name });
       else if (CONSTS[name] !== undefined) tokens.push({ type: 'const', value: name });
       else if (name === 'x' || name === 'y') tokens.push({ type: 'var', value: 'x' });
+      else if (paramSet && paramSet.has(name)) tokens.push({ type: 'param', value: name });
       else throw new Error('Unknown name: ' + name);
       i = j;
       continue;
@@ -97,11 +125,16 @@ function insertImplicitMul(tokens: Token[]): Token[] {
     const next = tokens[k + 1];
     if (!next) continue;
     const leftSide =
-      cur.type === 'num' || cur.type === 'var' || cur.type === 'const' || cur.type === 'rp';
+      cur.type === 'num' ||
+      cur.type === 'var' ||
+      cur.type === 'const' ||
+      cur.type === 'param' ||
+      cur.type === 'rp';
     const rightSide =
       next.type === 'num' ||
       next.type === 'var' ||
       next.type === 'const' ||
+      next.type === 'param' ||
       next.type === 'func' ||
       next.type === 'lp';
     if (leftSide && rightSide) out.push({ type: 'op', value: '*' });
@@ -118,7 +151,7 @@ function toRPN(tokens: Token[]): Token[] {
 
   for (let k = 0; k < tokens.length; k++) {
     const tk = tokens[k];
-    if (tk.type === 'num' || tk.type === 'var' || tk.type === 'const') {
+    if (tk.type === 'num' || tk.type === 'var' || tk.type === 'const' || tk.type === 'param') {
       output.push(tk);
       prev = tk;
       continue;
@@ -175,13 +208,14 @@ function toRPN(tokens: Token[]): Token[] {
   return output;
 }
 
-function evalRPN(rpn: Token[], x: number): number {
+function evalRPN(rpn: Token[], x: number, params?: Record<string, number>): number {
   const st: number[] = [];
   for (let k = 0; k < rpn.length; k++) {
     const tk = rpn[k];
     if (tk.type === 'num') st.push(parseFloat(tk.value));
     else if (tk.type === 'var') st.push(x);
     else if (tk.type === 'const') st.push(CONSTS[tk.value]);
+    else if (tk.type === 'param') st.push(params && params[tk.value] !== undefined ? params[tk.value] : NaN);
     else if (tk.type === 'func') {
       const a = st.pop() as number;
       st.push(FUNCS[tk.value](a));
@@ -205,21 +239,23 @@ function evalRPN(rpn: Token[], x: number): number {
 
 type Compiled = { expr: string; rpn: Token[] };
 
-export function compileExpr(expr: string): Compiled {
+export function compileExpr(expr: string, paramNames?: string[]): Compiled {
   const cleaned = expr
     .replace(/^\s*y\s*=\s*/i, '')
     .replace(/^\s*f\s*\(\s*x\s*\)\s*=\s*/i, '')
     .trim();
-  const rpn = toRPN(insertImplicitMul(tokenize(cleaned)));
+  const paramSet = paramNames && paramNames.length ? new Set(paramNames) : undefined;
+  const rpn = toRPN(insertImplicitMul(tokenize(cleaned, paramSet)));
   return { expr: cleaned, rpn };
 }
 
 export type CompiledExpr = Compiled;
 
-// Evaluate a compiled expression at x. Returns NaN on any error.
-export function evalAt(compiled: Compiled, x: number): number {
+// Evaluate a compiled expression at x (with optional parameter values).
+// Returns NaN on any error.
+export function evalAt(compiled: Compiled, x: number, params?: Record<string, number>): number {
   try {
-    const y = evalRPN(compiled.rpn, x);
+    const y = evalRPN(compiled.rpn, x, params);
     return typeof y === 'number' ? y : NaN;
   } catch {
     return NaN;
