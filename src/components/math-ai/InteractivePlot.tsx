@@ -1,13 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Download } from 'lucide-react';
 import { compileExpr, evalAt, type CompiledExpr } from '@/lib/math/plot';
 
 /**
  * Interactive function graph for `plot` blocks.
- * Students can: drag to pan, scroll or pinch to zoom, use the buttons, and
- * hover (or touch) anywhere to read the exact point on each curve.
+ * Students can: drag to pan, scroll or pinch to zoom, use the buttons, hover
+ * (or touch) anywhere to read the exact point on each curve, and save the
+ * graph as a PNG image.
  */
 
 const W = 660;
@@ -263,6 +264,68 @@ export default function InteractivePlot({ expressions }: { expressions: string[]
     setView({ xMin: -10, xMax: 10, yMin: ys.yMin, yMax: ys.yMax });
   };
 
+  // Export the current graph as a PNG. We clone the live SVG, bake in the
+  // resolved theme colors (so CSS variables and currentColor render outside
+  // the page), add a solid background, then rasterize via an off-screen canvas.
+  const downloadImage = () => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const cs = getComputedStyle(svg);
+    const pick = (name: string, fallback: string) => {
+      const v = cs.getPropertyValue(name).trim();
+      return v || fallback;
+    };
+    const bg = pick('--color-bg', '#ffffff');
+    const text = pick('--color-text', '#111111');
+    const elev = pick('--color-bg-elevated', bg);
+    const border = pick('--color-border', '#cccccc');
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute('xmlns', ns);
+    clone.setAttribute('width', String(W));
+    clone.setAttribute('height', String(H));
+    clone.style.setProperty('--color-bg', bg);
+    clone.style.setProperty('--color-text', text);
+    clone.style.setProperty('--color-bg-elevated', elev);
+    clone.style.setProperty('--color-border', border);
+    clone.style.color = text;
+
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', '0');
+    rect.setAttribute('y', '0');
+    rect.setAttribute('width', String(W));
+    rect.setAttribute('height', String(H));
+    rect.setAttribute('fill', bg);
+    clone.insertBefore(rect, clone.firstChild);
+
+    const svgStr = new XMLSerializer().serializeToString(clone);
+    const scale = 2;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = W * scale;
+      canvas.height = H * scale;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'graph.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+  };
+
   const paths = useMemo(() => {
     const N = 700;
     return series.map((s) => {
@@ -492,13 +555,21 @@ export default function InteractivePlot({ expressions }: { expressions: string[]
           >
             <RotateCcw className="h-4 w-4" />
           </button>
+          <button
+            type="button"
+            onClick={downloadImage}
+            title="Save as image"
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
+          >
+            <Download className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
       <div className="mt-1 px-1 text-[11px] text-[var(--color-text-tertiary)]">
         {allError
           ? 'Could not read this function.'
-          : 'Drag to move \u2022 Scroll or pinch to zoom \u2022 Hover to read a point'}
+          : 'Drag to move \u2022 Scroll or pinch to zoom \u2022 Hover to read \u2022 Save as image'}
       </div>
     </div>
   );
