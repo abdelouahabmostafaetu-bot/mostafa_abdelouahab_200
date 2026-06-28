@@ -4,15 +4,14 @@ import katex from 'katex';
 import 'katex/dist/katex.css';
 
 /**
- * Renders an assistant answer that mixes Markdown and LaTeX math.
+ * Renders an assistant answer that mixes Markdown, fenced code, and LaTeX math.
  *
- * Strategy (fixes the old "everything becomes <br>" problem):
- *   1. Pull every math span ($$...$$, \[...\], $...$, \(...\)) out first and
- *      render it with KaTeX, leaving a tiny placeholder behind.
- *   2. Render the remaining text as real Markdown: headings, bullet and
- *      numbered lists, bold/italic/code, dividers, paragraphs.
- *   3. Put the rendered math back in.
- * This keeps math safe from the Markdown pass and vice-versa.
+ * Strategy:
+ *   1. Pull out fenced code blocks and every math span first, render them, and
+ *      leave tiny placeholders behind (so Markdown never mangles them).
+ *   2. Render the remaining text as Markdown: headings, lists, bold/italic,
+ *      inline code, dividers, paragraphs.
+ *   3. Put the rendered code and math back in.
  */
 
 function escapeHtml(input: string): string {
@@ -51,9 +50,9 @@ function extractMath(input: string): Extracted {
   const inlines: string[] = [];
   let out = input;
 
-  const pushBlock = (tex: string): string => {
+  const pushBlockHtml = (htmlValue: string): string => {
     const idx = blocks.length;
-    blocks.push('<div class="my-3 overflow-x-auto">' + renderMath(tex, true) + '</div>');
+    blocks.push(htmlValue);
     return '\n\u0001B' + idx + '\u0001\n';
   };
   const pushInline = (tex: string): string => {
@@ -62,8 +61,22 @@ function extractMath(input: string): Extracted {
     return '\u0001I' + idx + '\u0001';
   };
 
-  out = out.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => pushBlock(tex));
-  out = out.replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => pushBlock(tex));
+  // Fenced code blocks first (so math/markdown inside them stays literal).
+  out = out.replace(/```[\w-]*\n?([\s\S]*?)```/g, (_m, code) => {
+    const body = escapeHtml(String(code).replace(/\n$/, ''));
+    return pushBlockHtml(
+      '<pre class="my-3 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-3 text-[13px] leading-6"><code>' +
+        body +
+        '</code></pre>',
+    );
+  });
+
+  out = out.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) =>
+    pushBlockHtml('<div class="my-3 overflow-x-auto">' + renderMath(tex, true) + '</div>'),
+  );
+  out = out.replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) =>
+    pushBlockHtml('<div class="my-3 overflow-x-auto">' + renderMath(tex, true) + '</div>'),
+  );
   out = out.replace(/\$([^$\n]+?)\$/g, (_m, tex) => pushInline(tex));
   out = out.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => pushInline(tex));
 
