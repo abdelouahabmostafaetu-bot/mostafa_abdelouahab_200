@@ -19,6 +19,7 @@ import {
   Trash2,
   Pencil,
   MessageSquare,
+  Download,
 } from 'lucide-react';
 import MathText from './MathText';
 import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
@@ -91,6 +92,22 @@ function decodeSources(header: string | null): Source[] {
   }
 }
 
+function downloadAnswer(text: string) {
+  try {
+    const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'math-ai-answer.md';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch {
+    // download unavailable
+  }
+}
+
 export default function MathAIChat() {
   const [model, setModel] = useState(DEFAULT_MODEL_ID);
   const [deep, setDeep] = useState(false);
@@ -107,12 +124,12 @@ export default function MathAIChat() {
   const [editTitle, setEditTitle] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const active = conversations.find((c) => c.id === activeId);
   const messages = active ? active.messages : [];
 
-  // Load saved conversations once (or create a fresh one).
   useEffect(() => {
     try {
       const rawC = localStorage.getItem(CONV_KEY);
@@ -135,7 +152,6 @@ export default function MathAIChat() {
     setLoaded(true);
   }, []);
 
-  // Persist (without heavy image data to stay under the storage quota).
   useEffect(() => {
     if (!loaded) return;
     try {
@@ -155,6 +171,20 @@ export default function MathAIChat() {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     });
   };
+
+  function autoGrow() {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  }
+
+  function resetGrow() {
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (el) el.style.height = 'auto';
+    });
+  }
 
   function patchActive(fn: (msgs: Message[]) => Message[]) {
     setConversations((prev) =>
@@ -275,6 +305,7 @@ export default function MathAIChat() {
     patchActive((msgs) => [...msgs, userMsg]);
     setInput('');
     setImage(null);
+    resetGrow();
     await runRequest(history, attached);
   }
 
@@ -298,6 +329,7 @@ export default function MathAIChat() {
     setInput('');
     setImage(null);
     setError(null);
+    resetGrow();
     if (active && active.messages.length === 0) return;
     const fresh = newConversation();
     setConversations((prev) => [fresh, ...prev]);
@@ -311,6 +343,7 @@ export default function MathAIChat() {
     setError(null);
     setInput('');
     setImage(null);
+    resetGrow();
   }
 
   function deleteConversation(id: string) {
@@ -358,7 +391,6 @@ export default function MathAIChat() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-7rem)] min-h-[460px]">
-      {/* Top bar */}
       <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-2">
         <button
           type="button"
@@ -380,7 +412,6 @@ export default function MathAIChat() {
         </button>
       </div>
 
-      {/* History slide-over */}
       {historyOpen && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setHistoryOpen(false)} />
@@ -549,6 +580,14 @@ export default function MathAIChat() {
                         {copied === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                         {copied === i ? 'Copied' : 'Copy'}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadAnswer(m.content)}
+                        title="Download answer"
+                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+                      >
+                        <Download className="h-3.5 w-3.5" /> Save
+                      </button>
                       {i === messages.length - 1 && !sending && (
                         <button
                           type="button"
@@ -633,8 +672,12 @@ export default function MathAIChat() {
             onChange={onPickImage}
           />
           <textarea
+            ref={textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              autoGrow();
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -643,7 +686,7 @@ export default function MathAIChat() {
             }}
             rows={1}
             placeholder="Ask a math question…"
-            className="flex-1 min-w-0 resize-none bg-transparent px-1 py-2.5 text-base text-[var(--color-text)] outline-none"
+            className="flex-1 min-w-0 resize-none bg-transparent px-1 py-2.5 text-base text-[var(--color-text)] outline-none max-h-[200px]"
           />
           {sending ? (
             <button
