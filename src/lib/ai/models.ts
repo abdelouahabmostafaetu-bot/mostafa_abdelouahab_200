@@ -3,7 +3,9 @@
  * SAFE for the browser: contains NO secrets, only labels and the NAME of the
  * environment variable each provider needs.
  *
- * vision: true means the model can read uploaded images (photos of problems).
+ * vision:    model can read uploaded images (photos of problems).
+ * reasoning: model "thinks" step by step before answering — best for hard,
+ *            advanced math (slower, but much more accurate).
  */
 
 export type AiProvider =
@@ -22,6 +24,7 @@ export type AiModel = {
   model: string;
   envKey: string;
   vision?: boolean;
+  reasoning?: boolean;
 };
 
 export const AI_MODELS: AiModel[] = [
@@ -53,6 +56,22 @@ export const AI_MODELS: AiModel[] = [
     provider: 'openrouter',
     model: 'deepseek/deepseek-chat',
     envKey: 'OPENROUTER_API_KEY',
+  },
+  {
+    id: 'openrouter-deepseek-r1',
+    label: 'DeepSeek R1 — deep thinking (OpenRouter)',
+    provider: 'openrouter',
+    model: 'deepseek/deepseek-r1',
+    envKey: 'OPENROUTER_API_KEY',
+    reasoning: true,
+  },
+  {
+    id: 'openrouter-qwq',
+    label: 'Qwen QwQ 32B — reasoning (OpenRouter)',
+    provider: 'openrouter',
+    model: 'qwen/qwq-32b',
+    envKey: 'OPENROUTER_API_KEY',
+    reasoning: true,
   },
   {
     id: 'mistral-large',

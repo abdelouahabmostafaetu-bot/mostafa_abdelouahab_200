@@ -1,17 +1,19 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Send, Loader2, Paperclip, X, Sparkles } from 'lucide-react';
+import { Send, Loader2, Paperclip, X, Sparkles, Brain, ExternalLink } from 'lucide-react';
 import MathText from './MathText';
 import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
 
 type Role = 'user' | 'assistant';
-type Message = { role: Role; content: string; image?: string };
+type Source = { title: string; url: string; kind: string };
+type Message = { role: Role; content: string; image?: string; sources?: Source[] };
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 export default function MathAIChat() {
   const [model, setModel] = useState(DEFAULT_MODEL_ID);
+  const [deep, setDeep] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -69,11 +71,15 @@ export default function MathAIChat() {
           messages: next.map((m) => ({ role: m.role, content: m.content })),
           model,
           image: attached,
+          deep,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Request failed');
-      setMessages((m) => [...m, { role: 'assistant', content: data.reply }]);
+      setMessages((m) => [
+        ...m,
+        { role: 'assistant', content: data.reply, sources: data.sources || [] },
+      ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -119,6 +125,25 @@ export default function MathAIChat() {
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5 text-[15px]">
                   <MathText text={m.content} />
+                  {m.sources && m.sources.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {m.sources.map((s, j) => (
+                        <a
+                          key={j}
+                          href={s.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-text)]"
+                        >
+                          <span className="font-medium text-[var(--color-accent)]">
+                            {s.kind === 'arxiv' ? 'arXiv' : 'Math.SE'}
+                          </span>
+                          <span className="max-w-[180px] truncate">{s.title}</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ),
@@ -130,7 +155,8 @@ export default function MathAIChat() {
               <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
             </div>
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] pt-1.5">
-              <Loader2 className="h-4 w-4 animate-spin" /> Thinking…
+              <Loader2 className="h-4 w-4 animate-spin" />{' '}
+              {deep ? 'Researching & verifying…' : 'Thinking…'}
             </div>
           </div>
         )}
@@ -190,7 +216,7 @@ export default function MathAIChat() {
             {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </button>
         </form>
-        <div className="mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
@@ -202,6 +228,24 @@ export default function MathAIChat() {
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => setDeep((v) => !v)}
+            title="Deep mode: research on Wolfram, Math StackExchange and arXiv, then double-check the answer"
+            className={
+              'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ' +
+              (deep
+                ? 'border-[var(--color-accent)] text-[var(--color-accent)] bg-[var(--color-bg-muted)]'
+                : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]')
+            }
+          >
+            <Brain className="h-3.5 w-3.5" /> Deep mode
+          </button>
+          {deep && (
+            <span className="text-[11px] text-[var(--color-text-tertiary)]">
+              Researches sources & verifies — slower but more accurate
+            </span>
+          )}
         </div>
       </div>
     </div>
