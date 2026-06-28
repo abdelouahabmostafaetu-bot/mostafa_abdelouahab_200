@@ -1,7 +1,21 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { Send, Loader2, Paperclip, X, Sparkles, Brain, ExternalLink, Globe } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Send,
+  Loader2,
+  Paperclip,
+  X,
+  Sparkles,
+  Brain,
+  ExternalLink,
+  Globe,
+  Copy,
+  Check,
+  RefreshCw,
+  Square,
+  Plus,
+} from 'lucide-react';
 import MathText from './MathText';
 import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
 
@@ -10,6 +24,7 @@ type Source = { title: string; url: string; kind: string };
 type Message = { role: Role; content: string; image?: string; sources?: Source[] };
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const STORAGE_KEY = 'math-ai-chat-v1';
 
 const SOURCE_LABELS: Record<string, string> = {
   arxiv: 'arXiv',
@@ -19,6 +34,13 @@ const SOURCE_LABELS: Record<string, string> = {
   web: 'Web',
 };
 
+const STARTERS = [
+  'Solve x^2 - 5x + 6 = 0 and explain each step',
+  'Find the derivative of f(x) = x sin(x)',
+  'Prove that the square root of 2 is irrational',
+  'Explain eigenvalues with a simple example',
+];
+
 export default function MathAIChat() {
   const [model, setModel] = useState(DEFAULT_MODEL_ID);
   const [deep, setDeep] = useState(false);
@@ -27,8 +49,37 @@ export default function MathAIChat() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<{ dataUrl: string; name: string } | null>(null);
+  const [copied, setCopied] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Load saved conversation once.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Message[];
+        if (Array.isArray(parsed)) setMessages(parsed);
+      }
+    } catch {
+      // ignore corrupt storage
+    }
+  }, []);
+
+  // Persist conversation (without heavy image data to stay under the quota).
+  useEffect(() => {
+    try {
+      const slim = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+        sources: m.sources,
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
+    } catch {
+      // ignore quota errors
+    }
+  }, [messages]);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -53,10 +104,46 @@ export default function MathAIChat() {
     e.target.value = '';
   }
 
+  async function runRequest(history: Message[], attached?: string) {
+    setSending(true);
+    setError(null);
+    scrollToBottom();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      const res = await fetch('/api/math-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: history.map((m) => ({ role: m.role, content: m.content })),
+          model,
+          image: attached,
+          deep,
+        }),
+        signal: controller.signal,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Request failed');
+      setMessages((m) => [
+        ...m,
+        { role: 'assistant', content: data.reply, sources: data.sources || [] },
+      ]);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // user stopped generation — no error toast
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong');
+      }
+    } finally {
+      setSending(false);
+      abortRef.current = null;
+      scrollToBottom();
+    }
+  }
+
   async function sendMessage(text: string) {
     const content = text.trim();
     if ((!content && !image) || sending) return;
-    setError(null);
     const attached = image?.dataUrl;
     const next: Message[] = [
       ...messages,
@@ -69,30 +156,44 @@ export default function MathAIChat() {
     setMessages(next);
     setInput('');
     setImage(null);
-    setSending(true);
-    scrollToBottom();
+    await runRequest(next, attached);
+  }
+
+  function stopGenerating() {
+    abortRef.current?.abort();
+  }
+
+  function regenerate() {
+    if (sending) return;
+    // Drop trailing assistant messages so we re-answer the last user turn.
+    let end = messages.length;
+    while (end > 0 && messages[end - 1].role === 'assistant') end -= 1;
+    if (end === 0) return;
+    const history = messages.slice(0, end);
+    setMessages(history);
+    void runRequest(history, history[history.length - 1].image);
+  }
+
+  function newChat() {
+    if (sending) abortRef.current?.abort();
+    setMessages([]);
+    setError(null);
+    setInput('');
+    setImage(null);
     try {
-      const res = await fetch('/api/math-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: next.map((m) => ({ role: m.role, content: m.content })),
-          model,
-          image: attached,
-          deep,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Request failed');
-      setMessages((m) => [
-        ...m,
-        { role: 'assistant', content: data.reply, sources: data.sources || [] },
-      ]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setSending(false);
-      scrollToBottom();
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }
+
+  async function copyAnswer(text: string, index: number) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(index);
+      setTimeout(() => setCopied((c) => (c === index ? null : c)), 1500);
+    } catch {
+      // clipboard not available
     }
   }
 
@@ -102,11 +203,26 @@ export default function MathAIChat() {
       ? 'Researching & verifying…'
       : 'Searching & solving…';
 
+  const lastIsAssistant = messages.length > 0 && messages[messages.length - 1].role === 'assistant';
+
   return (
     <div className="flex flex-col h-[calc(100dvh-9rem)] min-h-[460px]">
+      {messages.length > 0 && (
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-2">
+          <span className="text-xs text-[var(--color-text-tertiary)]">Math AI</span>
+          <button
+            type="button"
+            onClick={newChat}
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+          >
+            <Plus className="h-3.5 w-3.5" /> New chat
+          </button>
+        </div>
+      )}
+
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 space-y-8">
         {messages.length === 0 ? (
-          <div className="max-w-xl mx-auto text-center mt-20 px-2">
+          <div className="max-w-xl mx-auto text-center mt-16 px-2">
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-bg-muted)] mb-5">
               <Sparkles className="h-6 w-6 text-[var(--color-accent)]" />
             </div>
@@ -119,6 +235,18 @@ export default function MathAIChat() {
             <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
               <Globe className="h-3.5 w-3.5" /> Searches Math StackExchange, the web & research papers automatically
             </p>
+            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+              {STARTERS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => sendMessage(s)}
+                  className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2.5 text-left text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-text)]"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           messages.map((m, i) =>
@@ -136,7 +264,7 @@ export default function MathAIChat() {
                 </div>
               </div>
             ) : (
-              <div key={i} className="flex gap-2 md:gap-3">
+              <div key={i} className="group flex gap-2 md:gap-3">
                 <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
                   <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
                 </div>
@@ -161,6 +289,28 @@ export default function MathAIChat() {
                       ))}
                     </div>
                   )}
+                  <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => copyAnswer(m.content, i)}
+                      title="Copy answer"
+                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+                    >
+                      {copied === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copied === i ? 'Copied' : 'Copy'}
+                    </button>
+                    {i === messages.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={regenerate}
+                        disabled={sending}
+                        title="Regenerate this answer"
+                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)] disabled:opacity-40"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ),
@@ -171,8 +321,17 @@ export default function MathAIChat() {
             <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
             </div>
-            <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] pt-1.5">
-              <Loader2 className="h-4 w-4 animate-spin" /> {loadingText}
+            <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)] pt-1.5">
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> {loadingText}
+              </span>
+              <button
+                type="button"
+                onClick={stopGenerating}
+                className="inline-flex items-center gap-1 rounded-md border border-[var(--color-border)] px-2 py-0.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
+              >
+                <Square className="h-3 w-3" /> Stop
+              </button>
             </div>
           </div>
         )}
@@ -180,6 +339,17 @@ export default function MathAIChat() {
       </div>
 
       <div className="pt-2 pb-3">
+        {!sending && lastIsAssistant && (
+          <div className="mb-2 flex justify-center">
+            <button
+              type="button"
+              onClick={regenerate}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-text)]"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+            </button>
+          </div>
+        )}
         {image && (
           <div className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-2 py-1 text-xs text-[var(--color-text-secondary)]">
             <Paperclip className="h-3 w-3" />
@@ -225,13 +395,24 @@ export default function MathAIChat() {
             placeholder="Ask a math question…"
             className="flex-1 min-w-0 resize-none bg-transparent px-1 py-2.5 text-base text-[var(--color-text)] outline-none"
           />
-          <button
-            type="submit"
-            disabled={sending || (!input.trim() && !image)}
-            className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
-          >
-            {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-          </button>
+          {sending ? (
+            <button
+              type="button"
+              onClick={stopGenerating}
+              title="Stop"
+              className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-bg-muted)] h-10 w-10 text-[var(--color-text)] transition-opacity hover:opacity-90"
+            >
+              <Square className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!input.trim() && !image}
+              className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          )}
         </form>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <select
