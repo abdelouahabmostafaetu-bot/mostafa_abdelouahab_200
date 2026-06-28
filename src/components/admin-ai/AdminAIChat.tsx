@@ -1,18 +1,84 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { Send, Loader2, Wand2, CheckCircle2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Send,
+  Loader2,
+  Wand2,
+  CheckCircle2,
+  Settings,
+  Plus,
+  Trash2,
+  X,
+  Check,
+  AlertTriangle,
+} from 'lucide-react';
 import MathText from '@/components/math-ai/MathText';
 
 type Role = 'user' | 'assistant';
 type Message = { role: Role; content: string; actions?: string[] };
+
+type AdminModel = {
+  id: string;
+  label: string;
+  provider: string;
+  model: string;
+  envKey: string;
+  baseUrl: string;
+  vision: boolean;
+  reasoning: boolean;
+  custom: boolean;
+  keySet: boolean;
+  docId: string;
+};
+
+type ModelForm = {
+  label: string;
+  provider: string;
+  model: string;
+  envKey: string;
+  baseUrl: string;
+  vision: boolean;
+  reasoning: boolean;
+};
+
+const EMPTY_FORM: ModelForm = {
+  label: '',
+  provider: 'openrouter',
+  model: '',
+  envKey: '',
+  baseUrl: '',
+  vision: false,
+  reasoning: false,
+};
 
 export default function AdminAIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [model, setModel] = useState('gemini-flash');
+  const [models, setModels] = useState<AdminModel[]>([]);
+  const [managerOpen, setManagerOpen] = useState(false);
+  const [form, setForm] = useState<ModelForm>(EMPTY_FORM);
+  const [savingModel, setSavingModel] = useState(false);
+  const [modelMsg, setModelMsg] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  async function loadModels() {
+    try {
+      const res = await fetch('/api/admin-models');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.models)) setModels(data.models as AdminModel[]);
+    } catch {
+      // ignore
+    }
+  }
+
+  useEffect(() => {
+    loadModels();
+  }, []);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -34,7 +100,7 @@ export default function AdminAIChat() {
       const res = await fetch('/api/admin-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: payload }),
+        body: JSON.stringify({ messages: payload, model }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Request failed');
@@ -50,96 +116,162 @@ export default function AdminAIChat() {
     }
   }
 
+  async function addModel() {
+    if (savingModel) return;
+    setModelMsg(null);
+    if (!form.label.trim() || !form.model.trim() || !form.envKey.trim()) {
+      setModelMsg('Please fill in the display name, the model name, and the key name.');
+      return;
+    }
+    setSavingModel(true);
+    try {
+      const res = await fetch('/api/admin-models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to add model');
+      setForm(EMPTY_FORM);
+      setModelMsg('Added. Now set ' + form.envKey + ' in Vercel with the API key, then redeploy.');
+      await loadModels();
+    } catch (err) {
+      setModelMsg(err instanceof Error ? err.message : 'Failed to add model');
+    } finally {
+      setSavingModel(false);
+    }
+  }
+
+  async function removeModel(docId: string) {
+    try {
+      const res = await fetch('/api/admin-models', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: docId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to remove model');
+      await loadModels();
+    } catch (err) {
+      setModelMsg(err instanceof Error ? err.message : 'Failed to remove model');
+    }
+  }
+
   return (
     <div className="flex flex-col h-[calc(100dvh-9rem)] min-h-[460px]">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 space-y-8">
-        {messages.length === 0 ? (
-          <div className="max-w-xl mx-auto text-center mt-20 px-2">
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-bg-muted)] mb-5">
-              <Wand2 className="h-6 w-6 text-[var(--color-accent)]" />
-            </div>
-            <h2 className="text-xl font-semibold text-[var(--color-text)] mb-2">
-              Manage your website
-            </h2>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              Tell me what to do — draft, edit, publish, or delete blog posts.
-            </p>
-          </div>
-        ) : (
-          messages.map((m, i) =>
-            m.role === 'user' ? (
-              <div key={i} className="flex justify-end">
-                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-accent)] text-[var(--color-bg)] px-4 py-2.5">
-                  <p className="text-sm leading-6 whitespace-pre-wrap">{m.content}</p>
-                </div>
-              </div>
-            ) : (
-              <div key={i} className="flex gap-2 md:gap-3">
-                <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
-                  <Wand2 className="h-4 w-4 text-[var(--color-accent)]" />
-                </div>
-                <div className="min-w-0 flex-1 pt-0.5 text-[15px]">
-                  {m.actions && m.actions.length > 0 ? (
-                    <div className="mb-2 flex flex-col gap-1">
-                      {m.actions.map((a, j) => (
-                        <span
-                          key={j}
-                          className="inline-flex items-center gap-1.5 text-xs text-emerald-400"
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" /> {a}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  <MathText text={m.content} />
-                </div>
-              </div>
-            ),
-          )
-        )}
-        {sending ? (
-          <div className="flex gap-2 md:gap-3">
-            <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
-              <Wand2 className="h-4 w-4 text-[var(--color-accent)]" />
-            </div>
-            <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] pt-1.5">
-              <Loader2 className="h-4 w-4 animate-spin" /> Working…
-            </div>
-          </div>
-        ) : null}
-        {error ? <p className="text-center text-xs text-red-400">{error}</p> : null}
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-2">
+        <span className="inline-flex items-center gap-1.5 px-1 text-sm font-semibold text-[var(--color-text)]">
+          <Wand2 className="h-4 w-4 text-[var(--color-accent)]" /> Admin AI
+        </span>
+        <div className="flex items-center gap-2">
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            title="Choose the AI model for the Admin AI"
+            className="max-w-[180px] rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-xs text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-accent)]"
+          >
+            {models.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label + (m.keySet ? '' : ' — set key')}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setManagerOpen(true)}
+            title="Manage models"
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+          >
+            <Settings className="h-4 w-4" /> Models
+          </button>
+        </div>
       </div>
 
-      <div className="pt-2 pb-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            sendMessage(input);
-          }}
-          className="flex items-end gap-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2 py-1.5 shadow-sm focus-within:border-[var(--color-accent)]"
-        >
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage(input);
-              }
-            }}
-            rows={1}
-            placeholder="e.g. Draft a post about prime numbers and save it as a draft"
-            className="flex-1 min-w-0 resize-none bg-transparent px-2 py-2.5 text-base text-[var(--color-text)] outline-none"
+      {managerOpen && (
+        <div className="fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setManagerOpen(false)}
           />
-          <button
-            type="submit"
-            disabled={sending || !input.trim()}
-            className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
-          >
-            {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
+          <aside className="absolute right-0 top-0 flex h-full w-[26rem] max-w-[92vw] flex-col border-l border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-4 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-[var(--color-text)]">Manage AI models</span>
+              <button
+                type="button"
+                onClick={() => setManagerOpen(false)}
+                className="rounded-md p-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-4 overflow-y-auto">
+              <div className="space-y-1.5">
+                {models.map((m) => (
+                  <div
+                    key={m.id}
+                    className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm text-[var(--color-text)]">{m.label}</div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--color-text-tertiary)]">
+                        <span className="rounded bg-[var(--color-bg-muted)] px-1.5 py-0.5">{m.provider}</span>
+                        <span>{m.custom ? 'custom' : 'built-in'}</span>
+                        {m.keySet ? (
+                          <span className="inline-flex items-center gap-1 text-emerald-400">
+                            <Check className="h-3 w-3" /> key set
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-amber-400">
+                            <AlertTriangle className="h-3 w-3" /> add {m.envKey}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {m.custom ? (
+                      <button
+                        type="button"
+                        onClick={() => removeModel(m.docId)}
+                        title="Remove model"
+                        className="rounded p-1 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-muted)] hover:text-red-400"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <span className="px-1 text-[10px] text-[var(--color-text-tertiary)]">locked</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+                <div className="mb-2 text-sm font-semibold text-[var(--color-text)]">Add a model</div>
+                <div className="space-y-2">
+                  <input
+                    value={form.label}
+                    onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
+                    placeholder="Display name (e.g. Llama 3.3 70B)"
+                    className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+                  />
+                  <select
+                    value={form.provider}
+                    onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
+                    className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-accent)]"
+                  >
+                    <option value="openrouter">OpenRouter</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="mistral">Mistral</option>
+                    <option value="gemini">Gemini (Google)</option>
+                    <option value="custom">Custom (OpenAI-compatible)</option>
+                  </select>
+                  <input
+                    value={form.model}
+                    onChange={(e) => setForm((f) => ({ ...f, model: e.target.value }))}
+                    placeholder="Model name (e.g. meta-llama/llama-3.3-70b-instruct)"
+                    className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+                  />
+                  <input
+                    value={form.envKey}
+                    onChange={(e) => setForm((f) => ({ ...f, envKey: e.target.value }))}
+                    placeholder="Key name in Vercel (e.g. OPENROUTER_API_KEY)"
+                    className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none foc

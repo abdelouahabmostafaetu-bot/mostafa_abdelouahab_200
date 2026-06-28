@@ -5,11 +5,16 @@ import BlogPostModel from '@/lib/models/blog-post';
 import { buildExcerpt, normalizeBlogSlug, normalizeTags } from '@/lib/content';
 import { requireAdminApi } from '@/lib/admin';
 import { checkRateLimit } from '@/lib/security';
+import { resolveCatalogModel, type CatalogModel } from '@/lib/ai/model-catalog';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const MODEL = 'gemini-2.5-flash';
+const OPENAI_BASE: Record<string, string> = {
+  openrouter: 'https://openrouter.ai/api/v1',
+  mistral: 'https://api.mistral.ai/v1',
+  openai: 'https://api.openai.com/v1',
+};
 
 type ClientMessage = { role: 'user' | 'assistant'; content: string };
 
@@ -21,6 +26,15 @@ type GeminiPart =
 type GeminiContent = { role: string; parts: GeminiPart[] };
 
 type FunctionCallPart = { functionCall: { name: string; args: Record<string, unknown> } };
+
+type OaToolCall = { id: string; type?: string; function: { name: string; arguments: string } };
+type OaMessage = {
+  role: string;
+  content?: string | null;
+  tool_calls?: OaToolCall[];
+  tool_call_id?: string;
+  name?: string;
+};
 
 const SYSTEM_PROMPT = [
   'You are "Admin AI", the website management assistant for a mathematics academic website.',
@@ -111,6 +125,90 @@ const TOOLS = [
         },
       },
     ],
+  },
+];
+
+const OPENAI_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'list_blog_posts',
+      description:
+        'List blog posts (both published and drafts). Optionally filter by a search term matching title, slug, or category.',
+      parameters: {
+        type: 'object',
+        properties: { search: { type: 'string', description: 'Optional search term.' } },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_blog_post',
+      description: 'Get the full content and all fields of one blog post by its id.',
+      parameters: {
+        type: 'object',
+        properties: { id: { type: 'string', description: 'The blog post id.' } },
+        required: ['id'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_blog_post',
+      description: 'Create a new blog post.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          content: { type: 'string', description: 'Full post body in Markdown/MDX.' },
+          category: { type: 'string' },
+          tags: { type: 'array', items: { type: 'string' } },
+          excerpt: { type: 'string' },
+          isPublished: {
+            type: 'boolean',
+            description: 'True to publish immediately, false to save as a draft.',
+          },
+        },
+        required: ['title', 'content'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_blog_post',
+      description:
+        'Update an existing blog post by id. Only the fields you provide are changed; omitted fields keep their current value.',
+      parameters: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          title: { type: 'string' },
+          content: { type: 'string' },
+          category: { type: 'string' },
+          tags: { type: 'array', items: { type: 'string' } },
+          excerpt: { type: 'string' },
+          isPublished: { type: 'boolean' },
+          slug: { type: 'string' },
+        },
+        required: ['id'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'delete_blog_post',
+      description:
+        'Permanently delete a blog post by id. Always confirm with the admin before calling this.',
+      parameters: {
+        type: 'object',
+        properties: { id: { type: 'string' } },
+        required: ['id'],
+      },
+    },
   },
 ];
 
@@ -258,6 +356,129 @@ async function executeTool(
   return { response: { error: 'Unknown tool: ' + name } };
 }
 
+async function runGeminiAgent(
+  model: CatalogModel,
+  apiKey: string,
+  incoming: ClientMessage[],
+  actions: string[],
+): Promise<string> {
+  const contents: GeminiContent[] = incoming.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: String(m.content || '') }],
+  }));
+
+  const endpoint =
+    'https://generativelanguage.googleapis.com/v1beta/models/' +
+    model.model +
+    ':generateContent?key=' +
+    apiKey;
+
+  for (let step = 0; step < 6; step++) {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents,
+        tools: TOOLS,
+        generationConfig: { temperature: 0.3 },
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'Gemini API error');
+
+    const candidate = data?.candidates?.[0];
+    const parts: GeminiPart[] = candidate?.content?.parts ?? [];
+    const calls = parts.map(getFunctionCall).filter((c): c is FunctionCallPart => c !== null);
+
+    if (calls.length === 0) {
+      const reply = parts.map((p) => ('text' in p ? p.text : '')).join('').trim();
+      return reply || 'Done.';
+    }
+
+    contents.push({ role: 'model', parts });
+    const responseParts: GeminiPart[] = [];
+    for (const call of calls) {
+      const fnName = call.functionCall.name;
+      const fnArgs = call.functionCall.args || {};
+      const result = await executeTool(fnName, fnArgs);
+      if (result.action) actions.push(result.action);
+      responseParts.push({ functionResponse: { name: fnName, response: result.response } });
+    }
+    contents.push({ role: 'function', parts: responseParts });
+  }
+
+  return 'I completed several steps but reached the action limit. Please review and continue if needed.';
+}
+
+async function runOpenAiAgent(
+  model: CatalogModel,
+  apiKey: string,
+  base: string,
+  incoming: ClientMessage[],
+  actions: string[],
+): Promise<string> {
+  const messages: OaMessage[] = [
+    { role: 'system', content: SYSTEM_PROMPT },
+    ...incoming.map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: String(m.content || ''),
+    })),
+  ];
+
+  for (let step = 0; step < 6; step++) {
+    const res = await fetch(base + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
+      body: JSON.stringify({
+        model: model.model,
+        messages,
+        tools: OPENAI_TOOLS,
+        tool_choice: 'auto',
+        temperature: 0.3,
+      }),
+    });
+
+    const data = (await res.json()) as {
+      choices?: Array<{ message?: OaMessage }>;
+      error?: { message?: string } | string;
+    };
+    if (!res.ok) {
+      const e = data.error;
+      throw new Error(typeof e === 'string' ? e : e?.message || 'AI provider error');
+    }
+
+    const msg = data.choices?.[0]?.message;
+    if (!msg) return 'Done.';
+    const calls = Array.isArray(msg.tool_calls) ? msg.tool_calls : [];
+
+    if (calls.length === 0) {
+      return typeof msg.content === 'string' && msg.content.trim() ? msg.content : 'Done.';
+    }
+
+    messages.push({ role: 'assistant', content: msg.content ?? '', tool_calls: calls });
+    for (const tc of calls) {
+      let parsed: Record<string, unknown> = {};
+      try {
+        parsed = JSON.parse(tc.function.arguments || '{}');
+      } catch {
+        parsed = {};
+      }
+      const result = await executeTool(tc.function.name, parsed);
+      if (result.action) actions.push(result.action);
+      messages.push({
+        role: 'tool',
+        tool_call_id: tc.id,
+        name: tc.function.name,
+        content: JSON.stringify(result.response),
+      });
+    }
+  }
+
+  return 'I completed several steps but reached the action limit. Please review and continue if needed.';
+}
+
 export async function POST(request: NextRequest) {
   const limited = checkRateLimit(request, 'admin-ai', 30);
   if (limited) return limited;
@@ -265,12 +486,7 @@ export async function POST(request: NextRequest) {
   const forbidden = await requireAdminApi();
   if (forbidden) return forbidden;
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Server is missing GEMINI_API_KEY.' }, { status: 500 });
-  }
-
-  let body: { messages?: ClientMessage[] };
+  let body: { messages?: ClientMessage[]; model?: string };
   try {
     body = await request.json();
   } catch {
@@ -282,69 +498,43 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No messages provided.' }, { status: 400 });
   }
 
-  const contents: GeminiContent[] = incoming.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: String(m.content || '') }],
-  }));
+  const modelId = String(body.model || 'gemini-flash');
+  const chosen = (await resolveCatalogModel(modelId)) || (await resolveCatalogModel('gemini-flash'));
+  if (!chosen) {
+    return NextResponse.json({ error: 'No AI model is configured on this site.' }, { status: 500 });
+  }
 
-  const endpoint =
-    'https://generativelanguage.googleapis.com/v1beta/models/' +
-    MODEL +
-    ':generateContent?key=' +
-    apiKey;
+  const apiKey = process.env[chosen.envKey];
+  if (!apiKey) {
+    return NextResponse.json(
+      {
+        error:
+          'The model "' +
+          chosen.label +
+          '" needs the environment variable ' +
+          chosen.envKey +
+          ' set in Vercel. Add it (with your API key) and redeploy.',
+      },
+      { status: 400 },
+    );
+  }
 
   const actions: string[] = [];
-
   try {
-    for (let step = 0; step < 6; step++) {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents,
-          tools: TOOLS,
-          generationConfig: { temperature: 0.3 },
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        const message = data?.error?.message || 'Gemini API error';
-        return NextResponse.json({ error: message }, { status: res.status });
+    let reply: string;
+    if (chosen.provider === 'gemini') {
+      reply = await runGeminiAgent(chosen, apiKey, incoming, actions);
+    } else {
+      const base = chosen.provider === 'custom' ? chosen.baseUrl || '' : OPENAI_BASE[chosen.provider];
+      if (!base) {
+        return NextResponse.json(
+          { error: 'Unsupported provider for this model: ' + chosen.provider },
+          { status: 400 },
+        );
       }
-
-      const candidate = data?.candidates?.[0];
-      const parts: GeminiPart[] = candidate?.content?.parts ?? [];
-      const calls = parts
-        .map(getFunctionCall)
-        .filter((c): c is FunctionCallPart => c !== null);
-
-      if (calls.length === 0) {
-        const reply = parts
-          .map((p) => ('text' in p ? p.text : ''))
-          .join('')
-          .trim();
-        return NextResponse.json({ reply: reply || 'Done.', actions });
-      }
-
-      contents.push({ role: 'model', parts });
-
-      const responseParts: GeminiPart[] = [];
-      for (const call of calls) {
-        const fnName = call.functionCall.name;
-        const fnArgs = call.functionCall.args || {};
-        const result = await executeTool(fnName, fnArgs);
-        if (result.action) actions.push(result.action);
-        responseParts.push({ functionResponse: { name: fnName, response: result.response } });
-      }
-      contents.push({ role: 'function', parts: responseParts });
+      reply = await runOpenAiAgent(chosen, apiKey, base, incoming, actions);
     }
-
-    return NextResponse.json({
-      reply: 'I completed several steps but reached the action limit. Please review and continue if needed.',
-      actions,
-    });
+    return NextResponse.json({ reply, actions });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unexpected error' },

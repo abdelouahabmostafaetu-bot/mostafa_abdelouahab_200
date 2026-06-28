@@ -1,8 +1,11 @@
 /**
  * Server-side AI provider router.
  * - Gemini uses Google's native API.
- * - OpenRouter, Mistral and OpenAI use the OpenAI-compatible
+ * - OpenRouter, Mistral, OpenAI and custom providers use the OpenAI-compatible
  *   /chat/completions format.
+ *
+ * Models can be built-in (models.ts) or custom (added by the admin, stored in
+ * the database). Resolution checks built-in first, then the database.
  *
  * Supports:
  *   - runChat(): single full response (used for images + Deep verify pass).
@@ -12,6 +15,7 @@
  */
 
 import { AI_MODELS, type AiModel } from './models';
+import { resolveCatalogModel, type CatalogModel } from './model-catalog';
 
 export type ChatRole = 'user' | 'assistant';
 export type ProviderMessage = { role: ChatRole; content: string };
@@ -47,13 +51,13 @@ export function getApiKey(model: AiModel): string | undefined {
   return process.env[model.envKey];
 }
 
-function resolveModel(modelId: string): AiModel {
-  const model = getModelById(modelId) || getModelById('gemini-flash');
-  if (!model) throw new Error('No AI model is configured on this site.');
-  return model;
+async function resolveModelAsync(modelId: string): Promise<CatalogModel> {
+  const found = (await resolveCatalogModel(modelId)) || (await resolveCatalogModel('gemini-flash'));
+  if (!found) throw new Error('No AI model is configured on this site.');
+  return found;
 }
 
-function requireKey(model: AiModel): string {
+function requireKey(model: CatalogModel): string {
   const apiKey = getApiKey(model);
   if (!apiKey) {
     throw new Error(
@@ -65,6 +69,11 @@ function requireKey(model: AiModel): string {
     );
   }
   return apiKey;
+}
+
+function openAiBaseFor(model: CatalogModel): string | undefined {
+  if (model.provider === 'custom') return model.baseUrl || undefined;
+  return OPENAI_COMPATIBLE_BASE[model.provider];
 }
 
 function buildGeminiContents(messages: ProviderMessage[], image?: ChatImage) {
@@ -166,13 +175,13 @@ export async function runChat(
   messages: ProviderMessage[],
   image?: ChatImage,
 ): Promise<string> {
-  const model = resolveModel(modelId);
+  const model = await resolveModelAsync(modelId);
   const apiKey = requireKey(model);
 
   if (model.provider === 'gemini') {
     return runGemini(apiKey, model.model, system, messages, image);
   }
-  const base = OPENAI_COMPATIBLE_BASE[model.provider];
+  const base = openAiBaseFor(model);
   if (!base) throw new Error('Unsupported provider: ' + model.provider);
   return runOpenAiCompatible(base, apiKey, model.model, system, messages, image);
 }
@@ -299,14 +308,14 @@ export async function* streamChat(
   system: string,
   messages: ProviderMessage[],
 ): AsyncGenerator<string> {
-  const model = resolveModel(modelId);
+  const model = await resolveModelAsync(modelId);
   const apiKey = requireKey(model);
 
   if (model.provider === 'gemini') {
     yield* streamGemini(apiKey, model.model, system, messages);
     return;
   }
-  const base = OPENAI_COMPATIBLE_BASE[model.provider];
+  const base = openAiBaseFor(model);
   if (!base) throw new Error('Unsupported provider: ' + model.provider);
   yield* streamOpenAiCompatible(base, apiKey, model.model, system, messages);
 }

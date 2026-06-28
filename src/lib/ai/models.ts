@@ -6,6 +6,9 @@
  * Only strong mathematics models are listed here. Weak models were removed on
  * purpose so every choice gives good, reliable math.
  *
+ * Admins can add MORE models at runtime from the Admin AI; those are stored in
+ * the database (see lib/ai/model-catalog.ts) and merged with this list.
+ *
  * vision:    model can read uploaded images (photos of problems).
  *            NOTE: image reading is always handled by Gemini regardless of the
  *            selected model, so only Gemini is marked vision-capable here.
@@ -13,7 +16,7 @@
  *            advanced math (slower, but much more accurate).
  */
 
-export type AiProvider = 'gemini' | 'openrouter' | 'mistral' | 'openai';
+export type AiProvider = 'gemini' | 'openrouter' | 'mistral' | 'openai' | 'custom';
 
 export type AiModel = {
   id: string;
