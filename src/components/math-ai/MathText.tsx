@@ -2,16 +2,18 @@
 
 import katex from 'katex';
 import 'katex/dist/katex.css';
+import { renderPlotSvg } from '@/lib/math/plot';
 
 /**
- * Renders an assistant answer that mixes Markdown, fenced code, and LaTeX math.
+ * Renders an assistant answer that mixes Markdown, fenced code, math, and graphs.
  *
  * Strategy:
  *   1. Pull out fenced code blocks and every math span first, render them, and
  *      leave tiny placeholders behind (so Markdown never mangles them).
+ *      A fenced block tagged `plot` (or `graph`) becomes a real SVG graph.
  *   2. Render the remaining text as Markdown: headings, lists, bold/italic,
  *      inline code, dividers, paragraphs.
- *   3. Put the rendered code and math back in.
+ *   3. Put the rendered code, graphs, and math back in.
  */
 
 function escapeHtml(input: string): string {
@@ -62,7 +64,22 @@ function extractMath(input: string): Extracted {
   };
 
   // Fenced code blocks first (so math/markdown inside them stays literal).
-  out = out.replace(/```[\w-]*\n?([\s\S]*?)```/g, (_m, code) => {
+  // A `plot`/`graph` block is turned into a real function graph instead.
+  out = out.replace(/```([\w-]*)\n?([\s\S]*?)```/g, (_m, lang, code) => {
+    const language = String(lang || '').toLowerCase();
+    if (language === 'plot' || language === 'graph') {
+      const funcs = String(code)
+        .split(/[\n;]+/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith('#'));
+      if (funcs.length > 0) {
+        try {
+          return pushBlockHtml(renderPlotSvg(funcs));
+        } catch {
+          // fall through to plain code rendering
+        }
+      }
+    }
     const body = escapeHtml(String(code).replace(/\n$/, ''));
     return pushBlockHtml(
       '<pre class="my-3 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-3 text-[13px] leading-6"><code>' +
