@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { Send, Loader2, BookOpen, MessageSquare, ExternalLink } from 'lucide-react';
 import MathText from './MathText';
+import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
 
 type Role = 'user' | 'assistant';
 type Message = { role: Role; content: string };
@@ -24,6 +25,7 @@ const SUGGESTIONS = [
 
 export default function MathAIChat() {
   const [tab, setTab] = useState<'chat' | 'papers'>('chat');
+  const [model, setModel] = useState(DEFAULT_MODEL_ID);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -55,7 +57,7 @@ export default function MathAIChat() {
       const res = await fetch('/api/math-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ messages: next, model }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Request failed');
@@ -114,6 +116,21 @@ export default function MathAIChat() {
 
       {tab === 'chat' ? (
         <div className="flex flex-col h-[60vh]">
+          <div className="flex items-center gap-2 border-b border-[var(--color-border)] px-3 py-2">
+            <span className="text-xs text-[var(--color-text-tertiary)]">AI model</span>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-xs text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+            >
+              {AI_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
               <div className="text-center mt-8">
