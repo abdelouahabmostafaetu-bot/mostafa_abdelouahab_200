@@ -32,11 +32,11 @@ function renderMath(tex: string, displayMode: boolean): string {
   }
 }
 
-const CCCODE = 'rounded bg-[var(--color-bg-muted)] px-1 py-0.5 text-[0.85em] font-mono';
+const CODE_CLS = 'rounded bg-[var(--color-bg-muted)] px-1 py-0.5 text-[0.85em] font-mono';
 
 function renderInline(s: string): string {
   let out = escapeHtml(s);
-  out = out.replace(/`([^`]+)`/g, '<code class="' + CCODE + '">$1</code>');
+  out = out.replace(/`([^`]+)`/g, '<code class="' + CODE_CLS + '">$1</code>');
   out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   out = out.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
   out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
