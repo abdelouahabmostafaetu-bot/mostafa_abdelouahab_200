@@ -14,6 +14,7 @@ import { DEFAULT_MODEL_ID, VISION_FALLBACK_MODEL_ID } from '@/lib/ai/models';
 import { checkDailyLimit } from '@/lib/ai/daily-limit';
 import { queryWolfram } from '@/lib/ai/wolfram';
 import { searchMathDataset } from '@/lib/ai/math-dataset';
+import { recognizeImage } from '@/lib/ai/ocr';
 import {
   searchMathStackExchange,
   searchArxiv,
@@ -25,6 +26,7 @@ import {
 } from '@/lib/ai/knowledge';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
@@ -213,6 +215,30 @@ export async function POST(req: NextRequest) {
             '  link, for example [source](URL).\n' +
             '- If a reference is irrelevant, simply ignore it. Never invent references.\n\n' +
             parts.join('\n\n');
+        }
+      }
+    }
+
+    // High-accuracy OCR for uploaded images (Unlimited-OCR hosted on Modal).
+    // The image is still sent to the vision model below; the recognized text is
+    // added as extra grounding so handwritten / photographed math is read
+    // correctly. If OCR is not configured or fails, this is silently skipped.
+    if (image) {
+      const ocrText = await recognizeImage(image);
+      if (ocrText) {
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].role === 'user') {
+            messages[i] = {
+              ...messages[i],
+              content:
+                messages[i].content +
+                '\n\n[High-accuracy OCR of the attached image — treat this as the exact ' +
+                'problem statement, LaTeX preserved; the photo may be handwritten or low ' +
+                'quality, so prefer this text when it is clearer than the picture]:\n' +
+                ocrText,
+            };
+            break;
+          }
         }
       }
     }
