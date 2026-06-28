@@ -53,19 +53,21 @@ export default function MathText({ text }: { text: string }) {
     segments.push({ type: 'text', value: text.slice(lastIndex) });
   }
 
-  const html = segments
-    .map((seg) => {
-      if (seg.type === 'text') return formatText(seg.value);
-      if (seg.type === 'block')
-        return `<div class="my-2 overflow-x-auto">${renderMath(seg.value, true)}</div>`;
-      return renderMath(seg.value, false);
-    })
-    .join('');
+  const parts = segments.map((seg) => {
+    if (seg.type === 'text') return formatText(seg.value);
+    if (seg.type === 'block') {
+      return '<div class="my-2 overflow-x-auto">' + renderMath(seg.value, true) + '</div>';
+    }
+    return renderMath(seg.value, false);
+  });
+
+  const html = parts.join('');
+  const htmlProp = { __html: html };
 
   return (
     <div
       className="text-sm leading-7 text-[var(--color-text)]"
-      dangerouslySetInnerHTML= __html: html 
+      dangerouslySetInnerHTML={htmlProp}
     />
   );
 }

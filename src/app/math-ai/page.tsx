@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     'An AI assistant focused only on mathematics — solve problems step by step and discover international research papers.',
 };
 
+const headingStyle = { fontFamily: 'var(--font-heading)' };
+
 export default async function MathAIPage() {
   await auth.protect();
 
@@ -20,7 +22,7 @@ export default async function MathAIPage() {
           </p>
           <h1
             className="text-2xl md:text-4xl font-semibold text-[var(--color-text)] mb-3"
-            style= fontFamily: 'var(--font-heading)' 
+            style={headingStyle}
           >
             Math AI
           </h1>
