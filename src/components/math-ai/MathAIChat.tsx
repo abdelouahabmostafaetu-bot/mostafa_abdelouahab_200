@@ -8,12 +8,6 @@ import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
 type Role = 'user' | 'assistant';
 type Message = { role: Role; content: string; image?: string };
 
-const SUGGESTIONS = [
-  'Solve x^2 - 5x + 6 = 0 and explain each step',
-  'Prove that the square root of 2 is irrational',
-  'Explain the fundamental theorem of calculus',
-];
-
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 export default function MathAIChat() {
@@ -89,31 +83,19 @@ export default function MathAIChat() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-9rem)] min-h-[480px]">
+    <div className="flex flex-col h-[calc(100dvh-9rem)] min-h-[460px]">
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 space-y-8">
         {messages.length === 0 ? (
-          <div className="max-w-xl mx-auto text-center mt-16">
+          <div className="max-w-xl mx-auto text-center mt-20 px-2">
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-bg-muted)] mb-5">
               <Sparkles className="h-6 w-6 text-[var(--color-accent)]" />
             </div>
             <h2 className="text-xl font-semibold text-[var(--color-text)] mb-2">
               Ask a mathematics question
             </h2>
-            <p className="text-sm text-[var(--color-text-secondary)] mb-7">
+            <p className="text-sm text-[var(--color-text-secondary)]">
               Type a problem below, or attach a photo of one.
             </p>
-            <div className="flex flex-col items-stretch gap-2">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => sendMessage(s)}
-                  className="rounded-xl border border-[var(--color-border)] px-4 py-3 text-left text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-text)]"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
           </div>
         ) : (
           messages.map((m, i) =>
@@ -131,7 +113,7 @@ export default function MathAIChat() {
                 </div>
               </div>
             ) : (
-              <div key={i} className="flex gap-3">
+              <div key={i} className="flex gap-2 md:gap-3">
                 <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
                   <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
                 </div>
@@ -143,7 +125,7 @@ export default function MathAIChat() {
           )
         )}
         {sending && (
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
             </div>
@@ -155,11 +137,11 @@ export default function MathAIChat() {
         {error && <p className="text-center text-xs text-red-400">{error}</p>}
       </div>
 
-      <div className="pt-2 pb-2">
+      <div className="pt-2 pb-3">
         {image && (
           <div className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-2 py-1 text-xs text-[var(--color-text-secondary)]">
             <Paperclip className="h-3 w-3" />
-            <span className="max-w-[160px] truncate">{image.name}</span>
+            <span className="max-w-[150px] truncate">{image.name}</span>
             <button type="button" onClick={() => setImage(null)} className="hover:text-[var(--color-text)]">
               <X className="h-3 w-3" />
             </button>
@@ -170,15 +152,15 @@ export default function MathAIChat() {
             e.preventDefault();
             sendMessage(input);
           }}
-          className="flex items-end gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2 shadow-sm focus-within:border-[var(--color-accent)]"
+          className="flex items-end gap-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2 py-1.5 shadow-sm focus-within:border-[var(--color-accent)]"
         >
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             title="Attach an image"
-            className="shrink-0 rounded-lg p-2 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+            className="shrink-0 rounded-lg p-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
           >
-            <Paperclip className="h-4 w-4" />
+            <Paperclip className="h-5 w-5" />
           </button>
           <input
             ref={fileInputRef}
@@ -197,18 +179,18 @@ export default function MathAIChat() {
               }
             }}
             rows={1}
-            placeholder="Ask a math question… (use $...$ for LaTeX)"
-            className="flex-1 resize-none bg-transparent px-1 py-2 text-[15px] text-[var(--color-text)] outline-none"
+            placeholder="Ask a math question…"
+            className="flex-1 min-w-0 resize-none bg-transparent px-1 py-2.5 text-base text-[var(--color-text)] outline-none"
           />
           <button
             type="submit"
             disabled={sending || (!input.trim() && !image)}
-            className="shrink-0 inline-flex items-center justify-center rounded-lg bg-[var(--color-accent)] px-3.5 py-2 text-sm font-semibold text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
           >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </button>
         </form>
-        <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="mt-2">
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
@@ -220,7 +202,6 @@ export default function MathAIChat() {
               </option>
             ))}
           </select>
-          <span className="text-[10px] text-[var(--color-text-tertiary)]">Math only · 50/day</span>
         </div>
       </div>
     </div>
