@@ -22,9 +22,16 @@ const navLinks = [
   { href: '/library', label: 'My Library', icon: 'library' },
 ] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
 
+const adminLink = {
+  href: '/admin-ai',
+  label: 'Admin AI',
+  icon: 'equation',
+} satisfies { href: string; label: string; icon: SiteIconName };
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -37,6 +44,22 @@ export default function Navbar() {
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/admin/verify', { method: 'POST' })
+      .then((res) => {
+        if (active) setIsAdmin(res.ok);
+      })
+      .catch(() => {
+        if (active) setIsAdmin(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const links = isAdmin ? [...navLinks, adminLink] : navLinks;
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -64,7 +87,7 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-2">
             <div className="flex items-center gap-1">
-              {navLinks.map((link) => (
+              {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -139,7 +162,7 @@ export default function Navbar() {
             </span>
           </div>
           <div className="flex flex-col p-3 gap-1">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
