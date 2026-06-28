@@ -9,6 +9,7 @@ import { compileExpr, evalAt, detectParams, type CompiledExpr } from '@/lib/math
  * Pan (drag), zoom (scroll / pinch / buttons), hover readout, save as PNG,
  * parameter sliders, auto key points (roots, intercept, extrema),
  * intersection points, tangent line with slope, and area under the curve.
+ * Roots and intersection points are ALWAYS marked with a small circle.
  */
 
 const W = 660;
@@ -480,6 +481,36 @@ export default function InteractivePlot({ expressions }: { expressions: string[]
     return out.filter((p) => p.y >= view.yMin && p.y <= view.yMax);
   }, [showIntersections, series, validCount, params, view]);
 
+  // ---- Always-on markers: roots & intersections (small circles) ----
+  // These are shown even when the Key points / Intersections toggles are off,
+  // so students always see a small circle at every root and crossing. When a
+  // toggle is on, the richer labeled version above handles those points.
+  const autoRoots = useMemo(() => {
+    if (showKeyPoints) return [] as KeyPoint[];
+    const out: KeyPoint[] = [];
+    series.forEach((s) => {
+      if (!s.compiled) return;
+      for (const rx of findRoots(s.compiled, params, view.xMin, view.xMax)) {
+        out.push({ x: rx, y: 0, color: s.color, kind: 'root' });
+      }
+    });
+    return out.filter((p) => p.y >= view.yMin && p.y <= view.yMax);
+  }, [showKeyPoints, series, params, view]);
+
+  const autoIntersections = useMemo(() => {
+    if (showIntersections || validCount < 2) return [] as Point[];
+    const out: Point[] = [];
+    for (let i = 0; i < series.length; i++) {
+      for (let j = i + 1; j < series.length; j++) {
+        const a = series[i].compiled;
+        const b = series[j].compiled;
+        if (!a || !b) continue;
+        for (const pt of findIntersections(a, b, params, view.xMin, view.xMax)) out.push(pt);
+      }
+    }
+    return out.filter((p) => p.y >= view.yMin && p.y <= view.yMax);
+  }, [showIntersections, series, validCount, params, view]);
+
   // ---- Tangent line ----
   const tangent = useMemo(() => {
     if (!tangentOn || tangentX === null || primaryIndex < 0) return null;
@@ -658,6 +689,20 @@ export default function InteractivePlot({ expressions }: { expressions: string[]
               <circle cx={r1(tangent.px)} cy={r1(tangent.py)} r={4} fill={ACCENT_HEX} />
             </g>
           ) : null}
+
+          {autoRoots.map((kp, i) => {
+            const px = mapX(kp.x, view);
+            if (px < PAD - 1 || px > W - PAD + 1) return null;
+            const py = mapY(kp.y, view);
+            return <circle key={'ar' + i} cx={r1(px)} cy={r1(py)} r={3.6} fill="var(--color-bg)" stroke={kp.color} strokeWidth={2} />;
+          })}
+
+          {autoIntersections.map((pt, i) => {
+            const px = mapX(pt.x, view);
+            if (px < PAD - 1 || px > W - PAD + 1) return null;
+            const py = mapY(pt.y, view);
+            return <circle key={'ai' + i} cx={r1(px)} cy={r1(py)} r={4.2} fill="var(--color-bg)" stroke={ACCENT_HEX} strokeWidth={2.2} />;
+          })}
 
           {keyPoints.map((kp, i) => {
             const px = mapX(kp.x, view);
