@@ -106,7 +106,7 @@ class OCR:
         return text.strip()
 
 
-@app.function(secrets=[modal.Secret.from_name("ocr-token")])
+@app.function(image=image, secrets=[modal.Secret.from_name("ocr-token")])
 @modal.fastapi_endpoint(method="POST")
 def ocr(data: dict):
     # Token check (token travels in the JSON body over HTTPS).
