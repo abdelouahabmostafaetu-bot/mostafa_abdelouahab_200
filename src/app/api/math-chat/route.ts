@@ -13,6 +13,7 @@ import {
 import { DEFAULT_MODEL_ID, VISION_FALLBACK_MODEL_ID } from '@/lib/ai/models';
 import { checkDailyLimit } from '@/lib/ai/daily-limit';
 import { queryWolfram } from '@/lib/ai/wolfram';
+import { searchMathDataset } from '@/lib/ai/math-dataset';
 import {
   searchMathStackExchange,
   searchArxiv,
@@ -141,9 +142,10 @@ export async function POST(req: NextRequest) {
         const computeOnly = !research && wantsComputation(question);
         const skip = (): Promise<KnowledgeResult> => Promise.resolve(EMPTY);
 
-        const [wolframRes, seRes, axRes, s2Res, oaRes, webRes] = await Promise.allSettled([
+        const [wolframRes, seRes, dsRes, axRes, s2Res, oaRes, webRes] = await Promise.allSettled([
           queryWolfram(question),
           computeOnly ? skip() : searchMathStackExchange(question),
+          research ? skip() : searchMathDataset(question),
           research ? searchArxiv(question) : skip(),
           research ? searchSemanticScholar(question) : skip(),
           research ? searchOpenAlex(question) : skip(),
@@ -163,6 +165,15 @@ export async function POST(req: NextRequest) {
         if (se.context) {
           parts.push('MATH STACKEXCHANGE DISCUSSIONS:\n' + se.context);
           sources = sources.concat(se.sources);
+        }
+
+        const ds = settledKnowledge(dsRes);
+        if (ds.context) {
+          parts.push(
+            'SOLVED MATH EXAMPLES FROM A CURATED DATASET (use as grounding to guide your method; adapt and explain in your own words, never copy verbatim):\n' +
+              ds.context,
+          );
+          sources = sources.concat(ds.sources);
         }
 
         const ax = settledKnowledge(axRes);
