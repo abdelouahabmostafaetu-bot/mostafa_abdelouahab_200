@@ -1,8 +1,8 @@
 /**
  * Server-side AI provider router.
  * - Gemini uses Google's native API.
- * - Groq, Cerebras, OpenRouter, Mistral, NVIDIA and OpenAI use the
- *   OpenAI-compatible /chat/completions format.
+ * - OpenRouter, Mistral and OpenAI use the OpenAI-compatible
+ *   /chat/completions format.
  *
  * Supports an optional image attached to the latest user message (vision).
  * Secrets are read from process.env at request time and never sent to browsers.
@@ -14,12 +14,12 @@ export type ChatRole = 'user' | 'assistant';
 export type ProviderMessage = { role: ChatRole; content: string };
 export type ChatImage = { mimeType: string; dataBase64: string; dataUrl: string };
 
+// Longer answers: hard proofs / multi-step solutions used to get cut off at 4096.
+const MAX_OUTPUT_TOKENS = 8192;
+
 const OPENAI_COMPATIBLE_BASE: Record<string, string> = {
-  groq: 'https://api.groq.com/openai/v1',
-  cerebras: 'https://api.cerebras.ai/v1',
   openrouter: 'https://openrouter.ai/api/v1',
   mistral: 'https://api.mistral.ai/v1',
-  nvidia: 'https://integrate.api.nvidia.com/v1',
   openai: 'https://api.openai.com/v1',
 };
 
@@ -72,7 +72,7 @@ async function runGemini(
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: system }] },
       contents,
-      generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
+      generationConfig: { temperature: 0.2, maxOutputTokens: MAX_OUTPUT_TOKENS },
     }),
   });
 
@@ -122,7 +122,7 @@ async function runOpenAiCompatible(
       model: modelName,
       messages: payloadMessages,
       temperature: 0.2,
-      max_tokens: 4096,
+      max_tokens: MAX_OUTPUT_TOKENS,
     }),
   });
 

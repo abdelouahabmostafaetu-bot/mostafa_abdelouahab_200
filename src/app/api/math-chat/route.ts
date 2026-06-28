@@ -21,6 +21,7 @@ type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
 const DAILY_LIMIT = 50;
 const MAX_IMAGE_CHARS = 9_000_000;
+const EMPTY: KnowledgeResult = { context: '', sources: [] };
 
 const VERIFY_INSTRUCTION =
   'You are now a strict verifier of the solution you just gave. Re-check it step by step: ' +
@@ -37,7 +38,23 @@ function parseDataUrl(dataUrl: string): ChatImage | null {
 }
 
 function settledKnowledge(r: PromiseSettledResult<KnowledgeResult>): KnowledgeResult {
-  return r.status === 'fulfilled' ? r.value : { context: '', sources: [] };
+  return r.status === 'fulfilled' ? r.value : EMPTY;
+}
+
+// Does the question want papers / references / research?
+function wantsResearch(q: string): boolean {
+  return /\b(paper|papers|research|arxiv|preprint|reference|references|citation|cite|journal|publication|survey|literature|state of the art|open problem|who proved|history of|latest|recent)\b/i.test(
+    q,
+  );
+}
+
+// Is this a pure compute / solve question (fast path, no web needed)?
+function wantsComputation(q: string): boolean {
+  return (
+    /\b(solve|simplify|factor|expand|integrate|integral|differentiate|derivative|evaluate|compute|calculate|roots?|limit|determinant|eigen|matrix|sum|product)\b/i.test(
+      q,
+    ) || /[=]/.test(q)
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -77,7 +94,7 @@ export async function POST(req: NextRequest) {
     image = parsed;
   }
 
-  // Pick the model. Images are ALWAYS read by Gemini, no matter what is selected.
+  // Images are ALWAYS read by Gemini, no matter what is selected.
   let modelId = typeof body.model === 'string' && body.model ? body.model : DEFAULT_MODEL_ID;
   if (image) {
     modelId = VISION_FALLBACK_MODEL_ID;
@@ -91,21 +108,26 @@ export async function POST(req: NextRequest) {
     let systemPrompt = MATH_AI_SYSTEM_PROMPT;
     let sources: KnowledgeSource[] = [];
 
-    // Search-first: for every text question we look things up BEFORE answering
-    // (Math StackExchange, the web via Firecrawl/You.com, research papers and
-    // Wolfram|Alpha). Image questions skip this and go straight to Gemini vision.
     if (!image) {
       const lastUser = [...messages].reverse().find((m) => m.role === 'user');
       const question = lastUser ? lastUser.content.slice(0, 600) : '';
 
       if (question) {
+        // SMART, FAST RETRIEVAL
+        // - Deep mode or research questions: search everything (web + papers).
+        // - Pure compute questions: just Wolfram (fast, one call).
+        // - Everything else: Wolfram + Math StackExchange.
+        const research = deep || wantsResearch(question);
+        const computeOnly = !research && wantsComputation(question);
+        const skip = (): Promise<KnowledgeResult> => Promise.resolve(EMPTY);
+
         const [wolframRes, seRes, axRes, s2Res, oaRes, webRes] = await Promise.allSettled([
           queryWolfram(question),
-          searchMathStackExchange(question),
-          searchArxiv(question),
-          searchSemanticScholar(question),
-          searchOpenAlex(question),
-          searchWeb(question),
+          computeOnly ? skip() : searchMathStackExchange(question),
+          research ? searchArxiv(question) : skip(),
+          research ? searchSemanticScholar(question) : skip(),
+          research ? searchOpenAlex(question) : skip(),
+          research ? searchWeb(question) : skip(),
         ]);
 
         const parts: string[] = [];
@@ -153,9 +175,7 @@ export async function POST(req: NextRequest) {
             '\n\n==================================================================\n' +
             'SECTION 15 — LIVE REFERENCE MATERIAL (retrieved for THIS question)\n' +
             '==================================================================\n' +
-            'The app searched the material below FIRST (Math StackExchange, a live web\n' +
-            'search, research papers from arXiv, Semantic Scholar and OpenAlex, and\n' +
-            'Wolfram|Alpha) to help you answer more accurately.\n' +
+            'The app retrieved the material below to help you answer more accurately.\n' +
             '- Trust the Wolfram|Alpha computation for the numeric/symbolic result, but still\n' +
             '  show the full human reasoning and explanation.\n' +
             '- When you use a discussion, paper, or web page, cite it inline as a Markdown\n' +
@@ -168,7 +188,6 @@ export async function POST(req: NextRequest) {
 
     let reply = await runChat(modelId, systemPrompt, messages, image);
 
-    // Deep mode adds a second, strict self-verification pass.
     if (deep) {
       const verifyMessages: ProviderMessage[] = [
         ...messages,
