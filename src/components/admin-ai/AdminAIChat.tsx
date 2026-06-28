@@ -7,7 +7,6 @@ import {
   Wand2,
   CheckCircle2,
   Settings,
-  Plus,
   Trash2,
   X,
   Check,
@@ -51,6 +50,9 @@ const EMPTY_FORM: ModelForm = {
   vision: false,
   reasoning: false,
 };
+
+const INPUT_CLS =
+  'w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]';
 
 export default function AdminAIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -132,8 +134,9 @@ export default function AdminAIChat() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed to add model');
+      const savedKey = form.envKey;
       setForm(EMPTY_FORM);
-      setModelMsg('Added. Now set ' + form.envKey + ' in Vercel with the API key, then redeploy.');
+      setModelMsg('Added. Now set ' + savedKey + ' in Vercel with the API key, then redeploy.');
       await loadModels();
     } catch (err) {
       setModelMsg(err instanceof Error ? err.message : 'Failed to add model');
@@ -251,7 +254,7 @@ export default function AdminAIChat() {
                     value={form.label}
                     onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
                     placeholder="Display name (e.g. Llama 3.3 70B)"
-                    className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+                    className={INPUT_CLS}
                   />
                   <select
                     value={form.provider}
@@ -268,10 +271,144 @@ export default function AdminAIChat() {
                     value={form.model}
                     onChange={(e) => setForm((f) => ({ ...f, model: e.target.value }))}
                     placeholder="Model name (e.g. meta-llama/llama-3.3-70b-instruct)"
-                    className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+                    className={INPUT_CLS}
                   />
                   <input
                     value={form.envKey}
                     onChange={(e) => setForm((f) => ({ ...f, envKey: e.target.value }))}
                     placeholder="Key name in Vercel (e.g. OPENROUTER_API_KEY)"
-                    className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none foc
+                    className={INPUT_CLS}
+                  />
+                  {form.provider === 'custom' && (
+                    <input
+                      value={form.baseUrl}
+                      onChange={(e) => setForm((f) => ({ ...f, baseUrl: e.target.value }))}
+                      placeholder="Base URL (e.g. https://api.groq.com/openai/v1)"
+                      className={INPUT_CLS}
+                    />
+                  )}
+                  <div className="flex items-center gap-4 px-0.5 text-xs text-[var(--color-text-secondary)]">
+                    <label className="inline-flex items-center gap-1.5">
+                      <input
+                        type="checkbox"
+                        checked={form.vision}
+                        onChange={(e) => setForm((f) => ({ ...f, vision: e.target.checked }))}
+                      />
+                      Reads images
+                    </label>
+                    <label className="inline-flex items-center gap-1.5">
+                      <input
+                        type="checkbox"
+                        checked={form.reasoning}
+                        onChange={(e) => setForm((f) => ({ ...f, reasoning: e.target.checked }))}
+                      />
+                      Reasoning
+                    </label>
+                  </div>
+                  <p className="text-[11px] leading-5 text-[var(--color-text-tertiary)]">
+                    After adding, open Vercel → Settings → Environment Variables, add a variable with
+                    the exact key name above and your API key as its value, then redeploy.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={addModel}
+                    disabled={savingModel}
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  >
+                    {savingModel ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                    Add model
+                  </button>
+                  {modelMsg && (
+                    <p className="text-[11px] leading-5 text-[var(--color-text-secondary)]">{modelMsg}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto py-4">
+        {messages.length === 0 && (
+          <div className="mx-auto mt-8 max-w-md text-center">
+            <Wand2 className="mx-auto mb-3 h-7 w-7 text-[var(--color-accent)]" />
+            <h2 className="text-base font-semibold text-[var(--color-text)]">Admin AI</h2>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+              Manage your blog: ask me to list, write, edit, publish, or delete posts. Pick the AI
+              model above, or add your own with the Models button.
+            </p>
+          </div>
+        )}
+
+        {messages.map((m, i) => (
+          <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+            <div
+              className={
+                m.role === 'user'
+                  ? 'max-w-[85%] rounded-2xl rounded-br-sm bg-[var(--color-accent)] px-3.5 py-2 text-sm text-white'
+                  : 'max-w-[90%] rounded-2xl rounded-bl-sm bg-[var(--color-bg-muted)] px-3.5 py-2 text-sm text-[var(--color-text)]'
+              }
+            >
+              {m.role === 'assistant' ? <MathText content={m.content} /> : m.content}
+              {m.actions && m.actions.length > 0 && (
+                <div className="mt-2 space-y-1 border-t border-[var(--color-border)] pt-2">
+                  {m.actions.map((a, ai) => (
+                    <div
+                      key={ai}
+                      className="inline-flex items-center gap-1.5 text-xs text-emerald-400"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" /> {a}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {sending && (
+          <div className="flex justify-start">
+            <div className="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-bg-muted)] px-3.5 py-2 text-sm text-[var(--color-text-secondary)]">
+              <Loader2 className="h-4 w-4 animate-spin" /> Working…
+            </div>
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+          {error}
+        </div>
+      )}
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          sendMessage(input);
+        }}
+        className="flex items-end gap-2 border-t border-[var(--color-border)] pt-3"
+      >
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage(input);
+            }
+          }}
+          rows={1}
+          placeholder="Ask the Admin AI to manage your blog…"
+          className="max-h-40 min-h-[42px] flex-1 resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+        />
+        <button
+          type="submit"
+          disabled={sending || !input.trim()}
+          className="inline-flex h-[42px] w-[42px] items-center justify-center rounded-xl bg-[var(--color-accent)] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        </button>
+      </form>
+    </div>
+  );
+}
