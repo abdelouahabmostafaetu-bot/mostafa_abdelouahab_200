@@ -1,18 +1,18 @@
 /**
  * Server-side AI provider router.
- * Sends a chat to whichever provider the chosen model belongs to.
  * - Gemini uses Google's native API.
- * - Groq, Cerebras, OpenRouter, Mistral, NVIDIA and OpenAI all use the
- *   OpenAI-compatible /chat/completions format, so they share one function.
+ * - Groq, Cerebras, OpenRouter, Mistral, NVIDIA and OpenAI use the
+ *   OpenAI-compatible /chat/completions format.
  *
- * Secrets are read from process.env at request time and never sent to the
- * browser.
+ * Supports an optional image attached to the latest user message (vision).
+ * Secrets are read from process.env at request time and never sent to browsers.
  */
 
 import { AI_MODELS, type AiModel } from './models';
 
 export type ChatRole = 'user' | 'assistant';
 export type ProviderMessage = { role: ChatRole; content: string };
+export type ChatImage = { mimeType: string; dataBase64: string; dataUrl: string };
 
 const OPENAI_COMPATIBLE_BASE: Record<string, string> = {
   groq: 'https://api.groq.com/openai/v1',
@@ -23,11 +23,14 @@ const OPENAI_COMPATIBLE_BASE: Record<string, string> = {
   openai: 'https://api.openai.com/v1',
 };
 
+type GeminiPart = { text?: string; inlineData?: { mimeType: string; data: string } };
 type GeminiResponse = {
   candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   error?: { message?: string };
 };
 
+type OpenAiContentPart = { type: string; text?: string; image_url?: { url: string } };
+type OpenAiMessage = { role: string; content: string | OpenAiContentPart[] };
 type OpenAiResponse = {
   choices?: Array<{ message?: { content?: string } }>;
   error?: { message?: string } | string;
@@ -46,6 +49,7 @@ async function runGemini(
   modelName: string,
   system: string,
   messages: ProviderMessage[],
+  image?: ChatImage,
 ): Promise<string> {
   const endpoint =
     'https://generativelanguage.googleapis.com/v1beta/models/' +
@@ -53,10 +57,14 @@ async function runGemini(
     ':generateContent?key=' +
     apiKey;
 
-  const contents = messages.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
-  }));
+  const lastIndex = messages.length - 1;
+  const contents = messages.map((m, idx) => {
+    const parts: GeminiPart[] = [{ text: m.content }];
+    if (image && idx === lastIndex && m.role === 'user') {
+      parts.push({ inlineData: { mimeType: image.mimeType, data: image.dataBase64 } });
+    }
+    return { role: m.role === 'assistant' ? 'model' : 'user', parts };
+  });
 
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -84,9 +92,25 @@ async function runOpenAiCompatible(
   modelName: string,
   system: string,
   messages: ProviderMessage[],
+  image?: ChatImage,
 ): Promise<string> {
   const endpoint = base + '/chat/completions';
-  const payloadMessages = [{ role: 'system', content: system }, ...messages];
+  const lastIndex = messages.length - 1;
+
+  const mapped: OpenAiMessage[] = messages.map((m, idx) => {
+    if (image && idx === lastIndex && m.role === 'user') {
+      return {
+        role: m.role,
+        content: [
+          { type: 'text', text: m.content },
+          { type: 'image_url', image_url: { url: image.dataUrl } },
+        ],
+      };
+    }
+    return { role: m.role, content: m.content };
+  });
+
+  const payloadMessages: OpenAiMessage[] = [{ role: 'system', content: system }, ...mapped];
 
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -120,6 +144,7 @@ export async function runChat(
   modelId: string,
   system: string,
   messages: ProviderMessage[],
+  image?: ChatImage,
 ): Promise<string> {
   const model = getModelById(modelId) || getModelById('gemini-flash');
   if (!model) {
@@ -138,12 +163,12 @@ export async function runChat(
   }
 
   if (model.provider === 'gemini') {
-    return runGemini(apiKey, model.model, system, messages);
+    return runGemini(apiKey, model.model, system, messages, image);
   }
 
   const base = OPENAI_COMPATIBLE_BASE[model.provider];
   if (!base) {
     throw new Error('Unsupported provider: ' + model.provider);
   }
-  return runOpenAiCompatible(base, apiKey, model.model, system, messages);
+  return runOpenAiCompatible(base, apiKey, model.model, system, messages, image);
 }

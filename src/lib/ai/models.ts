@@ -1,11 +1,9 @@
 /**
  * Catalog of AI models the user can choose from in the Math AI.
- * This file is SAFE for the browser: it contains NO secrets, only labels and
- * the NAME of the environment variable each provider needs.
+ * SAFE for the browser: contains NO secrets, only labels and the NAME of the
+ * environment variable each provider needs.
  *
- * To enable a model, add its API key in Vercel under the listed envKey.
- * To add a new model, add a row here and (if it is a new provider) a base URL
- * in src/lib/ai/providers.ts.
+ * vision: true means the model can read uploaded images (photos of problems).
  */
 
 export type AiProvider =
@@ -23,6 +21,7 @@ export type AiModel = {
   provider: AiProvider;
   model: string;
   envKey: string;
+  vision?: boolean;
 };
 
 export const AI_MODELS: AiModel[] = [
@@ -32,6 +31,7 @@ export const AI_MODELS: AiModel[] = [
     provider: 'gemini',
     model: 'gemini-2.5-flash',
     envKey: 'GEMINI_API_KEY',
+    vision: true,
   },
   {
     id: 'groq-llama',
@@ -74,7 +74,9 @@ export const AI_MODELS: AiModel[] = [
     provider: 'openai',
     model: 'gpt-4o-mini',
     envKey: 'OPENAI_API_KEY',
+    vision: true,
   },
 ];
 
 export const DEFAULT_MODEL_ID = 'gemini-flash';
+export const VISION_FALLBACK_MODEL_ID = 'gemini-flash';
