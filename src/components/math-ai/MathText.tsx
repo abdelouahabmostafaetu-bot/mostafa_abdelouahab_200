@@ -5,21 +5,22 @@ import katex from 'katex';
 import 'katex/dist/katex.css';
 import InteractivePlot from './InteractivePlot';
 import GeometryDiagram from './GeometryDiagram';
+import Surface3D from './Surface3D';
 
 /**
  * Renders an assistant answer that mixes Markdown, fenced code, math, graphs,
- * and geometry diagrams.
+ * geometry diagrams, and 3D surfaces.
  *
  * Strategy:
  *   1. Pull out fenced code blocks and every math span first, render them, and
  *      leave tiny placeholders behind (so Markdown never mangles them).
  *      A fenced block tagged `plot` (or `graph`) becomes a real INTERACTIVE
  *      graph (pan / zoom / hover); a block tagged `geometry` (or `geo`) becomes
- *      an auto-scaled geometry diagram. Both render as React components.
+ *      an auto-scaled geometry diagram; a block tagged `plot3d` (or `surface`)
+ *      becomes an interactive 3D surface. All render as React components.
  *   2. Render the remaining text as Markdown: headings, lists, bold/italic,
  *      inline code, dividers, paragraphs.
- *   3. Put the rendered code and math back in, and interleave the graphs and
- *      diagrams.
+ *   3. Put the rendered code and math back in, and interleave the components.
  */
 
 function escapeHtml(input: string): string {
@@ -51,13 +52,14 @@ function renderInline(s: string): string {
   return out;
 }
 
-type Extracted = { text: string; blocks: string[]; inlines: string[]; plots: string[][]; diagrams: string[] };
+type Extracted = { text: string; blocks: string[]; inlines: string[]; plots: string[][]; diagrams: string[]; surfaces: string[] };
 
 function extractMath(input: string): Extracted {
   const blocks: string[] = [];
   const inlines: string[] = [];
   const plots: string[][] = [];
   const diagrams: string[] = [];
+  const surfaces: string[] = [];
   let out = input;
 
   const pushBlockHtml = (htmlValue: string): string => {
@@ -72,8 +74,8 @@ function extractMath(input: string): Extracted {
   };
 
   // Fenced code blocks first (so math/markdown inside them stays literal).
-  // A `plot`/`graph` block becomes an interactive graph; a `geometry`/`geo`
-  // block becomes a geometry diagram.
+  // `plot`/`graph` -> interactive graph; `geometry`/`geo` -> geometry diagram;
+  // `plot3d`/`surface`/`3d` -> interactive 3D surface.
   out = out.replace(/```([\w-]*)\n?([\s\S]*?)```/g, (_m, lang, code) => {
     const language = String(lang || '').toLowerCase();
     if (language === 'plot' || language === 'graph') {
@@ -95,6 +97,17 @@ function extractMath(input: string): Extracted {
         return '\n\u0001G' + idx + '\u0001\n';
       }
     }
+    if (language === 'plot3d' || language === 'surface' || language === '3d') {
+      const lines = String(code)
+        .split(/[\n;]+/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith('#'));
+      if (lines.length > 0) {
+        const idx = surfaces.length;
+        surfaces.push(lines[0]);
+        return '\n\u0001S' + idx + '\u0001\n';
+      }
+    }
     const body = escapeHtml(String(code).replace(/\n$/, ''));
     return pushBlockHtml(
       '<pre class="my-3 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-3 text-[13px] leading-6"><code>' +
@@ -112,7 +125,7 @@ function extractMath(input: string): Extracted {
   out = out.replace(/\$([^$\n]+?)\$/g, (_m, tex) => pushInline(tex));
   out = out.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => pushInline(tex));
 
-  return { text: out, blocks, inlines, plots, diagrams };
+  return { text: out, blocks, inlines, plots, diagrams, surfaces };
 }
 
 function renderMarkdown(text: string, blocks: string[]): string {
@@ -152,6 +165,14 @@ function renderMarkdown(text: string, blocks: string[]): string {
     if (geoMatch) {
       flushPara();
       html.push('\u0001G' + geoMatch[1] + '\u0001');
+      i++;
+      continue;
+    }
+
+    const surfMatch = t.match(/^\u0001S(\d+)\u0001$/);
+    if (surfMatch) {
+      flushPara();
+      html.push('\u0001S' + surfMatch[1] + '\u0001');
       i++;
       continue;
     }
@@ -217,12 +238,12 @@ function renderMarkdown(text: string, blocks: string[]): string {
 }
 
 export default function MathText({ text }: { text: string }) {
-  const { text: stripped, blocks, inlines, plots, diagrams } = extractMath(text || '');
+  const { text: stripped, blocks, inlines, plots, diagrams, surfaces } = extractMath(text || '');
   let html = renderMarkdown(stripped, blocks);
   html = html.replace(/\u0001I(\d+)\u0001/g, (_m, n) => inlines[Number(n)] || '');
   html = html.replace(/\u0001B(\d+)\u0001/g, (_m, n) => blocks[Number(n)] || '');
 
-  const segments = html.split(/\u0001([PG])(\d+)\u0001/);
+  const segments = html.split(/\u0001([PGS])(\d+)\u0001/);
   const nodes: ReactNode[] = [];
   for (let s = 0; s < segments.length; s += 3) {
     const textSeg = segments[s];
@@ -238,6 +259,8 @@ export default function MathText({ text }: { text: string }) {
         nodes.push(<InteractivePlot key={'plot-' + s} expressions={plots[idx] || []} />);
       } else if (kind === 'G') {
         nodes.push(<GeometryDiagram key={'geo-' + s} spec={diagrams[idx] || ''} />);
+      } else if (kind === 'S') {
+        nodes.push(<Surface3D key={'surf-' + s} expression={surfaces[idx] || ''} />);
       }
     }
   }
