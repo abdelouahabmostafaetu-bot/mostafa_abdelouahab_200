@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { MATH_AI_SYSTEM_PROMPT } from '@/lib/prompts/math-ai-prompt';
+import { PROOF_TECHNIQUES } from '@/lib/prompts/proof-techniques';
 import {
   runChat,
   streamChat,
@@ -29,6 +30,8 @@ type ChatMessage = { role: 'user' | 'assistant'; content: string };
 const DAILY_LIMIT = 50;
 const MAX_IMAGE_CHARS = 9_000_000;
 const EMPTY: KnowledgeResult = { context: '', sources: [] };
+
+const SYSTEM_BASE = MATH_AI_SYSTEM_PROMPT + '\n\n' + PROOF_TECHNIQUES;
 
 const VERIFY_INSTRUCTION =
   'You are now a strict verifier of the solution you just gave. Re-check it step by step: ' +
@@ -126,7 +129,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    let systemPrompt = MATH_AI_SYSTEM_PROMPT;
+    let systemPrompt = SYSTEM_BASE;
     let sources: KnowledgeSource[] = [];
 
     if (!image) {
@@ -188,7 +191,7 @@ export async function POST(req: NextRequest) {
 
         if (parts.length > 0) {
           systemPrompt =
-            MATH_AI_SYSTEM_PROMPT +
+            SYSTEM_BASE +
             '\n\n==================================================================\n' +
             'SECTION 15 — LIVE REFERENCE MATERIAL (retrieved for THIS question)\n' +
             '==================================================================\n' +
