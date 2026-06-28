@@ -349,7 +349,7 @@ export default function AdminAIChat() {
                   : 'max-w-[90%] rounded-2xl rounded-bl-sm bg-[var(--color-bg-muted)] px-3.5 py-2 text-sm text-[var(--color-text)]'
               }
             >
-              {m.role === 'assistant' ? <MathText content={m.content} /> : m.content}
+              {m.role === 'assistant' ? <MathText text={m.content} /> : m.content}
               {m.actions && m.actions.length > 0 && (
                 <div className="mt-2 space-y-1 border-t border-[var(--color-border)] pt-2">
                   {m.actions.map((a, ai) => (
