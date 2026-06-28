@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { MATH_AI_SYSTEM_PROMPT } from '@/lib/prompts/math-ai-prompt';
-import { runChat, getModelById, type ProviderMessage, type ChatImage } from '@/lib/ai/providers';
+import {
+  runChat,
+  streamChat,
+  getModelById,
+  getApiKey,
+  type ProviderMessage,
+  type ChatImage,
+} from '@/lib/ai/providers';
 import { DEFAULT_MODEL_ID, VISION_FALLBACK_MODEL_ID } from '@/lib/ai/models';
 import { checkDailyLimit } from '@/lib/ai/daily-limit';
 import { queryWolfram } from '@/lib/ai/wolfram';
@@ -41,14 +48,12 @@ function settledKnowledge(r: PromiseSettledResult<KnowledgeResult>): KnowledgeRe
   return r.status === 'fulfilled' ? r.value : EMPTY;
 }
 
-// Does the question want papers / references / research?
 function wantsResearch(q: string): boolean {
   return /\b(paper|papers|research|arxiv|preprint|reference|references|citation|cite|journal|publication|survey|literature|state of the art|open problem|who proved|history of|latest|recent)\b/i.test(
     q,
   );
 }
 
-// Is this a pure compute / solve question (fast path, no web needed)?
 function wantsComputation(q: string): boolean {
   return (
     /\b(solve|simplify|factor|expand|integrate|integral|differentiate|derivative|evaluate|compute|calculate|roots?|limit|determinant|eigen|matrix|sum|product)\b/i.test(
@@ -104,6 +109,22 @@ export async function POST(req: NextRequest) {
 
   const deep = body.deep === true;
 
+  // Fail fast with a friendly message if the chosen model has no key.
+  const chosenModel = getModelById(modelId);
+  if (chosenModel && !getApiKey(chosenModel)) {
+    return NextResponse.json(
+      {
+        error:
+          'The model "' +
+          chosenModel.label +
+          '" is not set up yet. Add ' +
+          chosenModel.envKey +
+          ' in your Vercel environment variables, then redeploy.',
+      },
+      { status: 500 },
+    );
+  }
+
   try {
     let systemPrompt = MATH_AI_SYSTEM_PROMPT;
     let sources: KnowledgeSource[] = [];
@@ -113,10 +134,6 @@ export async function POST(req: NextRequest) {
       const question = lastUser ? lastUser.content.slice(0, 600) : '';
 
       if (question) {
-        // SMART, FAST RETRIEVAL
-        // - Deep mode or research questions: search everything (web + papers).
-        // - Pure compute questions: just Wolfram (fast, one call).
-        // - Everything else: Wolfram + Math StackExchange.
         const research = deep || wantsResearch(question);
         const computeOnly = !research && wantsComputation(question);
         const skip = (): Promise<KnowledgeResult> => Promise.resolve(EMPTY);
@@ -186,23 +203,57 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    let reply = await runChat(modelId, systemPrompt, messages, image);
+    // Non-streaming path: images (vision) and Deep mode (needs a 2nd verify pass).
+    if (image || deep) {
+      let reply = await runChat(modelId, systemPrompt, messages, image);
 
-    if (deep) {
-      const verifyMessages: ProviderMessage[] = [
-        ...messages,
-        { role: 'assistant', content: reply },
-        { role: 'user', content: VERIFY_INSTRUCTION },
-      ];
-      try {
-        const verified = await runChat(modelId, systemPrompt, verifyMessages);
-        if (verified && verified.trim()) reply = verified;
-      } catch {
-        // keep the first answer if the verification pass fails
+      if (deep) {
+        const verifyMessages: ProviderMessage[] = [
+          ...messages,
+          { role: 'assistant', content: reply },
+          { role: 'user', content: VERIFY_INSTRUCTION },
+        ];
+        try {
+          const verified = await runChat(modelId, systemPrompt, verifyMessages);
+          if (verified && verified.trim()) reply = verified;
+        } catch {
+          // keep the first answer if verification fails
+        }
       }
+
+      return NextResponse.json({ reply, sources });
     }
 
-    return NextResponse.json({ reply, sources });
+    // Streaming path: normal text questions stream live, token by token.
+    const encoder = new TextEncoder();
+    const streamModelId = modelId;
+    const streamSystem = systemPrompt;
+    const streamMessages = messages;
+
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        try {
+          for await (const chunk of streamChat(streamModelId, streamSystem, streamMessages)) {
+            controller.enqueue(encoder.encode(chunk));
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'Streaming error';
+          controller.enqueue(encoder.encode('\n\n[Error: ' + msg + ']'));
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    const headers = new Headers();
+    headers.set('Content-Type', 'text/plain; charset=utf-8');
+    headers.set('Cache-Control', 'no-cache, no-transform');
+    headers.set('x-stream', '1');
+    headers.set(
+      'x-sources',
+      Buffer.from(encodeURIComponent(JSON.stringify(sources))).toString('base64'),
+    );
+    return new Response(stream, { headers });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Unexpected error' },
