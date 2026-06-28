@@ -7,12 +7,6 @@ import MathText from '@/components/math-ai/MathText';
 type Role = 'user' | 'assistant';
 type Message = { role: Role; content: string; actions?: string[] };
 
-const SUGGESTIONS = [
-  'List all my blog posts',
-  'Write and publish a short post introducing my research interests',
-  'Create a draft titled "Intro to Dynamical Systems" with an outline',
-];
-
 export default function AdminAIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -57,81 +51,72 @@ export default function AdminAIChat() {
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-[var(--color-border)] px-4 py-3">
-        <Wand2 className="h-4 w-4 text-[var(--color-accent)]" />
-        <span className="text-sm font-medium text-[var(--color-text)]">Website Admin Assistant</span>
-      </div>
-
-      <div className="flex flex-col h-[62vh]">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="text-center mt-8">
-              <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-                Tell me what to do on your site. For example:
-              </p>
-              <div className="flex flex-col items-stretch gap-2 max-w-lg mx-auto">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => sendMessage(s)}
-                    className="rounded-lg border border-[var(--color-border)] px-3 py-2 text-left text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-text)]"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+    <div className="flex flex-col h-[calc(100dvh-9rem)] min-h-[460px]">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 space-y-8">
+        {messages.length === 0 ? (
+          <div className="max-w-xl mx-auto text-center mt-20 px-2">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-bg-muted)] mb-5">
+              <Wand2 className="h-6 w-6 text-[var(--color-accent)]" />
             </div>
-          ) : (
-            messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div
-                  className={`max-w-[88%] rounded-2xl px-4 py-3 ${
-                    m.role === 'user'
-                      ? 'bg-[var(--color-accent)] text-[var(--color-bg)]'
-                      : 'bg-[var(--color-bg-muted)] border border-[var(--color-border)]'
-                  }`}
-                >
-                  {m.role === 'user' ? (
-                    <p className="text-sm leading-6 whitespace-pre-wrap">{m.content}</p>
-                  ) : (
-                    <>
-                      {m.actions && m.actions.length > 0 ? (
-                        <div className="mb-2 flex flex-col gap-1">
-                          {m.actions.map((a, j) => (
-                            <span
-                              key={j}
-                              className="inline-flex items-center gap-1.5 text-xs text-emerald-400"
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5" /> {a}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
-                      <MathText text={m.content} />
-                    </>
-                  )}
+            <h2 className="text-xl font-semibold text-[var(--color-text)] mb-2">
+              Manage your website
+            </h2>
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              Tell me what to do — draft, edit, publish, or delete blog posts.
+            </p>
+          </div>
+        ) : (
+          messages.map((m, i) =>
+            m.role === 'user' ? (
+              <div key={i} className="flex justify-end">
+                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-accent)] text-[var(--color-bg)] px-4 py-2.5">
+                  <p className="text-sm leading-6 whitespace-pre-wrap">{m.content}</p>
                 </div>
               </div>
-            ))
-          )}
-          {sending ? (
-            <div className="flex justify-start">
-              <div className="flex items-center gap-2 rounded-2xl bg-[var(--color-bg-muted)] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                <Loader2 className="h-4 w-4 animate-spin" /> Working...
+            ) : (
+              <div key={i} className="flex gap-2 md:gap-3">
+                <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
+                  <Wand2 className="h-4 w-4 text-[var(--color-accent)]" />
+                </div>
+                <div className="min-w-0 flex-1 pt-0.5 text-[15px]">
+                  {m.actions && m.actions.length > 0 ? (
+                    <div className="mb-2 flex flex-col gap-1">
+                      {m.actions.map((a, j) => (
+                        <span
+                          key={j}
+                          className="inline-flex items-center gap-1.5 text-xs text-emerald-400"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" /> {a}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <MathText text={m.content} />
+                </div>
               </div>
+            ),
+          )
+        )}
+        {sending ? (
+          <div className="flex gap-2 md:gap-3">
+            <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
+              <Wand2 className="h-4 w-4 text-[var(--color-accent)]" />
             </div>
-          ) : null}
-          {error ? <p className="text-center text-xs text-red-400">{error}</p> : null}
-        </div>
+            <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] pt-1.5">
+              <Loader2 className="h-4 w-4 animate-spin" /> Working…
+            </div>
+          </div>
+        ) : null}
+        {error ? <p className="text-center text-xs text-red-400">{error}</p> : null}
+      </div>
 
+      <div className="pt-2 pb-3">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             sendMessage(input);
           }}
-          className="border-t border-[var(--color-border)] p-3 flex items-end gap-2"
+          className="flex items-end gap-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2 py-1.5 shadow-sm focus-within:border-[var(--color-accent)]"
         >
           <textarea
             value={input}
@@ -144,14 +129,14 @@ export default function AdminAIChat() {
             }}
             rows={1}
             placeholder="e.g. Draft a post about prime numbers and save it as a draft"
-            className="flex-1 resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
+            className="flex-1 min-w-0 resize-none bg-transparent px-2 py-2.5 text-base text-[var(--color-text)] outline-none"
           />
           <button
             type="submit"
             disabled={sending || !input.trim()}
-            className="inline-flex items-center justify-center rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
           >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </button>
         </form>
       </div>
