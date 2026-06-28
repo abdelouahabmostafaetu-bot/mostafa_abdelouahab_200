@@ -18,6 +18,7 @@ const navLinks = [
   { href: '/notes', label: 'My Notes', icon: 'equation' },
   { href: '/problems-with-coffee', label: 'Problems', icon: 'equation' },
   { href: '/search', label: 'Search', icon: 'search' },
+  { href: '/math-ai', label: 'Math AI', icon: 'equation' },
   { href: '/library', label: 'My Library', icon: 'library' },
 ] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
 
