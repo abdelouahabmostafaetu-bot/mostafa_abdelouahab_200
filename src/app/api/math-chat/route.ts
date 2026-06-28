@@ -105,31 +105,11 @@ export async function POST(req: NextRequest) {
     image = parsed;
   }
 
-  // Images are ALWAYS read by Gemini, no matter what is selected.
-  let modelId = typeof body.model === 'string' && body.model ? body.model : DEFAULT_MODEL_ID;
-  if (image) {
-    modelId = VISION_FALLBACK_MODEL_ID;
-  } else if (!getModelById(modelId)) {
-    modelId = DEFAULT_MODEL_ID;
-  }
+  // The model the user picked (used for text and for OCR-recognized images).
+  let requestedModelId = typeof body.model === 'string' && body.model ? body.model : DEFAULT_MODEL_ID;
+  if (!getModelById(requestedModelId)) requestedModelId = DEFAULT_MODEL_ID;
 
   const deep = body.deep === true;
-
-  // Fail fast with a friendly message if the chosen model has no key.
-  const chosenModel = getModelById(modelId);
-  if (chosenModel && !getApiKey(chosenModel)) {
-    return NextResponse.json(
-      {
-        error:
-          'The model "' +
-          chosenModel.label +
-          '" is not set up yet. Add ' +
-          chosenModel.envKey +
-          ' in your Vercel environment variables, then redeploy.',
-      },
-      { status: 500 },
-    );
-  }
 
   try {
     let systemPrompt = SYSTEM_BASE;
@@ -220,9 +200,11 @@ export async function POST(req: NextRequest) {
     }
 
     // High-accuracy OCR for uploaded images (Unlimited-OCR hosted on Modal).
-    // The image is still sent to the vision model below; the recognized text is
-    // added as extra grounding so handwritten / photographed math is read
-    // correctly. If OCR is not configured or fails, this is silently skipped.
+    // If OCR returns text, we solve it with the user's selected text model and
+    // do NOT need to send the picture to the vision model at all. If OCR is not
+    // configured or returns nothing, we fall back to Gemini vision on the image.
+    let solveModelId = requestedModelId;
+    let visionImage: ChatImage | undefined;
     if (image) {
       const ocrText = await recognizeImage(image);
       if (ocrText) {
@@ -240,12 +222,32 @@ export async function POST(req: NextRequest) {
             break;
           }
         }
+      } else {
+        // OCR unavailable -> fall back to reading the raw image with Gemini.
+        solveModelId = VISION_FALLBACK_MODEL_ID;
+        visionImage = image;
       }
     }
 
-    // Non-streaming path: images (vision) and Deep mode (needs a 2nd verify pass).
-    if (image || deep) {
-      let reply = await runChat(modelId, systemPrompt, messages, image);
+    // Fail fast with a friendly message if the chosen model has no key.
+    const chosenModel = getModelById(solveModelId);
+    if (chosenModel && !getApiKey(chosenModel)) {
+      return NextResponse.json(
+        {
+          error:
+            'The model "' +
+            chosenModel.label +
+            '" is not set up yet. Add ' +
+            chosenModel.envKey +
+            ' in your Vercel environment variables, then redeploy.',
+        },
+        { status: 500 },
+      );
+    }
+
+    // Non-streaming path: raw-image vision fallback or Deep mode (2nd verify pass).
+    if (visionImage || deep) {
+      let reply = await runChat(solveModelId, systemPrompt, messages, visionImage);
 
       if (deep) {
         const verifyMessages: ProviderMessage[] = [
@@ -254,7 +256,7 @@ export async function POST(req: NextRequest) {
           { role: 'user', content: VERIFY_INSTRUCTION },
         ];
         try {
-          const verified = await runChat(modelId, systemPrompt, verifyMessages);
+          const verified = await runChat(solveModelId, systemPrompt, verifyMessages);
           if (verified && verified.trim()) reply = verified;
         } catch {
           // keep the first answer if verification fails
@@ -264,9 +266,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ reply, sources });
     }
 
-    // Streaming path: normal text questions stream live, token by token.
+    // Streaming path: normal text questions AND OCR-recognized images.
     const encoder = new TextEncoder();
-    const streamModelId = modelId;
+    const streamModelId = solveModelId;
     const streamSystem = systemPrompt;
     const streamMessages = messages;
 
