@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import {
   Send,
   Loader2,
@@ -36,8 +37,18 @@ type Conversation = {
 };
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const CONV_KEY = 'math-ai-conversations-v1';
-const ACTIVE_KEY = 'math-ai-active-v1';
+const CONV_BASE = 'math-ai-conversations-v1';
+const ACTIVE_BASE = 'math-ai-active-v1';
+
+// Each signed-in user gets their own private history. We namespace the browser
+// storage keys by the Clerk user id so two people on the same device never see
+// each other's chats.
+function convKeyFor(uid: string): string {
+  return CONV_BASE + ':' + uid;
+}
+function activeKeyFor(uid: string): string {
+  return ACTIVE_BASE + ':' + uid;
+}
 
 const SOURCE_LABELS: Record<string, string> = {
   arxiv: 'arXiv',
@@ -109,6 +120,9 @@ function downloadAnswer(text: string) {
 }
 
 export default function MathAIChat() {
+  const { user, isLoaded: userLoaded } = useUser();
+  const storageKey = userLoaded ? (user ? user.id : 'guest') : null;
+
   const [model, setModel] = useState(DEFAULT_MODEL_ID);
   const [deep, setDeep] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -126,14 +140,19 @@ export default function MathAIChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Tracks which user's history is currently loaded, so we never persist one
+  // user's chats under another user's key while switching accounts.
+  const loadedKeyRef = useRef<string | null>(null);
 
   const active = conversations.find((c) => c.id === activeId);
   const messages = active ? active.messages : [];
 
+  // Load this user's saved history (runs again whenever the signed-in user changes).
   useEffect(() => {
+    if (!storageKey) return;
     try {
-      const rawC = localStorage.getItem(CONV_KEY);
-      const rawA = localStorage.getItem(ACTIVE_KEY);
+      const rawC = localStorage.getItem(convKeyFor(storageKey));
+      const rawA = localStorage.getItem(activeKeyFor(storageKey));
       const parsed = rawC ? (JSON.parse(rawC) as Conversation[]) : [];
       if (Array.isArray(parsed) && parsed.length > 0) {
         setConversations(parsed);
@@ -149,22 +168,25 @@ export default function MathAIChat() {
       setConversations([fresh]);
       setActiveId(fresh.id);
     }
+    loadedKeyRef.current = storageKey;
     setLoaded(true);
-  }, []);
+  }, [storageKey]);
 
+  // Persist — only after the current user's history has been loaded, and only
+  // under that same user's key.
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !storageKey || loadedKeyRef.current !== storageKey) return;
     try {
       const slim = conversations.map((c) => ({
         ...c,
         messages: c.messages.map((m) => ({ role: m.role, content: m.content, sources: m.sources })),
       }));
-      localStorage.setItem(CONV_KEY, JSON.stringify(slim));
-      localStorage.setItem(ACTIVE_KEY, activeId);
+      localStorage.setItem(convKeyFor(storageKey), JSON.stringify(slim));
+      localStorage.setItem(activeKeyFor(storageKey), activeId);
     } catch {
       // ignore quota errors
     }
-  }, [conversations, activeId, loaded]);
+  }, [conversations, activeId, loaded, storageKey]);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
