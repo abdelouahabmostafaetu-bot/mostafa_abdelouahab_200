@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { MATH_AI_SYSTEM_PROMPT } from '@/lib/prompts/math-ai-prompt';
 
 export const runtime = 'nodejs';
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
 const MODEL = 'gemini-2.5-flash';
-
-const SYSTEM_PROMPT = `You are "Math AI", a rigorous assistant that ONLY helps with mathematics.
-Rules:
-- Answer ONLY mathematics questions (algebra, analysis, topology, geometry, number theory, probability, logic, etc.).
-- If a question is not about mathematics, politely refuse in one sentence and invite a math question.
-- Always show clear, step-by-step reasoning.
-- Write all formulas in LaTeX: inline math between single dollar signs and displayed math between double dollar signs.
-- Be precise and concise. Prefer correct, well-structured explanations.`;
 
 export async function POST(req: NextRequest) {
   await auth.protect();
@@ -43,16 +36,20 @@ export async function POST(req: NextRequest) {
     parts: [{ text: String(m.content || '') }],
   }));
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+  const endpoint =
+    'https://generativelanguage.googleapis.com/v1beta/models/' +
+    MODEL +
+    ':generateContent?key=' +
+    apiKey;
 
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        systemInstruction: { parts: [{ text: MATH_AI_SYSTEM_PROMPT }] },
         contents,
-        generationConfig: { temperature: 0.2, maxOutputTokens: 2048 },
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
       }),
     });
 
