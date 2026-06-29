@@ -20,6 +20,7 @@ MODEL_NAME = "baidu/Unlimited-OCR"
 CACHE_DIR = "/cache"
 
 # The cloud container image: Python + the exact libraries the model needs.
+# These versions mirror the official model card requirements.
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("git")
@@ -28,10 +29,12 @@ image = (
         "torchvision==0.25.0",
         "transformers==4.57.1",
         "Pillow==12.1.1",
+        "matplotlib==3.10.8",
         "einops==0.8.2",
         "addict==2.4.0",
         "easydict==1.13",
         "pymupdf==1.27.2.2",
+        "psutil==7.2.2",
         "accelerate",
         "safetensors",
         "fastapi[standard]",
