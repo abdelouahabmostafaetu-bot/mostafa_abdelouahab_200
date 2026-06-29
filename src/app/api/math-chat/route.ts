@@ -10,7 +10,11 @@ import {
   type ProviderMessage,
   type ChatImage,
 } from '@/lib/ai/providers';
-import { DEFAULT_MODEL_ID, VISION_FALLBACK_MODEL_ID } from '@/lib/ai/models';
+import {
+  DEFAULT_MODEL_ID,
+  PRIMARY_VISION_MODEL_ID,
+  VISION_FALLBACK_MODEL_ID,
+} from '@/lib/ai/models';
 import { checkDailyLimit } from '@/lib/ai/daily-limit';
 import { queryWolfram } from '@/lib/ai/wolfram';
 import { searchMathDataset } from '@/lib/ai/math-dataset';
@@ -199,10 +203,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // High-accuracy OCR for uploaded images (Unlimited-OCR hosted on Modal).
-    // If OCR returns text, we solve it with the user's selected text model and
-    // do NOT need to send the picture to the vision model at all. If OCR is not
-    // configured or returns nothing, we fall back to Gemini vision on the image.
+    // Reading uploaded images. Order of preference:
+    //   1. Unlimited-OCR on Modal (if configured) -> solve text with chosen model.
+    //   2. Free Qwen2.5-VL vision model reads AND answers the image.
+    //   3. Gemini vision as an automatic backup (handled in the catch below).
     let solveModelId = requestedModelId;
     let visionImage: ChatImage | undefined;
     if (image) {
@@ -223,8 +227,8 @@ export async function POST(req: NextRequest) {
           }
         }
       } else {
-        // OCR unavailable -> fall back to reading the raw image with Gemini.
-        solveModelId = VISION_FALLBACK_MODEL_ID;
+        // No OCR -> let a free vision model read the image directly.
+        solveModelId = PRIMARY_VISION_MODEL_ID;
         visionImage = image;
       }
     }
@@ -245,9 +249,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Non-streaming path: raw-image vision fallback or Deep mode (2nd verify pass).
+    // Non-streaming path: image vision (with backup) or Deep mode (2nd verify pass).
     if (visionImage || deep) {
-      let reply = await runChat(solveModelId, systemPrompt, messages, visionImage);
+      let reply: string;
+      try {
+        reply = await runChat(solveModelId, systemPrompt, messages, visionImage);
+      } catch (visionErr) {
+        // If the free vision model is unavailable, fall back to Gemini vision.
+        if (visionImage && solveModelId !== VISION_FALLBACK_MODEL_ID) {
+          solveModelId = VISION_FALLBACK_MODEL_ID;
+          reply = await runChat(solveModelId, systemPrompt, messages, visionImage);
+        } else {
+          throw visionErr;
+        }
+      }
 
       if (deep) {
         const verifyMessages: ProviderMessage[] = [
