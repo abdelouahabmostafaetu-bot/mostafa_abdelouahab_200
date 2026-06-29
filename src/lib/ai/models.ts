@@ -9,9 +9,9 @@
  * Admins can add MORE models at runtime from the Admin AI; those are stored in
  * the database (see lib/ai/model-catalog.ts) and merged with this list.
  *
- * vision:    model can read uploaded images (photos of problems).
- *            NOTE: image reading is always handled by Gemini regardless of the
- *            selected model, so only Gemini is marked vision-capable here.
+ * vision:    model can read uploaded images (photos of problems). Images are
+ *            read first by a free vision model (Qwen2.5-VL), with Gemini as an
+ *            automatic backup if it is unavailable.
  * reasoning: model "thinks" step by step before answering — best for hard,
  *            advanced math (slower, but much more accurate).
  */
@@ -35,6 +35,14 @@ export const AI_MODELS: AiModel[] = [
     provider: 'gemini',
     model: 'gemini-2.5-flash',
     envKey: 'GEMINI_API_KEY',
+    vision: true,
+  },
+  {
+    id: 'openrouter-vision',
+    label: 'Qwen2.5-VL — reads photos of problems (free)',
+    provider: 'openrouter',
+    model: 'qwen/qwen2.5-vl-72b-instruct:free',
+    envKey: 'OPENROUTER_API_KEY',
     vision: true,
   },
   {
@@ -77,4 +85,7 @@ export const AI_MODELS: AiModel[] = [
 ];
 
 export const DEFAULT_MODEL_ID = 'gemini-flash';
+// Free vision model tried first for image problems.
+export const PRIMARY_VISION_MODEL_ID = 'openrouter-vision';
+// Automatic backup if the free vision model is unavailable.
 export const VISION_FALLBACK_MODEL_ID = 'gemini-flash';
