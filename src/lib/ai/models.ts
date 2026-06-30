@@ -38,6 +38,15 @@ export const AI_MODELS: AiModel[] = [
     vision: true,
   },
   {
+    id: 'openrouter-claude-sonnet',
+    label: 'Claude Sonnet 4.5 — top-tier reasoning (via OpenRouter)',
+    provider: 'openrouter',
+    model: 'anthropic/claude-sonnet-4.5',
+    envKey: 'claudesonnet4',
+    vision: true,
+    reasoning: true,
+  },
+  {
     id: 'openrouter-vision',
     label: 'Qwen2.5-VL — reads photos of problems (free)',
     provider: 'openrouter',

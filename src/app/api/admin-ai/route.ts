@@ -9,6 +9,7 @@ import { resolveCatalogModel, type CatalogModel } from '@/lib/ai/model-catalog';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 const OPENAI_BASE: Record<string, string> = {
   openrouter: 'https://openrouter.ai/api/v1',

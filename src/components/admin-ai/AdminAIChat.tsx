@@ -104,11 +104,23 @@ export default function AdminAIChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: payload, model }),
       });
-      const data = await res.json();
+      const raw = await res.text();
+      let data: { reply?: string; actions?: string[]; error?: string } = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(
+          res.status === 504 || res.status === 408 || res.status === 503
+            ? 'The request took too long and timed out on the server. Try a shorter request, or pick a faster model.'
+            : 'The server returned an unexpected response (status ' +
+              res.status +
+              '). Please try again in a moment.',
+        );
+      }
       if (!res.ok) throw new Error(data?.error || 'Request failed');
       setMessages((m) => [
         ...m,
-        { role: 'assistant', content: data.reply, actions: data.actions || [] },
+        { role: 'assistant', content: data.reply ?? '', actions: data.actions || [] },
       ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
