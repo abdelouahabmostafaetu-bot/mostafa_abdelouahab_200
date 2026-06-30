@@ -1,8 +1,8 @@
 /**
  * Server-side AI provider router.
  * - Gemini uses Google's native API.
- * - OpenRouter, Mistral, OpenAI and custom providers use the OpenAI-compatible
- *   /chat/completions format.
+ * - OpenRouter, NaraRouter, Mistral, OpenAI and custom providers use the
+ *   OpenAI-compatible /chat/completions format.
  *
  * Models can be built-in (models.ts) or custom (added by the admin, stored in
  * the database). Resolution checks built-in first, then the database.
@@ -28,6 +28,7 @@ const OPENAI_COMPATIBLE_BASE: Record<string, string> = {
   openrouter: 'https://openrouter.ai/api/v1',
   mistral: 'https://api.mistral.ai/v1',
   openai: 'https://api.openai.com/v1',
+  nara: 'https://router.bynara.id/v1',
 };
 
 type GeminiPart = { text?: string; inlineData?: { mimeType: string; data: string } };

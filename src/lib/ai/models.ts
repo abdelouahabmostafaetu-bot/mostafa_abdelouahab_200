@@ -16,7 +16,7 @@
  *            advanced math (slower, but much more accurate).
  */
 
-export type AiProvider = 'gemini' | 'openrouter' | 'mistral' | 'openai' | 'custom';
+export type AiProvider = 'gemini' | 'openrouter' | 'mistral' | 'openai' | 'nara' | 'custom';
 
 export type AiModel = {
   id: string;
@@ -38,10 +38,10 @@ export const AI_MODELS: AiModel[] = [
     vision: true,
   },
   {
-    id: 'openrouter-claude-sonnet',
-    label: 'Claude Sonnet 4.5 — top-tier reasoning (via OpenRouter)',
-    provider: 'openrouter',
-    model: 'anthropic/claude-sonnet-4.5',
+    id: 'nara-claude-sonnet',
+    label: 'Claude Sonnet 4.5 — top-tier reasoning (via NaraRouter)',
+    provider: 'nara',
+    model: 'claude-sonnet-4.5',
     envKey: 'claudesonnet4',
     vision: true,
     reasoning: true,

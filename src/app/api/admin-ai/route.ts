@@ -15,6 +15,7 @@ const OPENAI_BASE: Record<string, string> = {
   openrouter: 'https://openrouter.ai/api/v1',
   mistral: 'https://api.mistral.ai/v1',
   openai: 'https://api.openai.com/v1',
+  nara: 'https://router.bynara.id/v1',
 };
 
 type ClientMessage = { role: 'user' | 'assistant'; content: string };
