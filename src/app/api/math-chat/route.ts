@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   const identity = userId || 'anonymous';
 
-  const limited = checkDailyLimit(identity, 'math-chat', DAILY_LIMIT);
+  const { limited, remaining } = checkDailyLimit(identity, 'math-chat', DAILY_LIMIT);
   if (limited) return limited;
 
   let body: { messages?: ChatMessage[]; model?: string; image?: string; deep?: boolean };
@@ -294,7 +294,15 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      return NextResponse.json({ reply, sources });
+      return NextResponse.json(
+        { reply, sources },
+        {
+          headers: {
+            'x-daily-remaining': String(remaining),
+            'x-daily-limit': String(DAILY_LIMIT),
+          },
+        },
+      );
     }
 
     // Streaming path: normal text questions AND OCR-recognized images.
@@ -322,6 +330,8 @@ export async function POST(req: NextRequest) {
     headers.set('Content-Type', 'text/plain; charset=utf-8');
     headers.set('Cache-Control', 'no-cache, no-transform');
     headers.set('x-stream', '1');
+    headers.set('x-daily-remaining', String(remaining));
+    headers.set('x-daily-limit', String(DAILY_LIMIT));
     headers.set(
       'x-sources',
       Buffer.from(encodeURIComponent(JSON.stringify(sources))).toString('base64'),

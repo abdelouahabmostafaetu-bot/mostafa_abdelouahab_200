@@ -159,7 +159,7 @@ const SYMBOL_GROUPS: SymbolGroup[] = [
       { label: 'hat', insert: BS + 'hat{ } ', title: 'Hat / unit vector' },
       { label: 'bar', insert: BS + 'overline{ } ', title: 'Overline / conjugate' },
       { label: 'C(n,k)', insert: BS + 'binom{n}{k} ', title: 'Binomial coefficient' },
-      { label: 'ẋ', insert: BS + 'dot{ } ', title: 'Dot (time derivative)' },
+      { label: 'ẋ', insert: BS + 'dot{ } ', title: 'Dot (time derivative)' },
     ],
   },
 ];
@@ -189,6 +189,8 @@ export default function MathInputTools({
           type="button"
           onClick={() => setShowSymbols((v) => !v)}
           title="Insert a math symbol"
+          aria-label="Toggle math symbol keyboard"
+          aria-pressed={showSymbols}
           className={
             'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ' +
             (showSymbols
@@ -196,12 +198,12 @@ export default function MathInputTools({
               : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]')
           }
         >
-          <Sigma className="h-3.5 w-3.5" /> Symbols
+          <Sigma className="h-3.5 w-3.5" aria-hidden="true" /> Symbols
         </button>
 
         <span className="mx-0.5 h-4 w-px bg-[var(--color-border)]" />
 
-        <Lightbulb className="h-3.5 w-3.5 text-[var(--color-text-tertiary)]" />
+        <Lightbulb className="h-3.5 w-3.5 text-[var(--color-text-tertiary)]" aria-hidden="true" />
         {QUICK_MODES.map((m) => {
           const on = activeMode === m.id;
           return (
@@ -211,6 +213,8 @@ export default function MathInputTools({
               disabled={disabled}
               onClick={() => onSelectMode(on ? null : m.id)}
               title={m.directive}
+              aria-label={m.label + ' mode'}
+              aria-pressed={on}
               className={
                 'rounded-full border px-2.5 py-1 text-xs transition-colors disabled:opacity-40 ' +
                 (on
@@ -227,9 +231,10 @@ export default function MathInputTools({
             type="button"
             onClick={() => onSelectMode(null)}
             title="Clear mode"
+            aria-label="Clear selected mode"
             className="inline-flex items-center rounded-full p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)]"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -242,6 +247,8 @@ export default function MathInputTools({
                 key={g.id}
                 type="button"
                 onClick={() => setGroup(g.id)}
+                aria-label={g.label + ' symbols'}
+                aria-pressed={g.id === group}
                 className={
                   'rounded-md px-2 py-1 text-[11px] font-medium transition-colors ' +
                   (g.id === group
@@ -260,6 +267,7 @@ export default function MathInputTools({
                 type="button"
                 onClick={() => onInsertSymbol(s.insert)}
                 title={s.title}
+                aria-label={'Insert ' + s.title}
                 className="min-w-[2.25rem] rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-sm text-[var(--color-text)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
                 {s.label}

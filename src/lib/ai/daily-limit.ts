@@ -15,32 +15,58 @@ type DailyBucket = { count: number; day: string };
 
 const dailyBuckets = new Map<string, DailyBucket>();
 
+export type DailyLimitStatus = {
+  /** A ready-to-return 429 response when the caller is over the limit, else null. */
+  limited: NextResponse | null;
+  /** How many messages remain today after counting this request. */
+  remaining: number;
+  /** The configured daily maximum. */
+  limit: number;
+};
+
 export function checkDailyLimit(
   identity: string,
   scope: string,
   maxPerDay: number,
-): NextResponse | null {
+): DailyLimitStatus {
   const day = new Date().toISOString().slice(0, 10);
   const key = scope + ':' + identity + ':' + day;
   const bucket = dailyBuckets.get(key);
 
+  let count: number;
   if (!bucket || bucket.day !== day) {
     dailyBuckets.set(key, { count: 1, day });
-    return null;
+    count = 1;
+  } else {
+    bucket.count += 1;
+    count = bucket.count;
   }
 
-  bucket.count += 1;
-  if (bucket.count <= maxPerDay) {
-    return null;
+  if (count > maxPerDay) {
+    return {
+      limited: NextResponse.json(
+        {
+          error:
+            'You have reached your daily limit of ' +
+            maxPerDay +
+            ' messages. Please come back tomorrow.',
+        },
+        {
+          status: 429,
+          headers: {
+            'x-daily-remaining': '0',
+            'x-daily-limit': String(maxPerDay),
+          },
+        },
+      ),
+      remaining: 0,
+      limit: maxPerDay,
+    };
   }
 
-  return NextResponse.json(
-    {
-      error:
-        'You have reached your daily limit of ' +
-        maxPerDay +
-        ' messages. Please come back tomorrow.',
-    },
-    { status: 429 },
-  );
+  return {
+    limited: null,
+    remaining: Math.max(0, maxPerDay - count),
+    limit: maxPerDay,
+  };
 }

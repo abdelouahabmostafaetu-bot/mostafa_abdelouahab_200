@@ -8,6 +8,7 @@ import Footer from '@/components/layout/Footer';
 import NavigationFeedback from '@/components/layout/NavigationFeedback';
 import BirthdayCelebration from '@/components/BirthdayCelebration';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/react';
 
 const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
@@ -91,6 +92,7 @@ export default function RootLayout({
           <Footer />
           <BirthdayCelebration />
           <SpeedInsights />
+          <Analytics />
         </ClerkProvider>
       </body>
     </html>
