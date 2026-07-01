@@ -24,6 +24,8 @@ import {
   Pin,
   Search,
   ArrowDown,
+  Sigma,
+  Code2,
 } from 'lucide-react';
 import MathText from './MathText';
 import MathInputTools, { QUICK_MODES } from './MathInputTools';
@@ -188,6 +190,37 @@ function slugify(title: string): string {
   return (base || 'conversation').slice(0, 48);
 }
 
+// Pull just the LaTeX equations out of an answer, preserving display vs inline
+// delimiters, so "Copy LaTeX" hands back clean, paste-ready math.
+function extractLatex(src: string): string {
+  const parts: string[] = [];
+  const re = /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\$([^$\n]+?)\$|\\\(([\s\S]+?)\\\)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    if (m[1] !== undefined) parts.push('$$\n' + m[1].trim() + '\n$$');
+    else if (m[2] !== undefined) parts.push('$$\n' + m[2].trim() + '\n$$');
+    else if (m[3] !== undefined) parts.push('$' + m[3].trim() + '$');
+    else if (m[4] !== undefined) parts.push('$' + m[4].trim() + '$');
+  }
+  return parts.join('\n\n');
+}
+
+// Pull just the real code blocks (skipping plot/geometry/3d render blocks) so
+// "Copy code" returns runnable code without the surrounding prose.
+function extractCode(src: string): string {
+  const parts: string[] = [];
+  const re = /```([\w-]*)\n?([\s\S]*?)```/g;
+  const skip = ['plot', 'graph', 'geometry', 'geo', 'plot3d', 'surface', '3d'];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const lang = String(m[1] || '').toLowerCase();
+    if (skip.includes(lang)) continue;
+    const body = String(m[2] || '').replace(/\n$/, '');
+    if (body.trim().length > 0) parts.push(body);
+  }
+  return parts.join('\n\n');
+}
+
 export default function MathAIChat() {
   const { user, isLoaded: userLoaded } = useUser();
   const storageKey = userLoaded ? (user ? user.id : 'guest') : null;
@@ -202,7 +235,7 @@ export default function MathAIChat() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<{ dataUrl: string; name: string } | null>(null);
-  const [copied, setCopied] = useState<number | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyQuery, setHistoryQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -539,11 +572,12 @@ export default function MathAIChat() {
     triggerDownload(conversationToMarkdown(active), 'math-ai-' + slugify(active.title) + '.md');
   }
 
-  async function copyAnswer(text: string, index: number) {
+  async function copyText(text: string, key: string) {
+    if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(index);
-      setTimeout(() => setCopied((c) => (c === index ? null : c)), 1500);
+      setCopied(key);
+      setTimeout(() => setCopied((c) => (c === key ? null : c)), 1500);
     } catch {
       // clipboard unavailable
     }
@@ -780,24 +814,40 @@ export default function MathAIChat() {
             </div>
           </div>
         ) : (
-          messages.map((m, i) =>
-            m.role === 'user' ? (
-              <div key={i} className="flex flex-col items-end">
-                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-accent)] text-[var(--color-bg)] px-4 py-2.5">
-                  {m.image && (
-                    <img
-                      src={m.image}
-                      alt="attachment"
-                      className="mb-2 max-h-56 rounded-lg border border-black/10"
-                    />
-                  )}
-                  <p className="text-sm leading-6 whitespace-pre-wrap">{m.content}</p>
+          messages.map((m, i) => {
+            if (m.role === 'user') {
+              return (
+                <div key={i} className="group flex flex-col items-end">
+                  <div className="max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-accent)] text-[var(--color-bg)] px-4 py-2.5">
+                    {m.image && (
+                      <img
+                        src={m.image}
+                        alt="attachment"
+                        className="mb-2 max-h-56 rounded-lg border border-black/10"
+                      />
+                    )}
+                    <p className="text-sm leading-6 whitespace-pre-wrap">{m.content}</p>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1 pr-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => copyText(m.content, 'q-' + i)}
+                      title="Copy question"
+                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+                    >
+                      {copied === 'q-' + i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copied === 'q-' + i ? 'Copied' : 'Copy question'}
+                    </button>
+                    {m.ts && (
+                      <span className="text-[10px] text-[var(--color-text-tertiary)]">{clockTime(m.ts)}</span>
+                    )}
+                  </div>
                 </div>
-                {m.ts && (
-                  <span className="mt-1 pr-1 text-[10px] text-[var(--color-text-tertiary)]">{clockTime(m.ts)}</span>
-                )}
-              </div>
-            ) : (
+              );
+            }
+            const latex = extractLatex(m.content);
+            const code = extractCode(m.content);
+            return (
               <div key={i} className="group flex gap-2 md:gap-3">
                 <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-gradient-to-br from-[var(--color-accent)] to-purple-500 flex items-center justify-center">
                   <Sparkles className="h-4 w-4 text-white" />
@@ -830,16 +880,38 @@ export default function MathAIChat() {
                     </div>
                   )}
                   {m.content && (
-                    <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="mt-2 flex flex-wrap items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                       <button
                         type="button"
-                        onClick={() => copyAnswer(m.content, i)}
-                        title="Copy answer"
+                        onClick={() => copyText(m.content, 'ans-' + i)}
+                        title="Copy the full answer (Markdown)"
                         className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                       >
-                        {copied === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                        {copied === i ? 'Copied' : 'Copy'}
+                        {copied === 'ans-' + i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied === 'ans-' + i ? 'Copied' : 'Copy'}
                       </button>
+                      {latex && (
+                        <button
+                          type="button"
+                          onClick={() => copyText(latex, 'tex-' + i)}
+                          title="Copy just the LaTeX equations"
+                          className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+                        >
+                          {copied === 'tex-' + i ? <Check className="h-3.5 w-3.5" /> : <Sigma className="h-3.5 w-3.5" />}
+                          {copied === 'tex-' + i ? 'Copied' : 'Copy LaTeX'}
+                        </button>
+                      )}
+                      {code && (
+                        <button
+                          type="button"
+                          onClick={() => copyText(code, 'code-' + i)}
+                          title="Copy the code block(s)"
+                          className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+                        >
+                          {copied === 'code-' + i ? <Check className="h-3.5 w-3.5" /> : <Code2 className="h-3.5 w-3.5" />}
+                          {copied === 'code-' + i ? 'Copied' : 'Copy code'}
+                        </button>
+                      )}
                       {i === messages.length - 1 && !sending && (
                         <button
                           type="button"
@@ -857,8 +929,8 @@ export default function MathAIChat() {
                   )}
                 </div>
               </div>
-            ),
-          )
+            );
+          })
         )}
         {showThinking && (
           <div className="flex gap-2 md:gap-3">
@@ -957,48 +1029,4 @@ export default function MathAIChat() {
               className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-bg-muted)] h-10 w-10 text-[var(--color-text)] transition-opacity hover:opacity-90"
             >
               <Square className="h-4 w-4" />
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={!input.trim() && !image}
-              className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
-            >
-              <Send className="h-5 w-5" />
-            </button>
-          )}
-        </form>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            title="Choose the math model"
-            className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-xs text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-accent)]"
-          >
-            {AI_MODELS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => setDeep((v) => !v)}
-            title="Deep mode double-checks (verifies) the answer with a second strict pass. The web & papers are always searched either way."
-            className={
-              'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ' +
-              (deep
-                ? 'border-[var(--color-accent)] text-[var(--color-accent)] bg-[var(--color-bg-muted)]'
-                : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]')
-            }
-          >
-            <Brain className="h-3.5 w-3.5" /> Deep mode
-          </button>
-          <span className="text-[11px] text-[var(--color-text-tertiary)]">
-            {deep ? 'Double-checks every answer — slower but most accurate' : 'Streams the answer live as it is written'}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
+            
