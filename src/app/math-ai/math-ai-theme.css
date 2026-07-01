@@ -1,21 +1,23 @@
 /* ==========================================================================
    Math AI — Ambient color & design layer
    Fully scoped under .math-ai-shell so no other page is affected.
-   Adds: aurora orbs (brand orange + teal + violet), a gradient glow that
-   frames the chat, a faint math grid, gradient text helper, refined
-   scrollbars. Honors prefers-reduced-motion and scales down on mobile.
+
+   Design goal: restrained & professional. A very soft, low-saturation ambient
+   wash (no loud colors), a faint math grid, a subtle neutral frame glow, and
+   clean borderless display equations. Honors prefers-reduced-motion and
+   scales down on mobile.
    ========================================================================== */
 
 .math-ai-shell {
     position: relative;
     isolation: isolate;
-    /* Brand-aligned accent trio: orange (site), teal (logo), violet (depth) */
+    /* Muted, professional accents (kept subtle on purpose) */
     --ai-accent: #f36b16;
     --ai-accent-2: #4f98a3;
-    --ai-accent-3: #8b5cf6;
+    --ai-neutral: #8b94a7;
 }
 
-/* ----- Aurora background ------------------------------------------------- */
+/* ----- Ambient background (very soft) ------------------------------------ */
 .math-ai-aurora {
     position: absolute;
     inset: 0;
@@ -27,36 +29,36 @@
 .math-ai-orb {
     position: absolute;
     border-radius: 999px;
-    filter: blur(72px);
-    opacity: 0.5;
+    filter: blur(96px);
+    opacity: 0.2;
     will-change: transform;
 }
 
 .math-ai-orb--a {
-    top: -7rem;
-    left: -5rem;
-    width: 24rem;
-    height: 24rem;
-    background: radial-gradient(circle, rgba(243, 107, 22, 0.55), transparent 70%);
-    animation: aiOrbFloatA 19s ease-in-out infinite alternate;
+    top: -8rem;
+    left: -6rem;
+    width: 26rem;
+    height: 26rem;
+    background: radial-gradient(circle, rgba(243, 107, 22, 0.2), transparent 72%);
+    animation: aiOrbFloatA 24s ease-in-out infinite alternate;
 }
 
 .math-ai-orb--b {
-    top: 18%;
-    right: -6rem;
-    width: 26rem;
-    height: 26rem;
-    background: radial-gradient(circle, rgba(79, 152, 163, 0.5), transparent 70%);
-    animation: aiOrbFloatB 23s ease-in-out infinite alternate;
+    top: 22%;
+    right: -7rem;
+    width: 27rem;
+    height: 27rem;
+    background: radial-gradient(circle, rgba(79, 152, 163, 0.18), transparent 72%);
+    animation: aiOrbFloatB 29s ease-in-out infinite alternate;
 }
 
 .math-ai-orb--c {
-    bottom: -9rem;
-    left: 28%;
-    width: 28rem;
-    height: 28rem;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%);
-    animation: aiOrbFloatC 27s ease-in-out infinite alternate;
+    bottom: -10rem;
+    left: 30%;
+    width: 30rem;
+    height: 30rem;
+    background: radial-gradient(circle, rgba(139, 148, 167, 0.16), transparent 74%);
+    animation: aiOrbFloatC 33s ease-in-out infinite alternate;
 }
 
 /* ----- Faint math grid (masked to fade out) ------------------------------ */
@@ -65,16 +67,16 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.55;
+    opacity: 0.32;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 44px 44px;
-    -webkit-mask-image: radial-gradient(ellipse 72% 58% at 50% 0%, #000 28%, transparent 76%);
-    mask-image: radial-gradient(ellipse 72% 58% at 50% 0%, #000 28%, transparent 76%);
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(ellipse 72% 58% at 50% 0%, #000 26%, transparent 78%);
+    mask-image: radial-gradient(ellipse 72% 58% at 50% 0%, #000 26%, transparent 78%);
 }
 
-/* ----- Gradient glow framing the chat ------------------------------------ */
+/* ----- Subtle neutral frame glow ----------------------------------------- */
 .math-ai-stage {
     position: relative;
     isolation: isolate;
@@ -88,63 +90,80 @@
     border-radius: 1.5rem;
     background: linear-gradient(
         140deg,
-        rgba(243, 107, 22, 0.3),
-        rgba(79, 152, 163, 0.22) 46%,
-        rgba(139, 92, 246, 0.26)
+        rgba(243, 107, 22, 0.12),
+        rgba(79, 152, 163, 0.09) 50%,
+        rgba(139, 148, 167, 0.1)
     );
-    filter: blur(24px);
-    opacity: 0.6;
-    animation: aiGlowPulse 8s ease-in-out infinite;
+    filter: blur(26px);
+    opacity: 0.38;
+    animation: aiGlowPulse 11s ease-in-out infinite;
 }
 
 /* ----- Helpers ----------------------------------------------------------- */
 .math-ai-gradient-text {
-    background: linear-gradient(120deg, var(--ai-accent), var(--ai-accent-2) 55%, var(--ai-accent-3));
+    background: linear-gradient(120deg, var(--ai-accent), var(--ai-accent-2) 60%, var(--ai-neutral));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
-/* Slightly richer selection + scrollbar within the Math AI surface */
+/* Restrained selection + neutral scrollbar within the Math AI surface */
 .math-ai-shell ::selection {
-    background-color: rgba(79, 152, 163, 0.32);
+    background-color: rgba(79, 152, 163, 0.2);
 }
 
 .math-ai-shell ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(243, 107, 22, 0.6), rgba(79, 152, 163, 0.55));
+    background: var(--color-border);
     border-radius: 999px;
+}
+
+.math-ai-shell ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-tertiary);
+}
+
+/* ----- Clean, borderless display equations (remove the orange box) -------
+   The global stylesheet frames every .katex-display in a faint orange box.
+   Inside the Math AI surface we want plain, professional equations with no
+   tinted background or border. */
+.math-ai-shell .katex-display {
+    margin: 1.1rem 0;
+    padding: 0.15rem 0;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 /* ----- Keyframes --------------------------------------------------------- */
 @keyframes aiOrbFloatA {
     from { transform: translate3d(0, 0, 0) scale(1); }
-    to { transform: translate3d(2.5rem, 2rem, 0) scale(1.12); }
+    to { transform: translate3d(2rem, 1.6rem, 0) scale(1.08); }
 }
 
 @keyframes aiOrbFloatB {
-    from { transform: translate3d(0, 0, 0) scale(1.05); }
-    to { transform: translate3d(-2.8rem, 1.6rem, 0) scale(0.95); }
+    from { transform: translate3d(0, 0, 0) scale(1.04); }
+    to { transform: translate3d(-2.2rem, 1.3rem, 0) scale(0.96); }
 }
 
 @keyframes aiOrbFloatC {
     from { transform: translate3d(0, 0, 0) scale(0.98); }
-    to { transform: translate3d(1.8rem, -2.2rem, 0) scale(1.1); }
+    to { transform: translate3d(1.4rem, -1.8rem, 0) scale(1.07); }
 }
 
 @keyframes aiGlowPulse {
-    0%, 100% { opacity: 0.42; }
-    50% { opacity: 0.7; }
+    0%, 100% { opacity: 0.28; }
+    50% { opacity: 0.46; }
 }
 
 /* ----- Responsiveness & accessibility ------------------------------------ */
 @media (max-width: 640px) {
     .math-ai-orb {
-        filter: blur(50px);
-        opacity: 0.4;
+        filter: blur(60px);
+        opacity: 0.16;
     }
-    .math-ai-orb--a { width: 16rem; height: 16rem; }
-    .math-ai-orb--b { width: 17rem; height: 17rem; }
-    .math-ai-orb--c { width: 18rem; height: 18rem; }
+    .math-ai-orb--a { width: 17rem; height: 17rem; }
+    .math-ai-orb--b { width: 18rem; height: 18rem; }
+    .math-ai-orb--c { width: 19rem; height: 19rem; }
     .math-ai-stage::before { filter: blur(18px); }
 }
 
