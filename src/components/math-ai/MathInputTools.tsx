@@ -53,41 +53,115 @@ export const QUICK_MODES: QuickMode[] = [
 ];
 
 type MathSymbol = { label: string; insert: string; title: string };
+type SymbolGroup = { id: string; label: string; symbols: MathSymbol[] };
 
 // A single backslash, built at runtime so this source file stays free of
 // escape sequences (keeps the LaTeX inserts unambiguous).
 const BS = String.fromCharCode(92);
 
-const MATH_SYMBOLS: MathSymbol[] = [
-  { label: 'x²', insert: '^2', title: 'Square' },
-  { label: 'xⁿ', insert: '^{ }', title: 'Power' },
-  { label: '√', insert: BS + 'sqrt{ }', title: 'Square root' },
-  { label: 'ⁿ√', insert: BS + 'sqrt[n]{ }', title: 'nth root' },
-  { label: 'a⁄b', insert: BS + 'frac{ }{ }', title: 'Fraction' },
-  { label: '∫', insert: BS + 'int_{ }^{ } ', title: 'Integral' },
-  { label: '∑', insert: BS + 'sum_{ }^{ } ', title: 'Summation' },
-  { label: '∏', insert: BS + 'prod_{ }^{ } ', title: 'Product' },
-  { label: 'lim', insert: BS + 'lim_{x ' + BS + 'to } ', title: 'Limit' },
-  { label: 'd/dx', insert: BS + 'frac{d}{dx} ', title: 'Derivative' },
-  { label: '∂', insert: BS + 'partial ', title: 'Partial derivative' },
-  { label: 'π', insert: BS + 'pi ', title: 'Pi' },
-  { label: 'θ', insert: BS + 'theta ', title: 'Theta' },
-  { label: 'α', insert: BS + 'alpha ', title: 'Alpha' },
-  { label: 'β', insert: BS + 'beta ', title: 'Beta' },
-  { label: 'Δ', insert: BS + 'Delta ', title: 'Delta' },
-  { label: '∞', insert: BS + 'infty ', title: 'Infinity' },
-  { label: '≤', insert: BS + 'le ', title: 'Less than or equal' },
-  { label: '≥', insert: BS + 'ge ', title: 'Greater than or equal' },
-  { label: '≠', insert: BS + 'ne ', title: 'Not equal' },
-  { label: '±', insert: BS + 'pm ', title: 'Plus or minus' },
-  { label: '×', insert: BS + 'times ', title: 'Times' },
-  { label: '·', insert: BS + 'cdot ', title: 'Multiply (dot)' },
-  { label: '→', insert: BS + 'to ', title: 'Approaches' },
-  { label: '∈', insert: BS + 'in ', title: 'Element of' },
-  { label: '∀', insert: BS + 'forall ', title: 'For all' },
-  { label: '∃', insert: BS + 'exists ', title: 'There exists' },
-  { label: '( )', insert: BS + 'left( ' + BS + 'right)', title: 'Auto-sized parentheses' },
-  { label: '[matrix]', insert: BS + 'begin{bmatrix}  ' + BS + 'end{bmatrix} ', title: 'Matrix' },
+const SYMBOL_GROUPS: SymbolGroup[] = [
+  {
+    id: 'basic',
+    label: 'Basic',
+    symbols: [
+      { label: 'x²', insert: '^2', title: 'Square' },
+      { label: 'xⁿ', insert: '^{ }', title: 'Power' },
+      { label: 'xₙ', insert: '_{ }', title: 'Subscript' },
+      { label: '√', insert: BS + 'sqrt{ }', title: 'Square root' },
+      { label: 'ⁿ√', insert: BS + 'sqrt[n]{ }', title: 'nth root' },
+      { label: 'a⁄b', insert: BS + 'frac{ }{ }', title: 'Fraction' },
+      { label: '( )', insert: BS + 'left( ' + BS + 'right)', title: 'Auto-sized parentheses' },
+      { label: '|x|', insert: BS + 'left| ' + BS + 'right|', title: 'Absolute value' },
+      { label: '±', insert: BS + 'pm ', title: 'Plus or minus' },
+      { label: '×', insert: BS + 'times ', title: 'Times' },
+      { label: '·', insert: BS + 'cdot ', title: 'Dot product' },
+      { label: '÷', insert: BS + 'div ', title: 'Divide' },
+    ],
+  },
+  {
+    id: 'calculus',
+    label: 'Calculus',
+    symbols: [
+      { label: '∫', insert: BS + 'int_{ }^{ } ', title: 'Integral' },
+      { label: '∮', insert: BS + 'oint ', title: 'Contour integral' },
+      { label: '∑', insert: BS + 'sum_{ }^{ } ', title: 'Summation' },
+      { label: '∏', insert: BS + 'prod_{ }^{ } ', title: 'Product' },
+      { label: 'lim', insert: BS + 'lim_{x ' + BS + 'to } ', title: 'Limit' },
+      { label: 'd/dx', insert: BS + 'frac{d}{dx} ', title: 'Derivative' },
+      { label: '∂', insert: BS + 'partial ', title: 'Partial derivative' },
+      { label: '∇', insert: BS + 'nabla ', title: 'Gradient / nabla' },
+      { label: '∞', insert: BS + 'infty ', title: 'Infinity' },
+      { label: '→', insert: BS + 'to ', title: 'Approaches' },
+    ],
+  },
+  {
+    id: 'greek',
+    label: 'Greek',
+    symbols: [
+      { label: 'π', insert: BS + 'pi ', title: 'Pi' },
+      { label: 'θ', insert: BS + 'theta ', title: 'Theta' },
+      { label: 'α', insert: BS + 'alpha ', title: 'Alpha' },
+      { label: 'β', insert: BS + 'beta ', title: 'Beta' },
+      { label: 'γ', insert: BS + 'gamma ', title: 'Gamma' },
+      { label: 'λ', insert: BS + 'lambda ', title: 'Lambda' },
+      { label: 'μ', insert: BS + 'mu ', title: 'Mu' },
+      { label: 'σ', insert: BS + 'sigma ', title: 'Sigma (lower)' },
+      { label: 'φ', insert: BS + 'phi ', title: 'Phi' },
+      { label: 'ω', insert: BS + 'omega ', title: 'Omega (lower)' },
+      { label: 'Δ', insert: BS + 'Delta ', title: 'Delta' },
+      { label: 'Σ', insert: BS + 'Sigma ', title: 'Sigma (upper)' },
+      { label: 'Ω', insert: BS + 'Omega ', title: 'Omega (upper)' },
+    ],
+  },
+  {
+    id: 'relations',
+    label: 'Relations',
+    symbols: [
+      { label: '≤', insert: BS + 'le ', title: 'Less than or equal' },
+      { label: '≥', insert: BS + 'ge ', title: 'Greater than or equal' },
+      { label: '≠', insert: BS + 'ne ', title: 'Not equal' },
+      { label: '≈', insert: BS + 'approx ', title: 'Approximately equal' },
+      { label: '≡', insert: BS + 'equiv ', title: 'Equivalent / congruent' },
+      { label: '∝', insert: BS + 'propto ', title: 'Proportional to' },
+      { label: '⇒', insert: BS + 'Rightarrow ', title: 'Implies' },
+      { label: '⇔', insert: BS + 'Leftrightarrow ', title: 'If and only if' },
+      { label: '∴', insert: BS + 'therefore ', title: 'Therefore' },
+      { label: '∵', insert: BS + 'because ', title: 'Because' },
+    ],
+  },
+  {
+    id: 'logic',
+    label: 'Sets & Logic',
+    symbols: [
+      { label: '∈', insert: BS + 'in ', title: 'Element of' },
+      { label: '∉', insert: BS + 'notin ', title: 'Not an element of' },
+      { label: '⊂', insert: BS + 'subset ', title: 'Subset' },
+      { label: '⊆', insert: BS + 'subseteq ', title: 'Subset or equal' },
+      { label: '∪', insert: BS + 'cup ', title: 'Union' },
+      { label: '∩', insert: BS + 'cap ', title: 'Intersection' },
+      { label: '∅', insert: BS + 'emptyset ', title: 'Empty set' },
+      { label: '∀', insert: BS + 'forall ', title: 'For all' },
+      { label: '∃', insert: BS + 'exists ', title: 'There exists' },
+      { label: 'ℝ', insert: BS + 'mathbb{R} ', title: 'Real numbers' },
+      { label: 'ℤ', insert: BS + 'mathbb{Z} ', title: 'Integers' },
+      { label: 'ℕ', insert: BS + 'mathbb{N} ', title: 'Natural numbers' },
+      { label: 'ℚ', insert: BS + 'mathbb{Q} ', title: 'Rational numbers' },
+    ],
+  },
+  {
+    id: 'structures',
+    label: 'Structures',
+    symbols: [
+      { label: '[matrix]', insert: BS + 'begin{bmatrix}  ' + BS + 'end{bmatrix} ', title: 'Bracket matrix' },
+      { label: '(matrix)', insert: BS + 'begin{pmatrix}  ' + BS + 'end{pmatrix} ', title: 'Parenthesis matrix' },
+      { label: 'cases', insert: BS + 'begin{cases}  ' + BS + 'end{cases} ', title: 'Piecewise / system' },
+      { label: 'vec', insert: BS + 'vec{ } ', title: 'Vector arrow' },
+      { label: 'hat', insert: BS + 'hat{ } ', title: 'Hat / unit vector' },
+      { label: 'bar', insert: BS + 'overline{ } ', title: 'Overline / conjugate' },
+      { label: 'C(n,k)', insert: BS + 'binom{n}{k} ', title: 'Binomial coefficient' },
+      { label: 'ẋ', insert: BS + 'dot{ } ', title: 'Dot (time derivative)' },
+    ],
+  },
 ];
 
 type Props = {
@@ -104,6 +178,9 @@ export default function MathInputTools({
   disabled,
 }: Props) {
   const [showSymbols, setShowSymbols] = useState(false);
+  const [group, setGroup] = useState(SYMBOL_GROUPS[0].id);
+
+  const activeGroup = SYMBOL_GROUPS.find((g) => g.id === group) || SYMBOL_GROUPS[0];
 
   return (
     <div className="mb-2">
@@ -113,7 +190,7 @@ export default function MathInputTools({
           onClick={() => setShowSymbols((v) => !v)}
           title="Insert a math symbol"
           className={
-            'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ' +
+            'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ' +
             (showSymbols
               ? 'border-[var(--color-accent)] text-[var(--color-accent)] bg-[var(--color-bg-muted)]'
               : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]')
@@ -158,18 +235,37 @@ export default function MathInputTools({
       </div>
 
       {showSymbols && (
-        <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-2">
-          {MATH_SYMBOLS.map((s) => (
-            <button
-              key={s.label}
-              type="button"
-              onClick={() => onInsertSymbol(s.insert)}
-              title={s.title}
-              className="min-w-[2rem] rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-sm text-[var(--color-text)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            >
-              {s.label}
-            </button>
-          ))}
+        <div className="mt-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-2">
+          <div className="mb-2 flex flex-wrap gap-1 border-b border-[var(--color-border)] pb-2">
+            {SYMBOL_GROUPS.map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => setGroup(g.id)}
+                className={
+                  'rounded-md px-2 py-1 text-[11px] font-medium transition-colors ' +
+                  (g.id === group
+                    ? 'bg-[var(--color-accent)] text-[var(--color-bg)]'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]')
+                }
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {activeGroup.symbols.map((s) => (
+              <button
+                key={s.label + s.insert}
+                type="button"
+                onClick={() => onInsertSymbol(s.insert)}
+                title={s.title}
+                className="min-w-[2.25rem] rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-sm text-[var(--color-text)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

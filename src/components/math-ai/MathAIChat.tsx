@@ -21,6 +21,9 @@ import {
   Pencil,
   MessageSquare,
   Download,
+  Pin,
+  Search,
+  ArrowDown,
 } from 'lucide-react';
 import MathText from './MathText';
 import MathInputTools, { QUICK_MODES } from './MathInputTools';
@@ -28,13 +31,14 @@ import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
 
 type Role = 'user' | 'assistant';
 type Source = { title: string; url: string; kind: string };
-type Message = { role: Role; content: string; image?: string; sources?: Source[] };
+type Message = { role: Role; content: string; image?: string; sources?: Source[]; ts?: number };
 type Conversation = {
   id: string;
   title: string;
   createdAt: number;
   updatedAt: number;
   messages: Message[];
+  pinned?: boolean;
 };
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -59,11 +63,45 @@ const SOURCE_LABELS: Record<string, string> = {
   web: 'Web',
 };
 
-const STARTERS = [
-  'Solve x^2 - 5x + 6 = 0 and explain each step',
-  'Find the derivative of f(x) = x sin(x)',
-  'Prove that the square root of 2 is irrational',
-  'Explain eigenvalues with a simple example',
+type StarterGroup = { id: string; label: string; items: string[] };
+
+const STARTER_GROUPS: StarterGroup[] = [
+  {
+    id: 'algebra',
+    label: 'Algebra',
+    items: [
+      'Solve x^2 - 5x + 6 = 0 and explain each step',
+      'Factor 2x^2 + 7x + 3 completely',
+      'Solve the system 2x + y = 5 and x - y = 1',
+    ],
+  },
+  {
+    id: 'calculus',
+    label: 'Calculus',
+    items: [
+      'Find the derivative of f(x) = x sin(x)',
+      'Evaluate the integral of x e^x dx',
+      'Compute the limit of (sin x)/x as x approaches 0',
+    ],
+  },
+  {
+    id: 'linear',
+    label: 'Linear algebra',
+    items: [
+      'Explain eigenvalues with a simple example',
+      'Find the inverse of a 2x2 matrix [[1,2],[3,4]]',
+      'What is the rank of a matrix and how do I find it?',
+    ],
+  },
+  {
+    id: 'proofs',
+    label: 'Proofs',
+    items: [
+      'Prove that the square root of 2 is irrational',
+      'Prove by induction that 1 + 2 + ... + n = n(n+1)/2',
+      'Prove there are infinitely many prime numbers',
+    ],
+  },
 ];
 
 function genId(): string {
@@ -95,6 +133,15 @@ function relativeTime(ts: number): string {
   return new Date(ts).toLocaleDateString();
 }
 
+function clockTime(ts?: number): string {
+  if (!ts) return '';
+  try {
+    return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
 function decodeSources(header: string | null): Source[] {
   if (!header) return [];
   try {
@@ -104,13 +151,13 @@ function decodeSources(header: string | null): Source[] {
   }
 }
 
-function downloadAnswer(text: string) {
+function triggerDownload(text: string, filename: string) {
   try {
     const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'math-ai-answer.md';
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -118,6 +165,27 @@ function downloadAnswer(text: string) {
   } catch {
     // download unavailable
   }
+}
+
+function conversationToMarkdown(c: Conversation): string {
+  const lines: string[] = ['# ' + c.title, '', '_Exported from Math AI_', ''];
+  for (const m of c.messages) {
+    lines.push(m.role === 'user' ? '## Question' : '## Answer');
+    lines.push('');
+    lines.push(m.content || '');
+    lines.push('');
+    if (m.sources && m.sources.length > 0) {
+      lines.push('**Sources:**');
+      for (const s of m.sources) lines.push('- [' + s.title + '](' + s.url + ')');
+      lines.push('');
+    }
+  }
+  return lines.join('\n');
+}
+
+function slugify(title: string): string {
+  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return (base || 'conversation').slice(0, 48);
 }
 
 export default function MathAIChat() {
@@ -136,18 +204,24 @@ export default function MathAIChat() {
   const [image, setImage] = useState<{ dataUrl: string; name: string } | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyQuery, setHistoryQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [starterTab, setStarterTab] = useState(STARTER_GROUPS[0].id);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const newChatRef = useRef<() => void>(() => {});
+  const activeIdRef = useRef('');
   // Tracks which user's history is currently loaded, so we never persist one
   // user's chats under another user's key while switching accounts.
   const loadedKeyRef = useRef<string | null>(null);
 
   const active = conversations.find((c) => c.id === activeId);
   const messages = active ? active.messages : [];
+  activeIdRef.current = activeId;
 
   // Load this user's saved history (runs again whenever the signed-in user changes).
   useEffect(() => {
@@ -181,7 +255,12 @@ export default function MathAIChat() {
     try {
       const slim = conversations.map((c) => ({
         ...c,
-        messages: c.messages.map((m) => ({ role: m.role, content: m.content, sources: m.sources })),
+        messages: c.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+          sources: m.sources,
+          ts: m.ts,
+        })),
       }));
       localStorage.setItem(convKeyFor(storageKey), JSON.stringify(slim));
       localStorage.setItem(activeKeyFor(storageKey), activeId);
@@ -195,6 +274,13 @@ export default function MathAIChat() {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     });
   };
+
+  function onScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    setShowScrollBtn(!nearBottom && el.scrollHeight > el.clientHeight + 40);
+  }
 
   function autoGrow() {
     const el = textareaRef.current;
@@ -241,7 +327,7 @@ export default function MathAIChat() {
   }
 
   function appendAssistant(content: string, sources: Source[]) {
-    patchActive((msgs) => [...msgs, { role: 'assistant', content, sources }]);
+    patchActive((msgs) => [...msgs, { role: 'assistant', content, sources, ts: Date.now() }]);
   }
 
   function updateLastAssistant(content: string) {
@@ -357,6 +443,7 @@ export default function MathAIChat() {
       role: 'user',
       content: content || 'Please read and solve the problem in this image.',
       image: attached,
+      ts: Date.now(),
     };
     const history = [...messages, userMsg];
     patchActive((msgs) => [...msgs, userMsg]);
@@ -394,6 +481,19 @@ export default function MathAIChat() {
     setConversations((prev) => [fresh, ...prev]);
     setActiveId(fresh.id);
   }
+  newChatRef.current = newChat;
+
+  // Keyboard shortcut: Cmd/Ctrl + K starts a new chat.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        newChatRef.current();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   function switchTo(id: string) {
     if (sending) abortRef.current?.abort();
@@ -417,6 +517,12 @@ export default function MathAIChat() {
     if (id === activeId) setActiveId(filtered[0].id);
   }
 
+  function togglePin(id: string) {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)),
+    );
+  }
+
   function startRename(c: Conversation) {
     setEditingId(c.id);
     setEditTitle(c.title);
@@ -426,6 +532,11 @@ export default function MathAIChat() {
     const t = editTitle.trim();
     setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, title: t || c.title } : c)));
     setEditingId(null);
+  }
+
+  function exportActive() {
+    if (!active || active.messages.length === 0) return;
+    triggerDownload(conversationToMarkdown(active), 'math-ai-' + slugify(active.title) + '.md');
   }
 
   async function copyAnswer(text: string, index: number) {
@@ -446,10 +557,21 @@ export default function MathAIChat() {
 
   const lastIsAssistant = messages.length > 0 && messages[messages.length - 1].role === 'assistant';
   const showThinking = sending && !lastIsAssistant;
-  const sortedConversations = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
+
+  const q = historyQuery.trim().toLowerCase();
+  const filteredConversations = conversations.filter((c) => {
+    if (!q) return true;
+    if (c.title.toLowerCase().includes(q)) return true;
+    return c.messages.some((m) => m.content.toLowerCase().includes(q));
+  });
+  const sortedConversations = [...filteredConversations].sort((a, b) => {
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+    return b.updatedAt - a.updatedAt;
+  });
+  const activeStarters = STARTER_GROUPS.find((g) => g.id === starterTab) || STARTER_GROUPS[0];
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-7rem)] min-h-[460px]">
+    <div className="relative flex flex-col h-[calc(100dvh-7rem)] min-h-[460px]">
       <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-2">
         <button
           type="button"
@@ -459,16 +581,32 @@ export default function MathAIChat() {
         >
           <Menu className="h-4 w-4" /> History
         </button>
-        <span className="truncate px-2 text-xs font-medium text-[var(--color-text-secondary)]">
-          {active ? active.title : 'Math AI'}
+        <span className="inline-flex items-center gap-1.5 truncate px-2 text-xs font-medium text-[var(--color-text-secondary)]">
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-[var(--color-accent)] to-purple-500">
+            <Sparkles className="h-3 w-3 text-white" />
+          </span>
+          <span className="truncate">{active ? active.title : 'Math AI'}</span>
         </span>
-        <button
-          type="button"
-          onClick={newChat}
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
-        >
-          <Plus className="h-3.5 w-3.5" /> New
-        </button>
+        <div className="flex items-center gap-1">
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={exportActive}
+              title="Export this conversation as Markdown"
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+            >
+              <Download className="h-3.5 w-3.5" /> Export
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={newChat}
+            title="New chat (Ctrl/Cmd + K)"
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
+          >
+            <Plus className="h-3.5 w-3.5" /> New
+          </button>
+        </div>
       </div>
 
       {historyOpen && (
@@ -485,6 +623,24 @@ export default function MathAIChat() {
                 <X className="h-4 w-4" />
               </button>
             </div>
+            <div className="mb-2 flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-2">
+              <Search className="h-3.5 w-3.5 shrink-0 text-[var(--color-text-tertiary)]" />
+              <input
+                value={historyQuery}
+                onChange={(e) => setHistoryQuery(e.target.value)}
+                placeholder="Search chats…"
+                className="min-w-0 flex-1 bg-transparent py-2 text-sm text-[var(--color-text)] outline-none"
+              />
+              {historyQuery && (
+                <button
+                  type="button"
+                  onClick={() => setHistoryQuery('')}
+                  className="rounded p-0.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)]"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
             <button
               type="button"
               onClick={newChat}
@@ -493,83 +649,125 @@ export default function MathAIChat() {
               <Plus className="h-4 w-4" /> New chat
             </button>
             <div className="flex-1 space-y-1 overflow-y-auto">
-              {sortedConversations.map((c) => (
-                <div
-                  key={c.id}
-                  className={
-                    'group flex items-center gap-2 rounded-lg px-2 py-2 transition-colors ' +
-                    (c.id === activeId
-                      ? 'bg-[var(--color-bg-muted)]'
-                      : 'hover:bg-[var(--color-bg-muted)]')
-                  }
-                >
-                  <MessageSquare className="h-4 w-4 shrink-0 text-[var(--color-text-tertiary)]" />
-                  {editingId === c.id ? (
-                    <input
-                      autoFocus
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      onBlur={() => commitRename(c.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') commitRename(c.id);
-                        if (e.key === 'Escape') setEditingId(null);
-                      }}
-                      className="min-w-0 flex-1 rounded border border-[var(--color-accent)] bg-[var(--color-bg)] px-1.5 py-0.5 text-sm text-[var(--color-text)] outline-none"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => switchTo(c.id)}
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <span className="block truncate text-sm text-[var(--color-text)]">{c.title}</span>
-                      <span className="block text-[11px] text-[var(--color-text-tertiary)]">
-                        {relativeTime(c.updatedAt)}
-                      </span>
-                    </button>
-                  )}
-                  <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button
-                      type="button"
-                      onClick={() => startRename(c)}
-                      title="Rename"
-                      className="rounded p-1 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteConversation(c.id)}
-                      title="Delete"
-                      className="rounded p-1 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg)] hover:text-red-400"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+              {sortedConversations.length === 0 ? (
+                <p className="mt-6 text-center text-xs text-[var(--color-text-tertiary)]">No matching chats.</p>
+              ) : (
+                sortedConversations.map((c) => (
+                  <div
+                    key={c.id}
+                    className={
+                      'group flex items-center gap-2 rounded-lg px-2 py-2 transition-colors ' +
+                      (c.id === activeId
+                        ? 'bg-[var(--color-bg-muted)]'
+                        : 'hover:bg-[var(--color-bg-muted)]')
+                    }
+                  >
+                    {c.pinned ? (
+                      <Pin className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
+                    ) : (
+                      <MessageSquare className="h-4 w-4 shrink-0 text-[var(--color-text-tertiary)]" />
+                    )}
+                    {editingId === c.id ? (
+                      <input
+                        autoFocus
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onBlur={() => commitRename(c.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitRename(c.id);
+                          if (e.key === 'Escape') setEditingId(null);
+                        }}
+                        className="min-w-0 flex-1 rounded border border-[var(--color-accent)] bg-[var(--color-bg)] px-1.5 py-0.5 text-sm text-[var(--color-text)] outline-none"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => switchTo(c.id)}
+                        className="min-w-0 flex-1 text-left"
+                      >
+                        <span className="block truncate text-sm text-[var(--color-text)]">{c.title}</span>
+                        <span className="block text-[11px] text-[var(--color-text-tertiary)]">
+                          {relativeTime(c.updatedAt)}
+                        </span>
+                      </button>
+                    )}
+                    <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => togglePin(c.id)}
+                        title={c.pinned ? 'Unpin' : 'Pin to top'}
+                        className={
+                          'rounded p-1 hover:bg-[var(--color-bg)] ' +
+                          (c.pinned
+                            ? 'text-[var(--color-accent)]'
+                            : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text)]')
+                        }
+                      >
+                        <Pin className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startRename(c)}
+                        title="Rename"
+                        className="rounded p-1 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteConversation(c.id)}
+                        title="Delete"
+                        className="rounded p-1 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg)] hover:text-red-400"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </aside>
         </div>
       )}
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 space-y-8">
+      <div
+        ref={scrollRef}
+        onScroll={onScroll}
+        className="flex-1 overflow-y-auto py-6 space-y-8"
+      >
         {messages.length === 0 ? (
-          <div className="max-w-xl mx-auto text-center mt-12 px-2">
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-bg-muted)] mb-5">
-              <Sparkles className="h-6 w-6 text-[var(--color-accent)]" />
+          <div className="max-w-xl mx-auto text-center mt-10 px-2">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-accent)] to-purple-500 mb-5 shadow-lg">
+              <Sparkles className="h-6 w-6 text-white" />
             </div>
             <h2 className="text-xl font-semibold text-[var(--color-text)] mb-2">
               Ask a mathematics question
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Type a problem below, or attach a photo of one.
+              Type a problem below, attach a photo, or start from an example.
             </p>
             <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)]">
               <Globe className="h-3.5 w-3.5" /> Searches Math StackExchange, the web & research papers automatically
             </p>
-            <div className="mt-6 grid gap-2 sm:grid-cols-2">
-              {STARTERS.map((s) => (
+            <div className="mt-6 flex flex-wrap justify-center gap-1.5">
+              {STARTER_GROUPS.map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => setStarterTab(g.id)}
+                  className={
+                    'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
+                    (g.id === starterTab
+                      ? 'bg-[var(--color-accent)] text-[var(--color-bg)]'
+                      : 'border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]')
+                  }
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 grid gap-2">
+              {activeStarters.items.map((s) => (
                 <button
                   key={s}
                   type="button"
@@ -584,7 +782,7 @@ export default function MathAIChat() {
         ) : (
           messages.map((m, i) =>
             m.role === 'user' ? (
-              <div key={i} className="flex justify-end">
+              <div key={i} className="flex flex-col items-end">
                 <div className="max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-accent)] text-[var(--color-bg)] px-4 py-2.5">
                   {m.image && (
                     <img
@@ -595,11 +793,14 @@ export default function MathAIChat() {
                   )}
                   <p className="text-sm leading-6 whitespace-pre-wrap">{m.content}</p>
                 </div>
+                {m.ts && (
+                  <span className="mt-1 pr-1 text-[10px] text-[var(--color-text-tertiary)]">{clockTime(m.ts)}</span>
+                )}
               </div>
             ) : (
               <div key={i} className="group flex gap-2 md:gap-3">
-                <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
+                <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-gradient-to-br from-[var(--color-accent)] to-purple-500 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-white" />
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5 text-[15px]">
                   {m.content ? (
@@ -639,14 +840,6 @@ export default function MathAIChat() {
                         {copied === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                         {copied === i ? 'Copied' : 'Copy'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => downloadAnswer(m.content)}
-                        title="Download answer"
-                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
-                      >
-                        <Download className="h-3.5 w-3.5" /> Save
-                      </button>
                       {i === messages.length - 1 && !sending && (
                         <button
                           type="button"
@@ -657,6 +850,9 @@ export default function MathAIChat() {
                           <RefreshCw className="h-3.5 w-3.5" /> Regenerate
                         </button>
                       )}
+                      {m.ts && (
+                        <span className="ml-1 text-[10px] text-[var(--color-text-tertiary)]">{clockTime(m.ts)}</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -666,8 +862,8 @@ export default function MathAIChat() {
         )}
         {showThinking && (
           <div className="flex gap-2 md:gap-3">
-            <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-[var(--color-bg-muted)] flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
+            <div className="mt-1 h-8 w-8 shrink-0 rounded-lg bg-gradient-to-br from-[var(--color-accent)] to-purple-500 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)] pt-1.5">
               <span className="flex items-center gap-2">
@@ -686,18 +882,18 @@ export default function MathAIChat() {
         {error && <p className="text-center text-xs text-red-400">{error}</p>}
       </div>
 
+      {showScrollBtn && (
+        <button
+          type="button"
+          onClick={scrollToBottom}
+          title="Scroll to latest"
+          className="absolute bottom-36 right-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] shadow-lg transition-colors hover:text-[var(--color-text)]"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </button>
+      )}
+
       <div className="pt-2 pb-3">
-        {!sending && lastIsAssistant && (
-          <div className="mb-2 flex justify-center">
-            <button
-              type="button"
-              onClick={regenerate}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-text)]"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Regenerate
-            </button>
-          </div>
-        )}
         {image && (
           <div className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-2 py-1 text-xs text-[var(--color-text-secondary)]">
             <Paperclip className="h-3 w-3" />
@@ -719,7 +915,7 @@ export default function MathAIChat() {
             e.preventDefault();
             sendMessage(input);
           }}
-          className="flex items-end gap-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2 py-1.5 shadow-sm focus-within:border-[var(--color-accent)]"
+          className="flex items-end gap-1.5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2 py-1.5 shadow-sm focus-within:border-[var(--color-accent)] focus-within:ring-1 focus-within:ring-[var(--color-accent)]"
         >
           <button
             type="button"
