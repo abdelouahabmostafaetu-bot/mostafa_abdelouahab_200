@@ -27,6 +27,7 @@ import {
   Sigma,
   Code2,
 } from 'lucide-react';
+import katex from 'katex';
 import MathText from './MathText';
 import MathInputTools, { QUICK_MODES } from './MathInputTools';
 import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
@@ -221,6 +222,36 @@ function extractCode(src: string): string {
   return parts.join('\n\n');
 }
 
+// Live preview: render any LaTeX the user is currently typing so they can catch
+// mistakes before sending. Falls back to treating a bare \command as inline math.
+function buildPreviewHtml(src: string): string {
+  const parts: string[] = [];
+  const re = /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\$([^$\n]+?)\$|\\\(([\s\S]+?)\\\)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const display = m[1] !== undefined || m[2] !== undefined;
+    const tex = (m[1] ?? m[2] ?? m[3] ?? m[4] ?? '').trim();
+    if (!tex) continue;
+    try {
+      parts.push(
+        katex.renderToString(tex, { displayMode: display, throwOnError: false, strict: false, trust: false }),
+      );
+    } catch {
+      // ignore render errors while typing
+    }
+  }
+  if (parts.length === 0 && /\\[a-zA-Z]+/.test(src)) {
+    try {
+      parts.push(
+        katex.renderToString(src.trim(), { displayMode: false, throwOnError: false, strict: false, trust: false }),
+      );
+    } catch {
+      // ignore
+    }
+  }
+  return parts.join(' ');
+}
+
 export default function MathAIChat() {
   const { user, isLoaded: userLoaded } = useUser();
   const storageKey = userLoaded ? (user ? user.id : 'guest') : null;
@@ -242,6 +273,7 @@ export default function MathAIChat() {
   const [editTitle, setEditTitle] = useState('');
   const [starterTab, setStarterTab] = useState(STARTER_GROUPS[0].id);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -437,6 +469,13 @@ export default function MathAIChat() {
         throw new Error(message);
       }
 
+      // Track how many messages remain today (surfaced next to the model picker).
+      const remainingHeader = res.headers.get('x-daily-remaining');
+      if (remainingHeader !== null) {
+        const n = Number(remainingHeader);
+        if (!Number.isNaN(n)) setRemaining(n);
+      }
+
       if (res.headers.get('x-stream') === '1' && res.body) {
         const sources = decodeSources(res.headers.get('x-sources'));
         appendAssistant('', sources);
@@ -603,6 +642,7 @@ export default function MathAIChat() {
     return b.updatedAt - a.updatedAt;
   });
   const activeStarters = STARTER_GROUPS.find((g) => g.id === starterTab) || STARTER_GROUPS[0];
+  const previewHtml = input.trim() ? buildPreviewHtml(input) : '';
 
   return (
     <div className="relative flex flex-col h-[calc(100dvh-7rem)] min-h-[460px]">
@@ -612,8 +652,9 @@ export default function MathAIChat() {
           onClick={() => setHistoryOpen(true)}
           className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
           title="Chat history"
+          aria-label="Open chat history"
         >
-          <Menu className="h-4 w-4" /> History
+          <Menu className="h-4 w-4" aria-hidden="true" /> History
         </button>
         <span className="inline-flex items-center gap-1.5 truncate px-2 text-xs font-medium text-[var(--color-text-secondary)]">
           <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-[var(--color-accent)] to-purple-500">
@@ -627,18 +668,20 @@ export default function MathAIChat() {
               type="button"
               onClick={exportActive}
               title="Export this conversation as Markdown"
+              aria-label="Export conversation as Markdown"
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
             >
-              <Download className="h-3.5 w-3.5" /> Export
+              <Download className="h-3.5 w-3.5" aria-hidden="true" /> Export
             </button>
           )}
           <button
             type="button"
             onClick={newChat}
             title="New chat (Ctrl/Cmd + K)"
+            aria-label="Start a new chat"
             className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
           >
-            <Plus className="h-3.5 w-3.5" /> New
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" /> New
           </button>
         </div>
       </div>
@@ -652,26 +695,29 @@ export default function MathAIChat() {
               <button
                 type="button"
                 onClick={() => setHistoryOpen(false)}
+                aria-label="Close chat history"
                 className="rounded-md p-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
             <div className="mb-2 flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-2">
-              <Search className="h-3.5 w-3.5 shrink-0 text-[var(--color-text-tertiary)]" />
+              <Search className="h-3.5 w-3.5 shrink-0 text-[var(--color-text-tertiary)]" aria-hidden="true" />
               <input
                 value={historyQuery}
                 onChange={(e) => setHistoryQuery(e.target.value)}
                 placeholder="Search chats…"
+                aria-label="Search chats"
                 className="min-w-0 flex-1 bg-transparent py-2 text-sm text-[var(--color-text)] outline-none"
               />
               {historyQuery && (
                 <button
                   type="button"
                   onClick={() => setHistoryQuery('')}
+                  aria-label="Clear search"
                   className="rounded p-0.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)]"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -680,7 +726,7 @@ export default function MathAIChat() {
               onClick={newChat}
               className="mb-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] transition-colors hover:border-[var(--color-accent)]"
             >
-              <Plus className="h-4 w-4" /> New chat
+              <Plus className="h-4 w-4" aria-hidden="true" /> New chat
             </button>
             <div className="flex-1 space-y-1 overflow-y-auto">
               {sortedConversations.length === 0 ? (
@@ -697,9 +743,9 @@ export default function MathAIChat() {
                     }
                   >
                     {c.pinned ? (
-                      <Pin className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
+                      <Pin className="h-4 w-4 shrink-0 text-[var(--color-accent)]" aria-hidden="true" />
                     ) : (
-                      <MessageSquare className="h-4 w-4 shrink-0 text-[var(--color-text-tertiary)]" />
+                      <MessageSquare className="h-4 w-4 shrink-0 text-[var(--color-text-tertiary)]" aria-hidden="true" />
                     )}
                     {editingId === c.id ? (
                       <input
@@ -711,6 +757,7 @@ export default function MathAIChat() {
                           if (e.key === 'Enter') commitRename(c.id);
                           if (e.key === 'Escape') setEditingId(null);
                         }}
+                        aria-label="Rename chat"
                         className="min-w-0 flex-1 rounded border border-[var(--color-accent)] bg-[var(--color-bg)] px-1.5 py-0.5 text-sm text-[var(--color-text)] outline-none"
                       />
                     ) : (
@@ -730,6 +777,7 @@ export default function MathAIChat() {
                         type="button"
                         onClick={() => togglePin(c.id)}
                         title={c.pinned ? 'Unpin' : 'Pin to top'}
+                        aria-label={c.pinned ? 'Unpin chat' : 'Pin chat to top'}
                         className={
                           'rounded p-1 hover:bg-[var(--color-bg)] ' +
                           (c.pinned
@@ -737,23 +785,25 @@ export default function MathAIChat() {
                             : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text)]')
                         }
                       >
-                        <Pin className="h-3.5 w-3.5" />
+                        <Pin className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                       <button
                         type="button"
                         onClick={() => startRename(c)}
                         title="Rename"
+                        aria-label="Rename chat"
                         className="rounded p-1 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                       <button
                         type="button"
                         onClick={() => deleteConversation(c.id)}
                         title="Delete"
+                        aria-label="Delete chat"
                         className="rounded p-1 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg)] hover:text-red-400"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
@@ -833,6 +883,7 @@ export default function MathAIChat() {
                       type="button"
                       onClick={() => copyText(m.content, 'q-' + i)}
                       title="Copy question"
+                      aria-label="Copy question"
                       className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                     >
                       {copied === 'q-' + i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
@@ -885,6 +936,7 @@ export default function MathAIChat() {
                         type="button"
                         onClick={() => copyText(m.content, 'ans-' + i)}
                         title="Copy the full answer (Markdown)"
+                        aria-label="Copy full answer"
                         className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                       >
                         {copied === 'ans-' + i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
@@ -895,6 +947,7 @@ export default function MathAIChat() {
                           type="button"
                           onClick={() => copyText(latex, 'tex-' + i)}
                           title="Copy just the LaTeX equations"
+                          aria-label="Copy LaTeX equations"
                           className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                         >
                           {copied === 'tex-' + i ? <Check className="h-3.5 w-3.5" /> : <Sigma className="h-3.5 w-3.5" />}
@@ -906,6 +959,7 @@ export default function MathAIChat() {
                           type="button"
                           onClick={() => copyText(code, 'code-' + i)}
                           title="Copy the code block(s)"
+                          aria-label="Copy code blocks"
                           className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                         >
                           {copied === 'code-' + i ? <Check className="h-3.5 w-3.5" /> : <Code2 className="h-3.5 w-3.5" />}
@@ -917,9 +971,10 @@ export default function MathAIChat() {
                           type="button"
                           onClick={regenerate}
                           title="Regenerate this answer"
+                          aria-label="Regenerate this answer"
                           className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                         >
-                          <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+                          <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" /> Regenerate
                         </button>
                       )}
                       {m.ts && (
@@ -944,9 +999,10 @@ export default function MathAIChat() {
               <button
                 type="button"
                 onClick={stopGenerating}
+                aria-label="Stop generating"
                 className="inline-flex items-center gap-1 rounded-md border border-[var(--color-border)] px-2 py-0.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
               >
-                <Square className="h-3 w-3" /> Stop
+                <Square className="h-3 w-3" aria-hidden="true" /> Stop
               </button>
             </div>
           </div>
@@ -959,21 +1015,33 @@ export default function MathAIChat() {
           type="button"
           onClick={scrollToBottom}
           title="Scroll to latest"
+          aria-label="Scroll to latest message"
           className="absolute bottom-36 right-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] shadow-lg transition-colors hover:text-[var(--color-text)]"
         >
-          <ArrowDown className="h-4 w-4" />
+          <ArrowDown className="h-4 w-4" aria-hidden="true" />
         </button>
       )}
 
       <div className="pt-2 pb-3">
         {image && (
           <div className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-2 py-1 text-xs text-[var(--color-text-secondary)]">
-            <Paperclip className="h-3 w-3" />
+            <Paperclip className="h-3 w-3" aria-hidden="true" />
             <span className="max-w-[150px] truncate">{image.name}</span>
             <span className="text-[var(--color-text-tertiary)]">· read by Gemini</span>
-            <button type="button" onClick={() => setImage(null)} className="hover:text-[var(--color-text)]">
-              <X className="h-3 w-3" />
+            <button type="button" onClick={() => setImage(null)} aria-label="Remove attached image" className="hover:text-[var(--color-text)]">
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
+          </div>
+        )}
+        {previewHtml && (
+          <div className="mb-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-2">
+            <span className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
+              Live preview
+            </span>
+            <div
+              className="overflow-x-auto text-[var(--color-text)]"
+              dangerouslySetInnerHTML= __html: previewHtml 
+            />
           </div>
         )}
         <MathInputTools
@@ -993,9 +1061,10 @@ export default function MathAIChat() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             title="Attach an image (read by Gemini)"
+            aria-label="Attach an image"
             className="shrink-0 rounded-lg p-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="h-5 w-5" aria-hidden="true" />
           </button>
           <input
             ref={fileInputRef}
@@ -1019,6 +1088,7 @@ export default function MathAIChat() {
             }}
             rows={1}
             placeholder="Ask a math question…"
+            aria-label="Ask a math question"
             className="flex-1 min-w-0 resize-none bg-transparent px-1 py-2.5 text-base text-[var(--color-text)] outline-none max-h-[200px]"
           />
           {sending ? (
@@ -1026,17 +1096,19 @@ export default function MathAIChat() {
               type="button"
               onClick={stopGenerating}
               title="Stop"
+              aria-label="Stop generating"
               className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-bg-muted)] h-10 w-10 text-[var(--color-text)] transition-opacity hover:opacity-90"
             >
-              <Square className="h-4 w-4" />
+              <Square className="h-4 w-4" aria-hidden="true" />
             </button>
           ) : (
             <button
               type="submit"
               disabled={!input.trim() && !image}
+              aria-label="Send message"
               className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
             >
-              <Send className="h-5 w-5" />
+              <Send className="h-5 w-5" aria-hidden="true" />
             </button>
           )}
         </form>
@@ -1045,6 +1117,7 @@ export default function MathAIChat() {
             value={model}
             onChange={(e) => setModel(e.target.value)}
             title="Choose the math model"
+            aria-label="Choose the math model"
             className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-xs text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-accent)]"
           >
             {AI_MODELS.map((m) => (
@@ -1057,6 +1130,8 @@ export default function MathAIChat() {
             type="button"
             onClick={() => setDeep((v) => !v)}
             title="Deep mode double-checks (verifies) the answer with a second strict pass. The web & papers are always searched either way."
+            aria-label="Toggle Deep mode"
+            aria-pressed={deep}
             className={
               'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ' +
               (deep
@@ -1064,11 +1139,22 @@ export default function MathAIChat() {
                 : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]')
             }
           >
-            <Brain className="h-3.5 w-3.5" /> Deep mode
+            <Brain className="h-3.5 w-3.5" aria-hidden="true" /> Deep mode
           </button>
           <span className="text-[11px] text-[var(--color-text-tertiary)]">
             {deep ? 'Double-checks every answer — slower but most accurate' : 'Streams the answer live as it is written'}
           </span>
+          {remaining !== null && (
+            <span
+              className={
+                'ml-auto text-[11px] ' +
+                (remaining <= 5 ? 'text-amber-400' : 'text-[var(--color-text-tertiary)]')
+              }
+              title="Messages remaining today"
+            >
+              {remaining} left today
+            </span>
+          )}
         </div>
       </div>
     </div>
