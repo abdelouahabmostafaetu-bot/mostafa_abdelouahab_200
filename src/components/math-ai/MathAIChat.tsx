@@ -23,6 +23,7 @@ import {
   Download,
 } from 'lucide-react';
 import MathText from './MathText';
+import MathInputTools, { QUICK_MODES } from './MathInputTools';
 import { AI_MODELS, DEFAULT_MODEL_ID } from '@/lib/ai/models';
 
 type Role = 'user' | 'assistant';
@@ -125,6 +126,7 @@ export default function MathAIChat() {
 
   const [model, setModel] = useState(DEFAULT_MODEL_ID);
   const [deep, setDeep] = useState(false);
+  const [mode, setMode] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -208,6 +210,25 @@ export default function MathAIChat() {
     });
   }
 
+  // Insert a LaTeX snippet at the caret (or replace the current selection).
+  function insertSymbol(snippet: string) {
+    const el = textareaRef.current;
+    if (!el) {
+      setInput((v) => v + snippet);
+      return;
+    }
+    const start = el.selectionStart ?? input.length;
+    const end = el.selectionEnd ?? input.length;
+    const next = input.slice(0, start) + snippet + input.slice(end);
+    setInput(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      const caret = start + snippet.length;
+      el.setSelectionRange(caret, caret);
+      autoGrow();
+    });
+  }
+
   function patchActive(fn: (msgs: Message[]) => Message[]) {
     setConversations((prev) =>
       prev.map((c) => {
@@ -253,18 +274,32 @@ export default function MathAIChat() {
     e.target.value = '';
   }
 
-  async function runRequest(history: Message[], attached?: string) {
+  async function runRequest(history: Message[], attached?: string, directive?: string) {
     setSending(true);
     setError(null);
     scrollToBottom();
     const controller = new AbortController();
     abortRef.current = controller;
     try {
+      // Quick-mode directives are appended only to the copy sent to the model,
+      // so the message shown on screen stays exactly what the user typed.
+      const outgoing = history.map((m) => ({ role: m.role, content: m.content }));
+      if (directive) {
+        for (let k = outgoing.length - 1; k >= 0; k -= 1) {
+          if (outgoing[k].role === 'user') {
+            outgoing[k] = {
+              ...outgoing[k],
+              content: outgoing[k].content + '\n\n[Instruction: ' + directive + ']',
+            };
+            break;
+          }
+        }
+      }
       const res = await fetch('/api/math-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: history.map((m) => ({ role: m.role, content: m.content })),
+          messages: outgoing,
           model,
           image: attached,
           deep,
@@ -328,7 +363,8 @@ export default function MathAIChat() {
     setInput('');
     setImage(null);
     resetGrow();
-    await runRequest(history, attached);
+    const directive = mode ? QUICK_MODES.find((x) => x.id === mode)?.directive : undefined;
+    await runRequest(history, attached, directive);
   }
 
   function stopGenerating() {
@@ -342,7 +378,8 @@ export default function MathAIChat() {
     if (end === 0) return;
     const history = messages.slice(0, end);
     patchActive(() => history);
-    void runRequest(history, history[history.length - 1].image);
+    const directive = mode ? QUICK_MODES.find((x) => x.id === mode)?.directive : undefined;
+    void runRequest(history, history[history.length - 1].image, directive);
   }
 
   function newChat() {
@@ -671,6 +708,12 @@ export default function MathAIChat() {
             </button>
           </div>
         )}
+        <MathInputTools
+          activeMode={mode}
+          onSelectMode={setMode}
+          onInsertSymbol={insertSymbol}
+          disabled={sending}
+        />
         <form
           onSubmit={(e) => {
             e.preventDefault();
