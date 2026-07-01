@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { MATH_AI_SYSTEM_PROMPT } from '@/lib/prompts/math-ai-prompt';
 import { PROOF_TECHNIQUES } from '@/lib/prompts/proof-techniques';
+import { PROBLEM_SOLVING_TECHNIQUES } from '@/lib/prompts/problem-solving-techniques';
 import {
   runChat,
   streamChat,
@@ -38,15 +39,28 @@ const DAILY_LIMIT = 50;
 const MAX_IMAGE_CHARS = 9_000_000;
 const EMPTY: KnowledgeResult = { context: '', sources: [] };
 
-const SYSTEM_BASE = MATH_AI_SYSTEM_PROMPT + '\n\n' + PROOF_TECHNIQUES;
+const SYSTEM_BASE =
+  MATH_AI_SYSTEM_PROMPT + '\n\n' + PROOF_TECHNIQUES + '\n\n' + PROBLEM_SOLVING_TECHNIQUES;
 
+// Deep mode runs this as a strict, INDEPENDENT referee pass over the first
+// answer. The point is a genuine second opinion (re-derive by a different
+// method), not a re-read of the same reasoning.
 const VERIFY_INSTRUCTION =
-  'You are now a strict verifier of the solution you just gave. Re-check it step by step: ' +
-  'recompute the key steps, substitute the result back into the original problem, and check ' +
-  'edge cases, signs, and domains. If everything is correct, return the SAME full solution, ' +
-  'cleanly formatted, and add a final line exactly: Verified \u2713. If you find any mistake, fix ' +
-  'it and return the complete corrected solution (still ending with the verified final answer). ' +
-  'Keep all mathematics in LaTeX. Do not mention that you are verifying — just return the solution.';
+  'You are now acting as a strict, independent referee checking the solution ' +
+  'above for errors. Work rigorously: (1) re-derive the key steps INDEPENDENTLY, ' +
+  'ideally by a DIFFERENT method than the one used above (for example substitution ' +
+  'vs. formula, algebraic vs. geometric, or direct vs. a limiting case), and confirm ' +
+  'the approaches agree; (2) substitute the final result back into the original ' +
+  'problem and check it satisfies every condition; (3) check edge cases, domains, ' +
+  'signs, units, and orders of magnitude — for probabilities confirm values lie in ' +
+  '[0,1], for counts a sensible non-negative integer, and for series or integrals ' +
+  'confirm convergence; (4) confirm every theorem you used actually had its ' +
+  'hypotheses satisfied, and look for a counterexample to each general claim. If ' +
+  'everything is correct, return the SAME full solution, cleanly formatted, and ' +
+  'append a final line exactly: Verified ✓. If you find any error, silently correct ' +
+  'it and return the complete corrected solution ending with the verified final ' +
+  'answer. Keep all mathematics in LaTeX. Do not mention that you are verifying or ' +
+  'that anything was changed — just return the polished, correct solution.';
 
 function parseDataUrl(dataUrl: string): ChatImage | null {
   const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
@@ -271,7 +285,9 @@ export async function POST(req: NextRequest) {
           { role: 'user', content: VERIFY_INSTRUCTION },
         ];
         try {
-          const verified = await runChat(solveModelId, systemPrompt, verifyMessages);
+          // Pass the image too, so an image problem is re-checked WITH the
+          // picture visible instead of verifying blind.
+          const verified = await runChat(solveModelId, systemPrompt, verifyMessages, visionImage);
           if (verified && verified.trim()) reply = verified;
         } catch {
           // keep the first answer if verification fails
