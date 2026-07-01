@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.css';
 import InteractivePlot from './InteractivePlot';
@@ -21,10 +21,24 @@ import Surface3D from './Surface3D';
  *   2. Render the remaining text as Markdown: headings, lists, bold/italic,
  *      inline code, dividers, paragraphs.
  *   3. Put the rendered code and math back in, and interleave the components.
+ *
+ * Each display equation and code block also gets its own hover "Copy" button
+ * (see ai-copy-btn); a single delegated click handler on the root reads the
+ * base64-encoded raw source from the button and writes it to the clipboard.
  */
 
 function escapeHtml(input: string): string {
   return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Safely stash raw source (LaTeX / code) inside an HTML attribute so the copy
+// handler can recover the exact original text. Unicode-safe.
+function encodeAttr(raw: string): string {
+  try {
+    return btoa(encodeURIComponent(raw));
+  } catch {
+    return '';
+  }
 }
 
 function renderMath(tex: string, displayMode: boolean): string {
@@ -38,6 +52,24 @@ function renderMath(tex: string, displayMode: boolean): string {
   } catch {
     return escapeHtml(tex);
   }
+}
+
+const COPY_BTN_CLS =
+  'ai-copy-btn absolute right-1.5 top-1.5 z-10 inline-flex items-center rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]';
+
+// A framed display equation with its own "Copy LaTeX" button.
+function mathBlockHtml(tex: string): string {
+  const enc = encodeAttr(tex.trim());
+  return (
+    '<div class="group relative my-3 overflow-x-auto">' +
+    renderMath(tex, true) +
+    '<button type="button" data-label="Copy LaTeX" data-copy="' +
+    enc +
+    '" aria-label="Copy LaTeX" class="' +
+    COPY_BTN_CLS +
+    '">Copy LaTeX</button>' +
+    '</div>'
+  );
 }
 
 const CODE_CLS = 'rounded bg-[var(--color-bg-muted)] px-1 py-0.5 text-[0.85em] font-mono';
@@ -108,20 +140,25 @@ function extractMath(input: string): Extracted {
         return '\n\u0001S' + idx + '\u0001\n';
       }
     }
-    const body = escapeHtml(String(code).replace(/\n$/, ''));
+    const raw = String(code).replace(/\n$/, '');
+    const bodyEsc = escapeHtml(raw);
+    const enc = encodeAttr(raw);
     return pushBlockHtml(
-      '<pre class="my-3 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-3 text-[13px] leading-6"><code>' +
-        body +
-        '</code></pre>',
+      '<div class="group relative my-3">' +
+        '<pre class="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-3 text-[13px] leading-6"><code>' +
+        bodyEsc +
+        '</code></pre>' +
+        '<button type="button" data-label="Copy code" data-copy="' +
+        enc +
+        '" aria-label="Copy code" class="' +
+        COPY_BTN_CLS +
+        '">Copy code</button>' +
+        '</div>',
     );
   });
 
-  out = out.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) =>
-    pushBlockHtml('<div class="my-3 overflow-x-auto">' + renderMath(tex, true) + '</div>'),
-  );
-  out = out.replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) =>
-    pushBlockHtml('<div class="my-3 overflow-x-auto">' + renderMath(tex, true) + '</div>'),
-  );
+  out = out.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => pushBlockHtml(mathBlockHtml(tex)));
+  out = out.replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => pushBlockHtml(mathBlockHtml(tex)));
   out = out.replace(/\$([^$\n]+?)\$/g, (_m, tex) => pushInline(tex));
   out = out.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => pushInline(tex));
 
@@ -238,10 +275,48 @@ function renderMarkdown(text: string, blocks: string[]): string {
 }
 
 export default function MathText({ text }: { text: string }) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const { text: stripped, blocks, inlines, plots, diagrams, surfaces } = extractMath(text || '');
   let html = renderMarkdown(stripped, blocks);
   html = html.replace(/\u0001I(\d+)\u0001/g, (_m, n) => inlines[Number(n)] || '');
   html = html.replace(/\u0001B(\d+)\u0001/g, (_m, n) => blocks[Number(n)] || '');
+
+  // One delegated click handler powers every per-block copy button.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    function onClick(e: MouseEvent) {
+      const target = e.target as HTMLElement | null;
+      const btn = target ? (target.closest('.ai-copy-btn') as HTMLElement | null) : null;
+      if (!btn || !root.contains(btn)) return;
+      const enc = btn.getAttribute('data-copy') || '';
+      let value = '';
+      try {
+        value = decodeURIComponent(atob(enc));
+      } catch {
+        value = '';
+      }
+      if (!value) return;
+      const restore = btn.getAttribute('data-label') || 'Copy';
+      navigator.clipboard
+        .writeText(value)
+        .then(() => {
+          btn.textContent = 'Copied';
+          btn.style.color = '#22c55e';
+          btn.style.borderColor = '#22c55e';
+          btn.style.opacity = '1';
+          setTimeout(() => {
+            btn.textContent = restore;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+            btn.style.opacity = '';
+          }, 1500);
+        })
+        .catch(() => {});
+    }
+    root.addEventListener('click', onClick);
+    return () => root.removeEventListener('click', onClick);
+  }, [text]);
 
   const segments = html.split(/\u0001([PGS])(\d+)\u0001/);
   const nodes: ReactNode[] = [];
@@ -266,7 +341,10 @@ export default function MathText({ text }: { text: string }) {
   }
 
   return (
-    <div className="text-[15px] leading-7 text-[var(--color-text)] [&_.katex-display]:my-3">
+    <div
+      ref={rootRef}
+      className="text-[15px] leading-7 text-[var(--color-text)] [&_.katex-display]:my-3"
+    >
       {nodes}
     </div>
   );
