@@ -1029,4 +1029,48 @@ export default function MathAIChat() {
               className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-bg-muted)] h-10 w-10 text-[var(--color-text)] transition-opacity hover:opacity-90"
             >
               <Square className="h-4 w-4" />
-            
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!input.trim() && !image}
+              className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] h-10 w-10 text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          )}
+        </form>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            title="Choose the math model"
+            className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-xs text-[var(--color-text-secondary)] outline-none focus:border-[var(--color-accent)]"
+          >
+            {AI_MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setDeep((v) => !v)}
+            title="Deep mode double-checks (verifies) the answer with a second strict pass. The web & papers are always searched either way."
+            className={
+              'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ' +
+              (deep
+                ? 'border-[var(--color-accent)] text-[var(--color-accent)] bg-[var(--color-bg-muted)]'
+                : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]')
+            }
+          >
+            <Brain className="h-3.5 w-3.5" /> Deep mode
+          </button>
+          <span className="text-[11px] text-[var(--color-text-tertiary)]">
+            {deep ? 'Double-checks every answer — slower but most accurate' : 'Streams the answer live as it is written'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
