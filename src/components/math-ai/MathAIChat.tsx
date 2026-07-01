@@ -1040,7 +1040,7 @@ export default function MathAIChat() {
             </span>
             <div
               className="overflow-x-auto text-[var(--color-text)]"
-              dangerouslySetInnerHTML= __html: previewHtml 
+              dangerouslySetInnerHTML={ { __html: previewHtml } }
             />
           </div>
         )}
