@@ -16,6 +16,7 @@ const contentSecurityPolicyReportOnly = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   turbopack: {
     root: process.cwd(),
   },
