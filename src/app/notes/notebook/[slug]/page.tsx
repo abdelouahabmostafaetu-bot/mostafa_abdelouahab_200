@@ -98,7 +98,14 @@ export default async function NotebookViewerPage({ params }: PageProps) {
           description={notebook.description}
           color={notebook.color}
           sections={sections}
-          actions={<NotebookDownloadButton notebookTitle={notebook.title} />}
+          actions={
+            <NotebookDownloadButton
+              notebookTitle={notebook.title}
+              notebookSlug={notebook.slug}
+              notebookSubject={notebook.subject}
+              notebookDescription={notebook.description}
+            />
+          }
         />
       </div>
     </main>
