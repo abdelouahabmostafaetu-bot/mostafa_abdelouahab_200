@@ -60,11 +60,6 @@ const DOCUMENT_CSS = [
 	'.cover-author { font-size: 13.5pt; margin: 0 0 3mm; }',
 	'.cover-date { font-size: 11pt; color: #444444; margin: 0; }',
 	'.cover-brand { margin-top: 24mm; font-size: 8.5pt; letter-spacing: 0.22em; text-transform: uppercase; color: #858585; }',
-	'.toc { page-break-after: always; padding-top: 4mm; text-align: left; }',
-	'.toc-title { font-size: 20pt; font-weight: 700; margin: 0 0 8mm; }',
-	'.toc-list { list-style: none; margin: 0; padding: 0; }',
-	'.toc-item { display: flex; align-items: baseline; gap: 4mm; padding: 2.6mm 0; border-bottom: 0.4pt dotted #b5b5b5; font-size: 12pt; }',
-	'.toc-num { min-width: 8mm; font-weight: 700; }',
 	'.section { margin-top: 10mm; }',
 	'.section:first-of-type { margin-top: 0; }',
 	'.section-title { font-size: 17pt; font-weight: 700; margin: 0 0 2mm; text-align: left; page-break-after: avoid; }',
@@ -86,7 +81,8 @@ const DOCUMENT_CSS = [
 	'.content img { max-width: 100%; }',
 	'.content a { color: #10386e; text-decoration: none; }',
 	'.katex { font-size: 1.05em; }',
-	'.katex-display { margin: 4.5mm 0; page-break-inside: avoid; }',
+	'.katex-display { margin: 4.5mm 0; page-break-inside: avoid; text-align: center; direction: ltr; }',
+	'.katex-display > .katex { display: inline-block; text-align: initial; margin: 0 auto; }',
 ].join('\n');
 
 function buildDocumentHtml(args: {
@@ -101,24 +97,12 @@ function buildDocumentHtml(args: {
 		year: 'numeric',
 	});
 
-	const tocItems = args.sections
-		.map(
-			(s, i) =>
-				`<li class="toc-item"><span class="toc-num">${i + 1}.</span><span>${escapeHtml(s.title)}</span></li>`,
-		)
-		.join('');
-
 	const sectionsHtml = args.sections
 		.map(
 			(s, i) =>
 				`<section class="section"><h1 class="section-title">${i + 1}&ensp;${escapeHtml(s.title)}</h1><hr class="section-rule" /><div class="content">${s.html}</div></section>`,
 		)
 		.join('');
-
-	const tocBlock =
-		args.sections.length > 1
-			? `<nav class="toc"><h1 class="toc-title">Contents</h1><ul class="toc-list">${tocItems}</ul></nav>`
-			: '';
 
 	const descBlock = args.description
 		? `<p class="cover-desc">${escapeHtml(args.description)}</p>`
@@ -144,7 +128,6 @@ function buildDocumentHtml(args: {
 		`<p class="cover-date">${escapeHtml(dateText)}</p>`,
 		'<p class="cover-brand">Research Journal &middot; mostafaabdelouahab.me</p>',
 		'</div>',
-		tocBlock,
 		sectionsHtml,
 		'</body>',
 		'</html>',
