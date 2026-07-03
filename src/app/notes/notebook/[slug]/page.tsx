@@ -31,6 +31,8 @@ const NOTEBOOK_MATH_CSS = [
   '}',
 ].join('\n');
 
+const notebookMathStyleProps = { __html: NOTEBOOK_MATH_CSS };
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -98,7 +100,7 @@ export default async function NotebookViewerPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen pt-20 pb-20">
-      <style dangerouslySetInnerHTML= __html: NOTEBOOK_MATH_CSS  />
+      <style dangerouslySetInnerHTML={notebookMathStyleProps} />
       <div className="mx-auto max-w-5xl px-4 md:px-6">
         {/* Back link */}
         <Link
