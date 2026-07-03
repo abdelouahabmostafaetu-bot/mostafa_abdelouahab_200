@@ -5,38 +5,38 @@
 /* ===== Base Styles ===== */
 @layer base {
   :root {
-    --font-sans: var(--font-inter), system-ui, sans-serif;
-    --font-serif: var(--font-dm-serif), 'Georgia', serif;
+    --font-sans: var(--font-source-sans), system-ui, sans-serif;
+    --font-serif: var(--font-fraunces), 'Georgia', serif;
     --font-reading: var(--font-source-serif), 'Georgia', serif;
 
-        /* Site palette */
-        --bg-main: #202124;
-        --bg-card: #27272b;
-        --border: #333338;
-        --text-main: #f4f4f5;
-        --text-muted: #b8b8bc;
-        --accent-orange: #f36b16;
+        /* Site palette — warm coffee / dark academia */
+        --bg-main: #161311;
+        --bg-card: #211b16;
+        --border: #33291f;
+        --text-main: #f3ece1;
+        --text-muted: #c2b4a3;
+        --accent-gold: #d9a24a;
 
         --color-primary: var(--text-main);
-        --color-accent: var(--accent-orange);
-        --color-accent-hover: #ff7a2b;
-        --color-accent-light: #ff995f;
+        --color-accent: var(--accent-gold);
+        --color-accent-hover: #e2b05e;
+        --color-accent-light: #ecc684;
         --color-surface: var(--bg-card);
         --color-bg: var(--bg-main);
-        --color-bg-muted: #242529;
+        --color-bg-muted: #1c1712;
         --color-bg-elevated: var(--bg-card);
         --color-text: var(--text-main);
         --color-text-secondary: var(--text-muted);
-        --color-text-tertiary: #8d8d94;
+        --color-text-tertiary: #96897a;
         --color-border: var(--border);
-        --color-border-light: #2d2d32;
-        --color-hover: #2b2b30;
-        --color-gold: var(--accent-orange);
-        --color-gold-muted: #c95a12;
-        --article-bg: #1e1f22;
-        --article-bg-soft: #23262a;
-        --article-accent: var(--accent-orange);
-        --article-accent-soft: rgba(243, 107, 22, 0.1);
+        --color-border-light: #2a2119;
+        --color-hover: #272019;
+        --color-gold: var(--accent-gold);
+        --color-gold-muted: #b28434;
+        --article-bg: #1a1511;
+        --article-bg-soft: #1f1913;
+        --article-accent: var(--accent-gold);
+        --article-accent-soft: rgba(217, 162, 74, 0.1);
         --article-gold: var(--color-accent-light);
         --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.5);
         --shadow-card:
@@ -45,11 +45,11 @@
         --tag-bg: var(--bg-card);
         --tag-border: var(--border);
         --tag-text: var(--text-muted);
-        --tag-bg-hover: #2d2d32;
-        --tag-border-hover: #44444a;
+        --tag-bg-hover: #2a2219;
+        --tag-border-hover: #4a3b2b;
         --tag-text-hover: var(--text-main);
-        --tag-bg-active: rgba(243, 107, 22, 0.14);
-        --tag-border-active: var(--accent-orange);
+        --tag-bg-active: rgba(217, 162, 74, 0.14);
+        --tag-border-active: var(--accent-gold);
         --tag-text-active: var(--text-main);
     }
 
@@ -67,7 +67,6 @@
     body {
         @apply bg-[var(--color-bg)] text-[var(--color-text)];
         font-family: var(--font-sans);
-        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         letter-spacing: 0;
         line-height: 1.6;
         min-height: 100svh;
@@ -86,7 +85,7 @@
     }
 
     ::selection {
-        background-color: rgba(243, 107, 22, 0.32);
+        background-color: rgba(217, 162, 74, 0.32);
     }
 
     /* Elegant scrollbar */
@@ -207,7 +206,7 @@
     .notes-reading a {
         color: var(--color-accent);
         text-decoration: underline;
-        text-decoration-color: rgba(243, 107, 22, 0.4);
+        text-decoration-color: rgba(217, 162, 74, 0.4);
         text-decoration-thickness: 1px;
         text-underline-offset: 0.2em;
         transition: color 0.15s ease, text-decoration-color 0.15s ease;
@@ -242,21 +241,21 @@
 
     .notes-reading blockquote {
         @apply my-7 md:my-8 rounded-r-lg border-l-[2px] px-5 py-4 md:px-6 md:py-5 italic text-[var(--color-text-secondary)];
-        border-color: rgba(243, 107, 22, 0.5);
-        background: rgba(243, 107, 22, 0.03);
+        border-color: rgba(217, 162, 74, 0.5);
+        background: rgba(217, 162, 74, 0.03);
     }
 
     .notes-reading code {
         @apply rounded px-1.5 py-0.5 font-mono text-[0.88em] text-[var(--color-text)];
-        background: rgba(243, 107, 22, 0.08);
-        border: 1px solid rgba(243, 107, 22, 0.15);
+        background: rgba(217, 162, 74, 0.08);
+        border: 1px solid rgba(217, 162, 74, 0.15);
     }
 
     .notes-reading pre {
         @apply my-7 md:my-8 overflow-x-auto rounded-lg p-4 text-sm leading-relaxed md:rounded-xl md:p-5;
-        background: #121417;
-        color: #e4e7eb;
-        border: 1px solid rgba(243, 107, 22, 0.12);
+        background: #120e0a;
+        color: #eae4da;
+        border: 1px solid rgba(217, 162, 74, 0.12);
     }
 
     .notes-reading pre code {
@@ -286,7 +285,7 @@
 
     .notes-reading th {
         @apply border border-[var(--color-border)] px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)];
-        background: rgba(243, 107, 22, 0.06);
+        background: rgba(217, 162, 74, 0.06);
     }
 
     .notes-reading td {
@@ -301,7 +300,7 @@
     .prose-academic a {
         color: var(--article-accent);
         text-decoration: underline;
-        text-decoration-color: rgba(243, 107, 22, 0.38);
+        text-decoration-color: rgba(217, 162, 74, 0.38);
         text-decoration-thickness: 1px;
         text-underline-offset: 0.22em;
         transition:
@@ -348,18 +347,18 @@
 
     .prose-academic code {
         @apply rounded px-1.5 py-0.5 font-mono text-[0.88em] text-[var(--color-text)];
-        background: rgba(243, 107, 22, 0.1);
-        border: 1px solid rgba(243, 107, 22, 0.18);
+        background: rgba(217, 162, 74, 0.1);
+        border: 1px solid rgba(217, 162, 74, 0.18);
     }
 
     .prose-academic pre {
         @apply my-7 md:my-9 overflow-x-auto rounded-xl p-4 text-sm leading-relaxed md:rounded-2xl md:p-5;
-        background: #121417;
-        color: #e4e7eb;
+        background: #120e0a;
+        color: #eae4da;
         box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.03),
             0 18px 55px rgba(0, 0, 0, 0.22);
-        border: 1px solid rgba(243, 107, 22, 0.16);
+        border: 1px solid rgba(217, 162, 74, 0.16);
     }
 
     .prose-academic pre code {
@@ -394,8 +393,8 @@
     }
 
     .problem-detail-container {
-        --problem-detail-accent: #ff6b1a;
-        --problem-detail-accent-rgb: 255, 107, 26;
+        --problem-detail-accent: #d9a24a;
+        --problem-detail-accent-rgb: 217, 162, 74;
         width: min(100%, 880px);
         max-width: 880px;
         min-width: 0;
@@ -487,7 +486,7 @@
 
     .problem-detail-back-link:hover {
         border-color: var(--problem-detail-accent, var(--color-accent));
-        background: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.1);
+        background: rgba(var(--problem-detail-accent-rgb, 217, 162, 74), 0.1);
         color: var(--problem-detail-accent, var(--color-accent));
     }
 
@@ -604,9 +603,9 @@
     .problem-article-content blockquote {
         margin: 1.35rem 0;
         border-left: 3px solid
-            rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.62);
+            rgba(var(--problem-detail-accent-rgb, 217, 162, 74), 0.62);
         border-radius: 0 10px 10px 0;
-        background: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.055);
+        background: rgba(var(--problem-detail-accent-rgb, 217, 162, 74), 0.055);
         padding: 0.9rem 1rem;
         color: var(--color-text-secondary);
     }
@@ -628,9 +627,9 @@
         margin: 1.4rem 0;
         overflow-x: auto;
         overflow-y: hidden;
-        border: 1px solid rgba(243, 107, 22, 0.14);
+        border: 1px solid rgba(217, 162, 74, 0.14);
         border-radius: 12px;
-        background: #16181b;
+        background: #16110c;
         padding: 0.95rem;
         -webkit-overflow-scrolling: touch;
     }
@@ -738,7 +737,7 @@
 
     .prose-academic th {
         @apply border border-[var(--color-border)] px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)];
-        background: rgba(243, 107, 22, 0.1);
+        background: rgba(217, 162, 74, 0.1);
     }
 
     .prose-academic td {
@@ -748,36 +747,24 @@
 
 @media (max-width: 640px) {
     body {
-        font-size: 13px;
-        line-height: 1.55;
+        font-size: 14px;
+        line-height: 1.6;
     }
 
     button,
     input,
     select,
     textarea {
-        font-size: 13px;
+        font-size: 14px;
     }
 
-    p,
-    li,
-    label {
-        font-size: min(1em, 13px);
-    }
-
-    a,
-    button {
-        line-height: 1.35;
-    }
-
-    svg,
     img[src*="/icons/"] {
-        max-width: 17px;
-        max-height: 17px;
+        max-width: 18px;
+        max-height: 18px;
     }
 
     .prose-academic {
-        font-size: 14px;
+        font-size: 15px;
         line-height: 1.78;
     }
 
@@ -1062,8 +1049,8 @@
     overflow-y: visible;
     padding: 0.85rem 1rem;
     border-radius: 14px;
-    background: rgba(243, 107, 22, 0.055);
-    border: 1px solid rgba(243, 107, 22, 0.12);
+    background: rgba(217, 162, 74, 0.055);
+    border: 1px solid rgba(217, 162, 74, 0.12);
     text-align: center;
 }
 
@@ -1147,7 +1134,7 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    color: #f5f5f5;
+    color: #f3ece1;
     font-size: 1.1rem;
     font-weight: 700;
     line-height: 1.35;
@@ -1180,7 +1167,7 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
-    color: rgba(255, 255, 255, 0.68);
+    color: rgba(243, 236, 225, 0.68);
     font-size: 0.95rem;
     line-height: 1.55;
 }
@@ -1225,7 +1212,7 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
     scrollbar-width: thin;
-    scrollbar-color: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.42)
+    scrollbar-color: rgba(var(--problem-detail-accent-rgb, 217, 162, 74), 0.42)
         transparent;
 }
 
@@ -1234,7 +1221,7 @@
 }
 
 .math-scroll::-webkit-scrollbar-thumb {
-    background: rgba(var(--problem-detail-accent-rgb, 255, 107, 26), 0.38);
+    background: rgba(var(--problem-detail-accent-rgb, 217, 162, 74), 0.38);
     border-radius: 999px;
 }
 
@@ -1537,15 +1524,15 @@
     min-height: 3.55rem;
     flex: 0 0 auto;
     border-radius: 999px;
-    background: rgba(243, 107, 22, 0.62);
+    background: rgba(217, 162, 74, 0.62);
 }
 
 .problem-list-item[data-variant="1"] .problem-list-accent {
-    background: rgba(243, 107, 22, 0.62);
+    background: rgba(217, 162, 74, 0.62);
 }
 
 .problem-list-item[data-variant="2"] .problem-list-accent {
-    background: rgba(217, 182, 111, 0.62);
+    background: rgba(191, 122, 68, 0.62);
 }
 
 .problem-list-meta {
@@ -1763,7 +1750,7 @@
 
 /* ===== Code Highlighting ===== */
 [data-rehype-pretty-code-figure] pre {
-    @apply border border-[var(--color-border)] !bg-[#111110];
+    @apply border border-[var(--color-border)] !bg-[#120e0a];
 }
 
 [data-rehype-pretty-code-figure] code {
@@ -1815,15 +1802,15 @@
         ),
         radial-gradient(
             circle at 82% 22%,
-            rgba(243, 107, 22, 0.22),
+            rgba(217, 162, 74, 0.22),
             transparent 34%
         ),
         radial-gradient(
             circle at 50% 88%,
-            rgba(243, 107, 22, 0.22),
+            rgba(217, 162, 74, 0.22),
             transparent 36%
         ),
-        rgba(15, 14, 13, 0.72);
+        rgba(15, 13, 11, 0.72);
     backdrop-filter: blur(16px);
     animation: birthdayOverlayIn 320ms ease-out both;
 }
@@ -1885,7 +1872,7 @@
             rgba(255, 255, 255, 0.16),
             rgba(255, 255, 255, 0.07)
         ),
-        rgba(32, 33, 36, 0.78);
+        rgba(33, 27, 22, 0.78);
     box-shadow:
         0 28px 90px rgba(0, 0, 0, 0.42),
         inset 0 1px 0 rgba(255, 255, 255, 0.18);
@@ -1901,8 +1888,8 @@
     z-index: -1;
     background: linear-gradient(
         120deg,
-        rgba(243, 107, 22, 0.42),
-        rgba(243, 107, 22, 0.34),
+        rgba(217, 162, 74, 0.42),
+        rgba(217, 162, 74, 0.34),
         rgba(217, 182, 111, 0.38)
     );
     filter: blur(18px);
@@ -2220,7 +2207,7 @@
             rgba(255, 255, 255, 0.18),
             rgba(255, 255, 255, 0.055)
         ),
-        linear-gradient(180deg, rgba(24, 26, 38, 0.88), rgba(14, 15, 24, 0.8));
+        linear-gradient(180deg, rgba(38, 30, 22, 0.88), rgba(24, 19, 14, 0.8));
     box-shadow:
         0 34px 120px rgba(0, 0, 0, 0.58),
         0 0 90px rgba(255, 191, 72, 0.18),
@@ -2439,7 +2426,7 @@
 .notebook-reader-content a {
     color: var(--color-accent);
     text-decoration: underline;
-    text-decoration-color: rgba(243, 107, 22, 0.4);
+    text-decoration-color: rgba(217, 162, 74, 0.4);
     text-underline-offset: 0.2em;
     transition: text-decoration-color 0.15s ease;
 }
@@ -2496,7 +2483,7 @@
 .notebook-reader-content pre {
     margin: 1.5rem 0;
     overflow-x: auto;
-    background: #1a1b1e;
+    background: #1a140f;
     border: 1px solid var(--color-border);
     border-radius: 0.65rem;
     padding: 1rem 1.15rem;

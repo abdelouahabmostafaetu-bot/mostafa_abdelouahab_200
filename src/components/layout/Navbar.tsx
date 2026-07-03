@@ -15,8 +15,8 @@ import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
 const navLinks = [
   { href: '/', label: 'About', icon: 'home' },
   { href: '/blog', label: 'Blog', icon: 'blog' },
-  { href: '/notes', label: 'My Notes', icon: 'equation' },
-  { href: '/problems-with-coffee', label: 'Problems', icon: 'equation' },
+  { href: '/notes', label: 'My Notes', icon: 'notebook' },
+  { href: '/problems-with-coffee', label: 'Problems', icon: 'math' },
   { href: '/search', label: 'Search', icon: 'search' },
   { href: '/math-ai', label: 'Math AI', icon: 'equation' },
   { href: '/library', label: 'My Library', icon: 'library' },
@@ -25,7 +25,7 @@ const navLinks = [
 const adminLink = {
   href: '/admin-ai',
   label: 'Admin AI',
-  icon: 'equation',
+  icon: 'dashboard',
 } satisfies { href: string; label: string; icon: SiteIconName };
 
 export default function Navbar() {
@@ -77,7 +77,7 @@ export default function Navbar() {
       <nav className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="flex h-14 items-center justify-between md:h-16">
           <Link href="/" className="group flex flex-col leading-none">
-            <span className="text-sm font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)] sm:text-base">
+            <span className="font-serif text-sm font-semibold text-[var(--color-text)] transition-colors duration-200 group-hover:text-[var(--color-accent)] sm:text-base">
               Abdelouahab Mostafa
             </span>
             <span className="hidden sm:block mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-text-tertiary)]">
@@ -152,7 +152,7 @@ export default function Navbar() {
         />
 
         <aside
-          className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-[min(17rem,82vw)] border-r border-[var(--color-border)] bg-[#080808] shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-[min(17rem,82vw)] border-r border-[var(--color-border)] bg-[var(--color-bg)] shadow-2xl transform transition-transform duration-300 ease-in-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
