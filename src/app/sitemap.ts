@@ -9,7 +9,6 @@ type ChangeFreq = MetadataRoute.Sitemap[number]['changeFrequency'];
 // are intentionally excluded and also blocked in robots.ts.
 const ROUTES: Array<{ path: string; priority: number; changeFrequency: ChangeFreq }> = [
   { path: '', priority: 1.0, changeFrequency: 'weekly' },
-  { path: '/math-ai', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/blog', priority: 0.8, changeFrequency: 'weekly' },
   { path: '/cv', priority: 0.8, changeFrequency: 'monthly' },
   { path: '/notes', priority: 0.7, changeFrequency: 'weekly' },
@@ -17,7 +16,6 @@ const ROUTES: Array<{ path: string; priority: number; changeFrequency: ChangeFre
   { path: '/library', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/problems-with-coffee', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/contact', priority: 0.5, changeFrequency: 'yearly' },
-  { path: '/search', priority: 0.3, changeFrequency: 'monthly' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -17,21 +17,12 @@ const navLinks = [
   { href: '/blog', label: 'Blog', icon: 'blog' },
   { href: '/notes', label: 'My Notes', icon: 'notebook' },
   { href: '/problems-with-coffee', label: 'Problems', icon: 'math' },
-  { href: '/search', label: 'Search', icon: 'search' },
-  { href: '/math-ai', label: 'Math AI', icon: 'equation' },
   { href: '/library', label: 'My Library', icon: 'library' },
 ] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
-
-const adminLink = {
-  href: '/admin-ai',
-  label: 'Admin AI',
-  icon: 'dashboard',
-} satisfies { href: string; label: string; icon: SiteIconName };
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -45,21 +36,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    fetch('/api/admin/verify', { method: 'POST' })
-      .then((res) => {
-        if (active) setIsAdmin(res.ok);
-      })
-      .catch(() => {
-        if (active) setIsAdmin(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const links = isAdmin ? [...navLinks, adminLink] : navLinks;
+  const links = navLinks;
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
