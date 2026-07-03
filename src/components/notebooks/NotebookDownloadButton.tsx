@@ -35,8 +35,11 @@ const FONT_CSS_URL =
 
 // LaTeX-inspired print stylesheet: black text on white paper, Computer Modern
 // serif body, justified paragraphs, clean rules, and sensible page breaking.
+// NOTE: .nb-pdf-root must stay in normal document flow (no absolute/offscreen
+// positioning here) because html2pdf clones it, and an offscreen clone
+// produces a blank capture. Hiding is done by the outer wrapper only.
 const PDF_CSS = [
-	'.nb-pdf-root { position: absolute; left: -10000px; top: 0; width: 700px; background: #ffffff; color: #1a1a1a; font-family: "Computer Modern Serif", "CMU Serif", Georgia, "Times New Roman", serif; font-size: 15px; line-height: 1.7; }',
+	'.nb-pdf-root { width: 700px; margin: 0; background: #ffffff; color: #1a1a1a; font-family: "Computer Modern Serif", "CMU Serif", Georgia, "Times New Roman", serif; font-size: 15px; line-height: 1.7; }',
 	'.nb-pdf-root * { color: #1a1a1a !important; background: transparent !important; box-shadow: none !important; text-shadow: none !important; }',
 	'.nb-pdf-root p, .nb-pdf-root li, .nb-pdf-root blockquote, .nb-pdf-root h1, .nb-pdf-root h2, .nb-pdf-root h3, .nb-pdf-root h4, .nb-pdf-root td, .nb-pdf-root th { font-family: inherit !important; }',
 	'.nb-pdf-root p { margin: 0 0 12px; text-align: justify; }',
@@ -196,7 +199,7 @@ export default function NotebookDownloadButton({
 		setIsWorking(true);
 		setFailed(false);
 
-		let root: HTMLElement | null = null;
+		let wrapper: HTMLElement | null = null;
 		try {
 			const sections = collectSections();
 			if (sections.length === 0) {
@@ -205,13 +208,24 @@ export default function NotebookDownloadButton({
 
 			await ensureFontsLoaded();
 
-			root = buildDocument(
+			const root = buildDocument(
 				notebookTitle,
 				notebookSubject ?? '',
 				notebookDescription ?? '',
 				sections,
 			);
-			document.body.appendChild(root);
+
+			// Hide the working copy with an outer wrapper only. The root itself
+			// must stay in normal flow so the html2pdf clone renders correctly.
+			wrapper = document.createElement('div');
+			wrapper.setAttribute('aria-hidden', 'true');
+			wrapper.style.position = 'fixed';
+			wrapper.style.left = '-10000px';
+			wrapper.style.top = '0';
+			wrapper.style.width = '700px';
+			wrapper.style.pointerEvents = 'none';
+			wrapper.appendChild(root);
+			document.body.appendChild(wrapper);
 
 			// Give the browser a moment to lay out the document and apply fonts.
 			await new Promise((resolve) => setTimeout(resolve, 300));
@@ -235,6 +249,8 @@ export default function NotebookDownloadButton({
 					useCORS: true,
 					backgroundColor: '#ffffff',
 					logging: false,
+					scrollX: 0,
+					scrollY: 0,
 				},
 				jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
 				pagebreak: { mode: ['css', 'legacy'] },
@@ -263,8 +279,8 @@ export default function NotebookDownloadButton({
 		} catch {
 			setFailed(true);
 		} finally {
-			if (root && root.parentNode) {
-				root.parentNode.removeChild(root);
+			if (wrapper && wrapper.parentNode) {
+				wrapper.parentNode.removeChild(wrapper);
 			}
 			setIsWorking(false);
 		}
