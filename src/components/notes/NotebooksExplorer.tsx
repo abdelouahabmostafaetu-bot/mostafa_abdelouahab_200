@@ -24,6 +24,7 @@ function normalizeSubject(subject: string | undefined | null): string {
 
 function NotebookCard({ notebook }: { notebook: NotebookSummary }) {
   const accent = notebook.color || 'var(--color-accent)';
+  const accentStyle = { backgroundColor: accent };
 
   return (
     <Link
@@ -33,7 +34,7 @@ function NotebookCard({ notebook }: { notebook: NotebookSummary }) {
       {/* Notebook spine */}
       <span
         className="w-1.5 shrink-0 opacity-80 transition-opacity duration-200 group-hover:opacity-100"
-        style= backgroundColor: accent 
+        style={accentStyle}
         aria-hidden="true"
       />
 
@@ -41,7 +42,7 @@ function NotebookCard({ notebook }: { notebook: NotebookSummary }) {
         <div className="flex items-center gap-2">
           <span
             className="h-2 w-2 shrink-0 rounded-full"
-            style= backgroundColor: accent 
+            style={accentStyle}
             aria-hidden="true"
           />
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
