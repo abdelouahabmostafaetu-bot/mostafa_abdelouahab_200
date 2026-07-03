@@ -15,19 +15,34 @@ export const dynamic = 'force-dynamic';
 
 type PageProps = { params: Promise<{ slug: string }> };
 
-// Force every $$ ... $$ display formula to render centered (not left/right).
+// Force every $$ ... $$ display formula onto its own line, centered on the
+// page. Display math is wrapped by rehypeWrapDisplayMath as:
+//   .math-scroll > .math-scroll__inner > .katex-display
+// so we center the flex wrapper and force ltr (Arabic/RTL text was pushing
+// the equation to the side). Inline $ ... $ math is left untouched so it
+// stays on the same line as the surrounding text.
 const NOTEBOOK_MATH_CSS = [
-  '.notebook-reader-content .katex-display {',
+  '.notebook-reader-content .math-scroll {',
+  '  width: 100%;',
   '  text-align: center !important;',
   '  direction: ltr;',
-  '  margin-left: auto;',
-  '  margin-right: auto;',
+  '}',
+  '.notebook-reader-content .math-scroll__inner {',
+  '  display: flex !important;',
+  '  justify-content: center !important;',
+  '  min-width: 100%;',
+  '}',
+  '.notebook-reader-content .katex-display {',
+  '  display: block;',
+  '  width: 100%;',
+  '  margin-left: auto !important;',
+  '  margin-right: auto !important;',
+  '  text-align: center !important;',
+  '  direction: ltr;',
   '}',
   '.notebook-reader-content .katex-display > .katex {',
   '  display: inline-block;',
   '  text-align: initial;',
-  '  margin-left: auto;',
-  '  margin-right: auto;',
   '}',
 ].join('\n');
 
