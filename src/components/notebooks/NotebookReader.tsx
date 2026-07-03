@@ -72,6 +72,9 @@ export default function NotebookReader({
     setTocOpen(false);
   }, []);
 
+  const progressStyle = { width: `${progress}%` };
+  const dotColorStyle = color ? { backgroundColor: color } : undefined;
+
   const toc = (
     <nav aria-label="Table of contents" className="flex flex-col gap-0.5">
       {sections.map((s) => {
@@ -118,7 +121,7 @@ export default function NotebookReader({
       >
         <div
           className="h-full bg-[var(--color-accent)] transition-[width] duration-150 ease-out"
-          style={{ width: `${progress}%` }}
+          style={progressStyle}
         />
       </div>
 
@@ -128,7 +131,7 @@ export default function NotebookReader({
           {color && (
             <span
               className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: color }}
+              style={dotColorStyle}
               aria-hidden="true"
             />
           )}
@@ -214,17 +217,9 @@ export default function NotebookReader({
                 aria-labelledby={`page-${s.pageNumber}-title`}
                 className={`scroll-mt-28 ${i > 0 ? 'mt-12 border-t border-[var(--color-border)] pt-10' : ''}`}
               >
-                <div className="mb-5 flex items-baseline gap-3">
-                  <span className="font-mono text-xs tabular-nums text-[var(--color-text-tertiary)]">
-                    {String(s.pageNumber).padStart(2, '0')}
-                  </span>
-                  <h2
-                    id={`page-${s.pageNumber}-title`}
-                    className="font-serif text-xl leading-snug text-[var(--color-text)] md:text-2xl text-balance"
-                  >
-                    {s.title || `Page ${s.pageNumber}`}
-                  </h2>
-                </div>
+                <h2 id={`page-${s.pageNumber}-title`} className="sr-only">
+                  {s.title || `Page ${s.pageNumber}`}
+                </h2>
                 <div className="notebook-reader-content">{s.content}</div>
               </section>
             ))
