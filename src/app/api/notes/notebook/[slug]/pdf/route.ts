@@ -236,14 +236,21 @@ export async function GET(_request: Request, context: RouteContext) {
 		browser = await launchBrowser();
 		const page = await browser.newPage();
 		await page.setContent(html, {
-			waitUntil: 'networkidle0',
+			waitUntil: 'load',
 			timeout: 45000,
 		});
+		// Ensure the KaTeX stylesheet and Computer Modern webfonts are fully
+		// applied before printing (setContent 'load' does not wait for fonts).
 		try {
-			await page.evaluateHandle('document.fonts.ready');
+			await page.evaluate(async () => {
+				if (document.fonts && document.fonts.ready) {
+					await document.fonts.ready;
+				}
+			});
 		} catch {
 			// Continue with fallback fonts if webfonts are slow.
 		}
+		await new Promise((resolve) => setTimeout(resolve, 400));
 
 		const footerTemplate =
 			'<div style="width:100%; text-align:center; font-size:9px; color:#888888; font-family: Georgia, serif;"><span class="pageNumber"></span></div>';
