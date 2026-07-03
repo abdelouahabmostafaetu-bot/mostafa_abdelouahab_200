@@ -288,7 +288,7 @@ export default function MathText({ text }: { text: string }) {
     function onClick(e: MouseEvent) {
       const target = e.target as HTMLElement | null;
       const btn = target ? (target.closest('.ai-copy-btn') as HTMLElement | null) : null;
-      if (!btn || !root.contains(btn)) return;
+      if (!btn || !root || !root.contains(btn)) return;
       const enc = btn.getAttribute('data-copy') || '';
       let value = '';
       try {
