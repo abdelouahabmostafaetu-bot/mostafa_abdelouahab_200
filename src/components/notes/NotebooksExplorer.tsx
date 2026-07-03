@@ -15,8 +15,6 @@ export type NotebookSummary = {
   pageCount: number;
 };
 
-type SortKey = 'newest' | 'title' | 'pages';
-
 function normalizeSubject(subject: string | undefined | null): string {
   const trimmed = (subject ?? '').trim();
   return trimmed || 'General';
@@ -84,14 +82,7 @@ export default function NotebooksExplorer({
   notebooks: NotebookSummary[];
   isAdmin: boolean;
 }) {
-  const [searchTerm, setSearchTerm] = useState('');
   const [subject, setSubject] = useState('all');
-  const [sortKey, setSortKey] = useState<SortKey>('newest');
-
-  const totalPages = useMemo(
-    () => notebooks.reduce((sum, nb) => sum + nb.pageCount, 0),
-    [notebooks],
-  );
 
   const subjects = useMemo(() => {
     const subjectCounts = new Map<string, number>();
@@ -105,31 +96,15 @@ export default function NotebooksExplorer({
   }, [notebooks]);
 
   const visibleNotebooks = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    if (subject === 'all') return notebooks;
+    return notebooks.filter(
+      (nb) => normalizeSubject(nb.subject) === subject,
+    );
+  }, [notebooks, subject]);
 
-    const filtered = notebooks.filter((nb) => {
-      if (subject !== 'all' && normalizeSubject(nb.subject) !== subject) {
-        return false;
-      }
-      if (!term) return true;
-      const haystack =
-        `${nb.title} ${nb.subject ?? ''} ${nb.description ?? ''}`.toLowerCase();
-      return haystack.includes(term);
-    });
-
-    if (sortKey === 'title') {
-      return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
-    }
-    if (sortKey === 'pages') {
-      return [...filtered].sort((a, b) => b.pageCount - a.pageCount);
-    }
-    return filtered; // 'newest' — server already sorts by createdAt desc
-  }, [notebooks, searchTerm, subject, sortKey]);
-
-  const hasFilters = searchTerm.trim() !== '' || subject !== 'all';
+  const hasFilters = subject !== 'all';
 
   const clearFilters = () => {
-    setSearchTerm('');
     setSubject('all');
   };
 
@@ -171,119 +146,38 @@ export default function NotebooksExplorer({
               </div>
             )}
           </div>
-
-          {/* Stats */}
-          <div className="mt-6 flex flex-wrap gap-2.5">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)]">
-              <SiteIcon name="notebook" alt="" className="h-3.5 w-3.5" />
-              <strong className="font-semibold text-[var(--color-text)]">
-                {notebooks.length}
-              </strong>
-              notebook{notebooks.length !== 1 ? 's' : ''}
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)]">
-              <FileText size={13} aria-hidden="true" />
-              <strong className="font-semibold text-[var(--color-text)]">
-                {totalPages}
-              </strong>
-              page{totalPages !== 1 ? 's' : ''}
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)]">
-              <SiteIcon name="book" alt="" className="h-3.5 w-3.5" />
-              <strong className="font-semibold text-[var(--color-text)]">
-                {subjects.length}
-              </strong>
-              subject{subjects.length !== 1 ? 's' : ''}
-            </span>
-          </div>
         </header>
 
-        {/* Explore toolbar */}
-        {notebooks.length > 0 && (
-          <div className="mb-8 space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              {/* Search */}
-              <div className="relative flex-1">
-                <Search
-                  size={15}
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-                />
-                <input
-                  type="search"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search notebooks by title, subject, or topic…"
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-2.5 pl-10 pr-9 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] outline-none transition-colors focus:border-[var(--color-accent)]"
-                  aria-label="Search notebooks"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text)]"
-                    aria-label="Clear search"
-                  >
-                    <X size={14} aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-
-              {/* Sort */}
-              <label className="inline-flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
-                Sort
-                <select
-                  value={sortKey}
-                  onChange={(e) => setSortKey(e.target.value as SortKey)}
-                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-accent)]"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="title">Title A–Z</option>
-                  <option value="pages">Most pages</option>
-                </select>
-              </label>
-            </div>
-
-            {/* Subject chips */}
-            {subjects.length > 1 && (
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSubject('all')}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                    subject === 'all'
-                      ? 'border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold text-[var(--color-bg)]'
-                      : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
-                  }`}
-                >
-                  All ({notebooks.length})
-                </button>
-                {subjects.map(([name, count]) => (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() =>
-                      setSubject((prev) => (prev === name ? 'all' : name))
-                    }
-                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                      subject === name
-                        ? 'border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold text-[var(--color-bg)]'
-                        : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
-                    }`}
-                  >
-                    {name} ({count})
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Result count when filtering */}
-            {hasFilters && (
-              <p className="text-xs text-[var(--color-text-tertiary)]">
-                Found {visibleNotebooks.length} of {notebooks.length} notebook
-                {notebooks.length !== 1 ? 's' : ''}
-              </p>
-            )}
+        {/* Subject filter */}
+        {notebooks.length > 0 && subjects.length > 1 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSubject('all')}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                subject === 'all'
+                  ? 'border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold text-[var(--color-bg)]'
+                  : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
+              }`}
+            >
+              All ({notebooks.length})
+            </button>
+            {subjects.map(([name, count]) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() =>
+                  setSubject((prev) => (prev === name ? 'all' : name))
+                }
+                className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                  subject === name
+                    ? 'border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold text-[var(--color-bg)]'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
+                }`}
+              >
+                {name} ({count})
+              </button>
+            ))}
           </div>
         )}
 
@@ -316,7 +210,7 @@ export default function NotebooksExplorer({
               className="mx-auto mb-3 text-[var(--color-text-tertiary)] opacity-60"
             />
             <p className="text-sm text-[var(--color-text-secondary)]">
-              No notebooks match your search.
+              No notebooks match this subject.
             </p>
             <button
               type="button"
@@ -324,7 +218,7 @@ export default function NotebooksExplorer({
               className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
             >
               <X size={14} aria-hidden="true" />
-              Clear filters
+              Clear filter
             </button>
           </div>
         ) : (
