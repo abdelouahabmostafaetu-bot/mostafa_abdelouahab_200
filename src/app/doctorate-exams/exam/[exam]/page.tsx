@@ -143,13 +143,14 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
           )}
 
           <div className="mt-5">
-            <Link
-              href={`/doctorate-exams/download/${exam}`}
+            <a
+              href={`/api/doctorate-exams/pdf/${exam}`}
+              download
               className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
             >
               <Download size={13} aria-hidden="true" />
               Download exam + all solutions (PDF)
-            </Link>
+            </a>
           </div>
         </header>
 

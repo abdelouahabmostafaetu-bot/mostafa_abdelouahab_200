@@ -32,7 +32,7 @@ const selectClass =
 /**
  * DoctorateExamsExplorer — minimal archive: dropdown filters + one clean
  * row per FULL exam (no boxes). Each exam can be opened in full or
- * downloaded as a PDF with all of its solutions.
+ * downloaded directly as a styled PDF with all of its solutions.
  */
 export default function DoctorateExamsExplorer({ problems }: Props) {
   const exams = useMemo(() => {
@@ -213,13 +213,14 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
                     View Full Exam
                     <ArrowRight size={12} aria-hidden="true" />
                   </Link>
-                  <Link
-                    href={`/doctorate-exams/download/${e.key}`}
+                  <a
+                    href={`/api/doctorate-exams/pdf/${e.key}`}
+                    download
                     className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
                   >
                     <Download size={12} aria-hidden="true" />
                     Download PDF
-                  </Link>
+                  </a>
                 </div>
               </div>
             ))}
