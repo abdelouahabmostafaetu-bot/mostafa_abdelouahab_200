@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, Source_Sans_3, Source_Serif_4 } from 'next/font/google';
-import { ClerkProvider } from '@clerk/nextjs';
 import 'katex/dist/katex.min.css';
 import '@/styles/globals.css';
 import Navbar from '@/components/layout/Navbar';
@@ -84,15 +83,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-svh overflow-x-hidden flex flex-col">
-        <ClerkProvider>
-          <NavigationFeedback />
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <BirthdayCelebration />
-          <SpeedInsights />
-          <Analytics />
-        </ClerkProvider>
+        <NavigationFeedback />
+        <Navbar />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <BirthdayCelebration />
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

@@ -1,12 +1,18 @@
 import Link from 'next/link';
-import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import { getSessionUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Chat',
 };
 
 export default async function ChatPage() {
-  await auth.protect();
+  const user = await getSessionUser();
+  if (!user) {
+    redirect('/sign-in?redirect=/chat');
+  }
 
   return (
     <div className="pt-20 pb-20">
@@ -14,10 +20,7 @@ export default async function ChatPage() {
         <p className="text-[10px] md:text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-2">
           Protected
         </p>
-        <h1
-          className="text-2xl md:text-4xl font-semibold text-[var(--color-text)] mb-3"
-          style={{ fontFamily: 'var(--font-serif)' }}
-        >
+        <h1 className="font-serif text-2xl md:text-4xl font-semibold text-[var(--color-text)] mb-3">
           Chat
         </h1>
         <p className="text-sm text-[var(--color-text-secondary)] leading-6">

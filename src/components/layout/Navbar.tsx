@@ -3,14 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
-import {
-  Show,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from '@clerk/nextjs';
+import { LogOut, Menu, X } from 'lucide-react';
 import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
+
+type SessionUser = {
+  id: string;
+  email: string;
+  name: string;
+  image: string;
+  isAdmin?: boolean;
+};
 
 const navLinks = [
   { href: '/', label: 'About', icon: 'home' },
@@ -21,9 +23,32 @@ const navLinks = [
   { href: '/library', label: 'My Library', icon: 'library' },
 ] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
 
+function Avatar({ user, size }: { user: SessionUser; size: string }) {
+  if (user.image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={user.image}
+        alt=""
+        referrerPolicy="no-referrer"
+        className={`${size} rounded-full border border-[var(--color-border)] object-cover`}
+      />
+    );
+  }
+  return (
+    <span
+      className={`${size} flex items-center justify-center rounded-full bg-[var(--color-accent)] text-xs font-bold text-[var(--color-bg)]`}
+    >
+      {(user.name || user.email || '?').charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -36,6 +61,23 @@ export default function Navbar() {
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  /* Load the signed-in user for the account area. */
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d: { user?: SessionUser | null }) => {
+        if (!cancelled) setUser(d?.user ?? null);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setAuthLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
 
   const links = navLinks;
 
@@ -84,28 +126,32 @@ export default function Navbar() {
             </div>
 
             <div className="ml-2 flex items-center gap-2">
-              <Show when="signed-out">
-                <SignInButton mode="redirect">
-                  <button
-                    type="button"
-                    className="rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              {authLoaded && !user && (
+                <Link
+                  href="/sign-in"
+                  className="rounded-lg bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
+                >
+                  Sign in
+                </Link>
+              )}
+              {user && (
+                <div className="flex items-center gap-1">
+                  <Link
+                    href="/dashboard"
+                    title="Your dashboard"
+                    className="flex items-center rounded-lg p-1.5 transition-colors hover:bg-[var(--color-bg-muted)]"
                   >
-                    Sign in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="redirect">
-                  <button
-                    type="button"
-                    className="rounded-lg bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
+                    <Avatar user={user} size="h-7 w-7" />
+                  </Link>
+                  <a
+                    href="/api/auth/signout"
+                    title="Sign out"
+                    className="rounded-lg p-2 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text)]"
                   >
-                    Sign up
-                  </button>
-                </SignUpButton>
-              </Show>
-
-              <Show when="signed-in">
-                <UserButton />
-              </Show>
+                    <LogOut size={15} aria-hidden="true" />
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
@@ -158,33 +204,39 @@ export default function Navbar() {
             ))}
 
             <div className="mt-4 border-t border-[var(--color-border)] pt-4">
-              <Show when="signed-out">
-                <div className="flex flex-col gap-2">
-                  <SignInButton mode="redirect">
-                    <button
-                      type="button"
-                      className="w-full rounded-md border border-[var(--color-border)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                    >
-                      Sign in
-                    </button>
-                  </SignInButton>
-                  <SignUpButton mode="redirect">
-                    <button
-                      type="button"
-                      className="w-full rounded-md bg-[var(--color-accent)] px-3 py-2 text-xs font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
-                    >
-                      Sign up
-                    </button>
-                  </SignUpButton>
+              {authLoaded && !user && (
+                <Link
+                  href="/sign-in"
+                  className="block w-full rounded-md bg-[var(--color-accent)] px-3 py-2 text-center text-xs font-semibold text-[var(--color-bg)] transition-opacity duration-150 hover:opacity-90"
+                >
+                  Sign in
+                </Link>
+              )}
+              {user && (
+                <div className="space-y-2">
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-2.5 rounded-md border border-[var(--color-border)] px-3 py-2"
+                  >
+                    <Avatar user={user} size="h-6 w-6" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-xs font-medium text-[var(--color-text)]">
+                        {user.name || user.email}
+                      </span>
+                      <span className="block text-[10px] text-[var(--color-text-tertiary)]">
+                        View dashboard
+                      </span>
+                    </span>
+                  </Link>
+                  <a
+                    href="/api/auth/signout"
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                  >
+                    <LogOut size={12} aria-hidden="true" />
+                    Sign out
+                  </a>
                 </div>
-              </Show>
-
-              <Show when="signed-in">
-                <div className="flex items-center justify-between rounded-md border border-[var(--color-border)] px-3 py-2">
-                  <span className="text-xs text-[var(--color-text-secondary)]">Account</span>
-                  <UserButton />
-                </div>
-              </Show>
+              )}
             </div>
           </div>
         </aside>
