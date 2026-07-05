@@ -8,6 +8,7 @@ import {
   Download,
   Hourglass,
 } from 'lucide-react';
+import { getSessionUser } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { DoctorateProblem } from '@/lib/models/doctorate-problem';
 import MDXContent from '@/components/MDXContent';
@@ -60,6 +61,8 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
   const { exam } = await params;
   const parsed = parseExam(exam);
   if (!parsed) notFound();
+
+  const user = await getSessionUser();
 
   let problems: LeanProblem[] = [];
   try {
@@ -143,14 +146,23 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
           )}
 
           <div className="mt-5">
-            <a
-              href={`/api/doctorate-exams/pdf/${exam}`}
-              download
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
-            >
-              <Download size={13} aria-hidden="true" />
-              Download exam + all solutions (PDF)
-            </a>
+            {user ? (
+              <a
+                href={`/api/doctorate-exams/pdf/${exam}`}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
+              >
+                <Download size={13} aria-hidden="true" />
+                Download exam + all solutions (PDF)
+              </a>
+            ) : (
+              <Link
+                href={`/sign-in?redirect_url=${encodeURIComponent(`/api/doctorate-exams/pdf/${exam}`)}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                <Download size={13} aria-hidden="true" />
+                Sign in to download
+              </Link>
+            )}
           </div>
         </header>
 
