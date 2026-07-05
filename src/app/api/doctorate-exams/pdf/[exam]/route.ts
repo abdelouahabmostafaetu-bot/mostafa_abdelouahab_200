@@ -20,17 +20,28 @@ type LeanProblem = {
   specialty: string;
   university: string;
   source: string;
+  year: number;
+  examType: DoctorateExamType;
   problemNumber?: number;
   statement: string;
   solution: string;
 };
 
-function parseExam(
-  exam: string,
-): { year: number; examType: DoctorateExamType } | null {
+type ParsedExam =
+  | { examId: number }
+  | { year: number; examType: DoctorateExamType };
+
+function parseExam(exam: string): ParsedExam | null {
+  if (/^\d+$/.test(exam)) return { examId: Number(exam) };
   const m = /^(\d{4})-(general|specialist)$/.exec(exam);
   if (!m) return null;
   return { year: Number(m[1]), examType: m[2] as DoctorateExamType };
+}
+
+function buildQuery(parsed: ParsedExam): Record<string, unknown> {
+  return 'examId' in parsed
+    ? { published: true, examId: parsed.examId }
+    : { published: true, year: parsed.year, examType: parsed.examType };
 }
 
 function escapeHtml(value: string): string {
@@ -287,14 +298,10 @@ export async function GET(
 
     await connectToDatabase();
 
-    const problems = (await DoctorateProblem.find({
-      published: true,
-      year: parsed.year,
-      examType: parsed.examType,
-    })
+    const problems = (await DoctorateProblem.find(buildQuery(parsed))
       .sort({ problemNumber: 1, createdAt: 1 })
       .select(
-        'title slug specialty university source problemNumber statement solution',
+        'title slug specialty university source year examType problemNumber statement solution',
       )
       .lean()) as unknown as LeanProblem[];
 
@@ -304,6 +311,9 @@ export async function GET(
         { status: 404 },
       );
     }
+
+    const year = problems[0].year;
+    const examType = problems[0].examType;
 
     /* Render every statement/solution (Markdown + LaTeX -> HTML with KaTeX) */
     const rendered = await Promise.all(
@@ -317,8 +327,8 @@ export async function GET(
     );
 
     const html = buildExamHtml({
-      year: parsed.year,
-      examType: parsed.examType,
+      year,
+      examType,
       specialty: problems[0].specialty ?? '',
       problems: rendered,
     });
@@ -348,9 +358,8 @@ export async function GET(
           'Page <span class="pageNumber"></span> sur <span class="totalPages"></span></div>',
       });
 
-      const typeSlug =
-        parsed.examType === 'general' ? 'generale' : 'specialite';
-      const filename = `doctorat-${typeSlug}-${parsed.year}.pdf`;
+      const typeSlug = examType === 'general' ? 'generale' : 'specialite';
+      const filename = `doctorat-${typeSlug}-${year}.pdf`;
 
       return new NextResponse(Buffer.from(pdf), {
         status: 200,

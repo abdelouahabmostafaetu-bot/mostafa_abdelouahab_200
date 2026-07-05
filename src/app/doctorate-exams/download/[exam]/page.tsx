@@ -22,17 +22,28 @@ type LeanProblem = {
   specialty: string;
   university: string;
   source: string;
+  year: number;
+  examType: DoctorateExamType;
   problemNumber?: number;
   statement: string;
   solution: string;
 };
 
-function parseExam(
-  exam: string,
-): { year: number; examType: DoctorateExamType } | null {
+type ParsedExam =
+  | { examId: number }
+  | { year: number; examType: DoctorateExamType };
+
+function parseExam(exam: string): ParsedExam | null {
+  if (/^\d+$/.test(exam)) return { examId: Number(exam) };
   const m = /^(\d{4})-(general|specialist)$/.exec(exam);
   if (!m) return null;
   return { year: Number(m[1]), examType: m[2] as DoctorateExamType };
+}
+
+function buildQuery(parsed: ParsedExam): Record<string, unknown> {
+  return 'examId' in parsed
+    ? { published: true, examId: parsed.examId }
+    : { published: true, year: parsed.year, examType: parsed.examType };
 }
 
 export async function generateMetadata({
@@ -41,9 +52,16 @@ export async function generateMetadata({
   const { exam } = await params;
   const parsed = parseExam(exam);
   if (!parsed) return { title: 'Exam Not Found' };
+  if ('year' in parsed) {
+    return {
+      title: `${EXAM_TYPE_LABELS[parsed.examType]} ${parsed.year} — Full Exam + Solutions (PDF)`,
+      description: `Download the complete ${parsed.year} Algerian doctorate ${EXAM_TYPE_LABELS[parsed.examType].toLowerCase()} in mathematics with all problems and solutions.`,
+    };
+  }
   return {
-    title: `${EXAM_TYPE_LABELS[parsed.examType]} ${parsed.year} — Full Exam + Solutions (PDF)`,
-    description: `Download the complete ${parsed.year} Algerian doctorate ${EXAM_TYPE_LABELS[parsed.examType].toLowerCase()} in mathematics with all problems and solutions.`,
+    title: 'Doctorate Exam — Full Exam + Solutions (PDF)',
+    description:
+      'Download a complete Algerian doctorate entrance exam in mathematics with all problems and solutions.',
   };
 }
 
@@ -57,14 +75,10 @@ export default async function DoctorateExamDownloadPage({
   let problems: LeanProblem[] = [];
   try {
     await connectToDatabase();
-    problems = (await DoctorateProblem.find({
-      published: true,
-      year: parsed.year,
-      examType: parsed.examType,
-    })
+    problems = (await DoctorateProblem.find(buildQuery(parsed))
       .sort({ problemNumber: 1, createdAt: 1 })
       .select(
-        'title slug specialty university source problemNumber statement solution',
+        'title slug specialty university source year examType problemNumber statement solution',
       )
       .lean()) as unknown as LeanProblem[];
   } catch (err) {
@@ -76,7 +90,9 @@ export default async function DoctorateExamDownloadPage({
   }
 
   const first = problems[0];
-  const examLabel = EXAM_TYPE_LABELS[parsed.examType];
+  const year = first.year;
+  const examType = first.examType;
+  const examLabel = EXAM_TYPE_LABELS[examType];
   const solvedCount = problems.filter((p) =>
     String(p.solution ?? '').trim(),
   ).length;
@@ -128,7 +144,7 @@ export default async function DoctorateExamDownloadPage({
             <p className="mt-3 text-sm font-medium">{first.university}</p>
           )}
           <h1 className="mt-4 font-serif text-2xl font-bold md:text-3xl">
-            {examLabel} — {parsed.year}
+            {examLabel} — {year}
           </h1>
           <p className="mt-1 text-sm text-neutral-600">
             {first.specialty} • {problems.length} problem
@@ -191,7 +207,7 @@ export default async function DoctorateExamDownloadPage({
         {/* Footer */}
         <footer className="mt-14 border-t border-neutral-200 pt-4 text-center text-[11px] text-neutral-500">
           Doctorate Exam Archive — mostafaabdelouahab.me • {examLabel}{' '}
-          {parsed.year}
+          {year}
         </footer>
       </div>
     </div>

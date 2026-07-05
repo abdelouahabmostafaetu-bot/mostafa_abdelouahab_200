@@ -31,18 +31,29 @@ type LeanProblem = {
   specialty: string;
   university: string;
   source: string;
+  year: number;
+  examType: DoctorateExamType;
   problemNumber?: number;
   statement: string;
   solution: string;
   difficulty: DoctorateDifficulty;
 };
 
-function parseExam(
-  exam: string,
-): { year: number; examType: DoctorateExamType } | null {
+type ParsedExam =
+  | { examId: number }
+  | { year: number; examType: DoctorateExamType };
+
+function parseExam(exam: string): ParsedExam | null {
+  if (/^\d+$/.test(exam)) return { examId: Number(exam) };
   const m = /^(\d{4})-(general|specialist)$/.exec(exam);
   if (!m) return null;
   return { year: Number(m[1]), examType: m[2] as DoctorateExamType };
+}
+
+function buildQuery(parsed: ParsedExam): Record<string, unknown> {
+  return 'examId' in parsed
+    ? { published: true, examId: parsed.examId }
+    : { published: true, year: parsed.year, examType: parsed.examType };
 }
 
 export async function generateMetadata({
@@ -51,9 +62,16 @@ export async function generateMetadata({
   const { exam } = await params;
   const parsed = parseExam(exam);
   if (!parsed) return { title: 'Exam Not Found' };
+  if ('year' in parsed) {
+    return {
+      title: `${EXAM_TYPE_LABELS[parsed.examType]} ${parsed.year} | Doctorate Exam Archive`,
+      description: `Complete ${parsed.year} Algerian mathematics doctorate ${EXAM_TYPE_LABELS[parsed.examType].toLowerCase()} — every problem with a full solution.`,
+    };
+  }
   return {
-    title: `${EXAM_TYPE_LABELS[parsed.examType]} ${parsed.year} | Doctorate Exam Archive`,
-    description: `Complete ${parsed.year} Algerian mathematics doctorate ${EXAM_TYPE_LABELS[parsed.examType].toLowerCase()} — every problem with a full solution.`,
+    title: 'Doctorate Exam | Archive',
+    description:
+      'A complete Algerian mathematics doctorate entrance exam — every problem with a full solution.',
   };
 }
 
@@ -67,14 +85,10 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
   let problems: LeanProblem[] = [];
   try {
     await connectToDatabase();
-    problems = (await DoctorateProblem.find({
-      published: true,
-      year: parsed.year,
-      examType: parsed.examType,
-    })
+    problems = (await DoctorateProblem.find(buildQuery(parsed))
       .sort({ problemNumber: 1, createdAt: 1 })
       .select(
-        'title slug specialty university source problemNumber statement solution difficulty',
+        'title slug specialty university source year examType problemNumber statement solution difficulty',
       )
       .lean()) as unknown as LeanProblem[];
   } catch (err) {
@@ -86,9 +100,11 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
   }
 
   const first = problems[0];
-  const examLabel = EXAM_TYPE_LABELS[parsed.examType];
+  const year = first.year;
+  const examType = first.examType;
+  const examLabel = EXAM_TYPE_LABELS[examType];
   const examBadgeClass =
-    parsed.examType === 'general'
+    examType === 'general'
       ? 'border-[var(--color-accent)]/40 bg-[var(--color-accent)]/10 text-[var(--color-accent)]'
       : 'border-sky-500/40 bg-sky-500/10 text-sky-300';
 
@@ -113,7 +129,7 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
               {examLabel}
             </span>
             <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-[10px] text-[var(--color-text-tertiary)]">
-              {parsed.year}
+              {year}
             </span>
             <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-[10px] text-[var(--color-text-tertiary)]">
               {problems.length} exercice{problems.length !== 1 ? 's' : ''}
@@ -121,7 +137,7 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
           </div>
 
           <h1 className="mb-3 font-serif text-[1.9rem] font-normal leading-[1.2] text-[var(--color-text)] md:text-[2.4rem]">
-            {examLabel} — {parsed.year}
+            {examLabel} — {year}
           </h1>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--color-text-tertiary)]">
