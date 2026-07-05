@@ -348,9 +348,13 @@ export async function GET(
     try {
       const page = await browser.newPage();
       await page.setContent(html, {
-        waitUntil: 'networkidle0',
+        waitUntil: 'load',
         timeout: 45000,
       });
+      /* Wait for webfonts (Amiri/Noto Serif) and the KaTeX stylesheet to settle */
+      await page
+        .waitForNetworkIdle({ idleTime: 500, timeout: 15000 })
+        .catch(() => {});
       await page.evaluateHandle('document.fonts.ready');
 
       const pdf = await page.pdf({
