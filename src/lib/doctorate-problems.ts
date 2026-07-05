@@ -27,6 +27,7 @@ export function mapDoctorateProblemSummary(p: any): DoctorateProblemSummary {
     tags: Array.isArray(p.tags) ? p.tags : [],
     hasSolution: Boolean(String(p.solution ?? '').trim()),
     problemNumber: p.problemNumber ?? undefined,
+    examId: p.examId ?? undefined,
     published: p.published,
     createdAt: p.createdAt
       ? new Date(p.createdAt).toISOString()

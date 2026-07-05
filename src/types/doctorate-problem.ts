@@ -26,6 +26,7 @@ export type DoctorateProblemSummary = {
   tags: string[];
   hasSolution: boolean;
   problemNumber?: number;
+  examId?: number;
   published?: boolean;
   createdAt: string;
 };

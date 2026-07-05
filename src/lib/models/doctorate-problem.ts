@@ -5,6 +5,10 @@ import mongoose, { Document, Schema } from 'mongoose';
  * doctorate (PhD) entrance exams. Every year there are two exams:
  *  - 'general'    → the general mathematics exam
  *  - 'specialist' → the specialty exam (Analysis, Algebra, ...)
+ *
+ * examId groups all exercises that belong to the SAME exam paper. Two
+ * papers from the same year/examType but different universities get
+ * different examId values, so they never collide on one page.
  */
 export interface IDoctorateProblem extends Document {
   title: string;
@@ -14,6 +18,7 @@ export interface IDoctorateProblem extends Document {
   year: number;
   university: string;
   source: string;
+  examId?: number;
   problemNumber?: number;
   statement: string;
   solution: string;
@@ -70,6 +75,11 @@ const DoctorateProblemSchema = new Schema<IDoctorateProblem>(
       default: '',
       maxlength: [500, 'Source must be less than 500 characters'],
     },
+    examId: {
+      type: Number,
+      min: 1,
+      index: true,
+    },
     problemNumber: {
       type: Number,
       min: 1,
@@ -112,6 +122,7 @@ const DoctorateProblemSchema = new Schema<IDoctorateProblem>(
 // Indexes for performance
 DoctorateProblemSchema.index({ published: 1, year: -1, problemNumber: 1 });
 DoctorateProblemSchema.index({ examType: 1, year: -1, published: 1 });
+DoctorateProblemSchema.index({ examId: 1, problemNumber: 1 });
 DoctorateProblemSchema.index({ specialty: 1, published: 1 });
 DoctorateProblemSchema.index({ tags: 1 });
 DoctorateProblemSchema.index({
