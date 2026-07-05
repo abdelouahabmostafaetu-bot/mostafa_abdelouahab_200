@@ -1,70 +1,53 @@
-import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
+import { getSessionUser, isAdminEmail, type SessionUser } from '@/lib/auth';
 
-type ClerkUser = Awaited<ReturnType<typeof currentUser>>;
+/**
+ * Admin authorization built on the custom Google OAuth + MongoDB session
+ * system (see src/lib/auth.ts). Admin access is granted to the account
+ * whose Google email matches the ADMIN_EMAIL environment variable.
+ *
+ * The function names and behaviors intentionally match the previous
+ * implementation so every admin page and API route keeps working:
+ *  - getCurrentAdminUser() — admin user or null (safe for checks)
+ *  - requireAdmin()        — redirects when not admin (server pages)
+ *  - requireAdminApi()     — 401/403 response when not admin (API routes)
+ */
 
-function getConfiguredAdminEmail() {
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  if (!adminEmail) {
-    throw new Error('ADMIN_EMAIL environment variable is not configured.');
-  }
-
-  return adminEmail;
+export async function getCurrentAdminUser(): Promise<SessionUser | null> {
+  const user = await getSessionUser();
+  if (!user) return null;
+  return isAdminEmail(user.email) ? user : null;
 }
 
-function getPrimaryEmail(user: NonNullable<ClerkUser>) {
-  return user.primaryEmailAddress?.emailAddress?.trim().toLowerCase() ?? '';
-}
-
-function isAdminUser(user: ClerkUser) {
-  if (!user) {
-    return false;
-  }
-
-  return getPrimaryEmail(user) === getConfiguredAdminEmail();
-}
-
-export async function getCurrentAdminUser() {
-  const user = await currentUser();
-  try {
-    return isAdminUser(user) ? user : null;
-  } catch (error) {
-    console.error('Admin authorization is not configured:', error);
-    return null;
-  }
-}
-
-export async function requireAdmin() {
-  const user = await currentUser();
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await getSessionUser();
   if (!user) {
     redirect('/sign-in');
   }
 
-  try {
-    if (isAdminUser(user)) {
-      return user;
-    }
-  } catch (error) {
-    console.error('Admin authorization is not configured:', error);
+  if (!isAdminEmail(user.email)) {
+    redirect('/');
   }
 
-  redirect('/');
+  return user;
 }
 
 export async function requireAdminApi(): Promise<NextResponse | null> {
-  const user = await currentUser();
+  const user = await getSessionUser();
   if (!user) {
-    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+    return NextResponse.json(
+      { error: 'Authentication required.' },
+      { status: 401 },
+    );
   }
 
-  try {
-    if (isAdminUser(user)) {
-      return null;
-    }
-  } catch (error) {
-    console.error('Admin authorization is not configured:', error);
+  if (!isAdminEmail(user.email)) {
+    return NextResponse.json(
+      { error: 'Admin access required.' },
+      { status: 403 },
+    );
   }
 
-  return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
+  return null;
 }
