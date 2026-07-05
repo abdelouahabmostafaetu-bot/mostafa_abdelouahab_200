@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getSessionUser } from '@/lib/auth';
 import { MATH_AI_SYSTEM_PROMPT } from '@/lib/prompts/math-ai-prompt';
 import { PROOF_TECHNIQUES } from '@/lib/prompts/proof-techniques';
 import { PROBLEM_SOLVING_TECHNIQUES } from '@/lib/prompts/problem-solving-techniques';
@@ -87,9 +87,11 @@ function wantsComputation(q: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  await auth.protect();
-  const { userId } = await auth();
-  const identity = userId || 'anonymous';
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+  }
+  const identity = user.id || 'anonymous';
 
   const { limited, remaining } = checkDailyLimit(identity, 'math-chat', DAILY_LIMIT);
   if (limited) return limited;
