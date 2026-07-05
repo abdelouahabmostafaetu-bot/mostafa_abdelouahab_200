@@ -168,9 +168,8 @@ function createMcpServer() {
       const maxDoc = await DoctorateProblem.findOne({})
         .sort({ examId: -1 })
         .select("examId")
-        .lean();
-      const nextExamId =
-        (((maxDoc?.examId as number | undefined) ?? 0) || 0) + 1;
+        .lean<{ examId?: number } | null>();
+      const nextExamId = (maxDoc?.examId ?? 0) + 1;
       for (const d of docs) {
         d.examId = nextExamId;
       }
@@ -254,7 +253,7 @@ function createMcpServer() {
         { new: true },
       )
         .select("slug title")
-        .lean();
+        .lean<{ slug: string; title: string } | null>();
 
       if (!updated) {
         return {
@@ -288,7 +287,14 @@ function createMcpServer() {
 
       const all = await DoctorateProblem.find({})
         .select("_id year examType university createdAt")
-        .lean();
+        .lean<
+          Array<{
+            _id: unknown;
+            year: number;
+            examType: string;
+            university?: string;
+          }>
+        >();
 
       const groups = new Map<
         string,
@@ -300,8 +306,8 @@ function createMcpServer() {
         }
       >();
 
-      for (const p of all as Array<Record<string, unknown>>) {
-        const year = p.year as number;
+      for (const p of all) {
+        const year = p.year;
         const examType = String(p.examType);
         const university = String(p.university ?? "").trim();
         const key = `${year}||${examType}||${university.toLowerCase()}`;
@@ -320,19 +326,16 @@ function createMcpServer() {
           a.university.localeCompare(b.university),
       );
 
-      const ops: Array<Record<string, unknown>> = [];
       const summary: Array<Record<string, unknown>> = [];
       let counter = 0;
+      let updatedExercises = 0;
       for (const g of groupList) {
         counter += 1;
-        for (const id of g.ids) {
-          ops.push({
-            updateOne: {
-              filter: { _id: id },
-              update: { $set: { examId: counter } },
-            },
-          });
-        }
+        const res = await DoctorateProblem.updateMany(
+          { _id: { $in: g.ids } },
+          { $set: { examId: counter } },
+        );
+        updatedExercises += res.modifiedCount ?? 0;
         summary.push({
           examId: counter,
           year: g.year,
@@ -342,15 +345,11 @@ function createMcpServer() {
         });
       }
 
-      if (ops.length > 0) {
-        await DoctorateProblem.bulkWrite(ops);
-      }
-
       return {
         content: [
           {
             type: "text",
-            text: `Renumbered ${counter} exam(s) across ${ops.length} exercise(s).\n${JSON.stringify(
+            text: `Renumbered ${counter} exam(s), updated ${updatedExercises} exercise(s).\n${JSON.stringify(
               summary,
               null,
               2,
@@ -394,7 +393,7 @@ function createMcpServer() {
 
       const deleted = await DoctorateProblem.findOneAndDelete({ slug })
         .select("slug title")
-        .lean();
+        .lean<{ slug: string; title: string } | null>();
 
       if (!deleted) {
         return {
