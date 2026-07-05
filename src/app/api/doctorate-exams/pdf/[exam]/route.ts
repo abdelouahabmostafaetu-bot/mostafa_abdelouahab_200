@@ -9,6 +9,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
+const CONTACT_EMAIL = 'abdelouahab.mostafa.etu@centre-univ-mila.dz';
+const SITE_URL = 'www.mostafaabdelouahab.me';
+
 type LeanProblem = {
   _id: unknown;
   title: string;
@@ -56,23 +59,28 @@ async function launchBrowser() {
 function buildExamHtml(args: {
   year: number;
   examType: DoctorateExamType;
-  university: string;
   specialty: string;
-  source: string;
-  problems: Array<{ number: number; statementHtml: string; solutionHtml: string | null }>;
+  problems: Array<{
+    number: number;
+    statementHtml: string;
+    solutionHtml: string | null;
+  }>;
 }): string {
-  const { year, examType, university, specialty, source, problems } = args;
+  const { year, examType, specialty, problems } = args;
 
   const epreuveLabel =
     examType === 'general'
       ? 'Math\u00e9matiques g\u00e9n\u00e9rales'
-      : `\u00c9preuve de Sp\u00e9cialit\u00e9${specialty ? ` \u2014 ${escapeHtml(specialty)}` : ''}`;
+      : `Sp\u00e9cialit\u00e9${specialty ? ` \u2014 ${escapeHtml(specialty)}` : ''}`;
 
   const exercicesHtml = problems
     .map(
       (p) => `
       <section class="exercice">
-        <h2 class="exercice-title">Exercice ${p.number}</h2>
+        <div class="exercice-head">
+          <span class="exercice-name">Exercice ${p.number}</span>
+          <span class="exercice-rule"></span>
+        </div>
         <div class="content">${p.statementHtml}</div>
       </section>`,
     )
@@ -82,7 +90,10 @@ function buildExamHtml(args: {
     .map(
       (p) => `
       <section class="exercice">
-        <h2 class="exercice-title">Solution de l'exercice ${p.number}</h2>
+        <div class="exercice-head">
+          <span class="exercice-name">Solution de l'exercice ${p.number}</span>
+          <span class="exercice-rule"></span>
+        </div>
         <div class="content">${
           p.solutionHtml ??
           '<p class="muted"><em>La solution de cet exercice sera publi\u00e9e prochainement.</em></p>'
@@ -98,7 +109,7 @@ function buildExamHtml(args: {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
   html, body {
@@ -108,91 +119,65 @@ function buildExamHtml(args: {
     background: #fff;
     font-family: 'Noto Serif', Georgia, serif;
     font-size: 11pt;
-    line-height: 1.55;
+    line-height: 1.6;
   }
-  .ar {
-    font-family: 'Amiri', 'Noto Serif', serif;
-    direction: rtl;
-  }
-  /* ── Official header ── */
-  .head-center { text-align: center; }
-  .head-center .ar-line { font-size: 13pt; font-weight: 700; }
-  .head-center .fr-line { font-size: 11.5pt; font-weight: 700; margin-top: 2px; }
-  .head-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-top: 10px;
-  }
-  .head-row .left { font-size: 9.5pt; font-weight: 700; max-width: 55%; }
-  .head-row .right { font-size: 11pt; font-weight: 700; text-align: right; }
-  .double-rule {
-    border: 0;
-    border-top: 2.2px solid #111;
-    margin: 8px 0 2px;
-  }
-  .double-rule + .double-rule { margin-top: 0; border-top-width: 1px; }
-  .dept-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+  /* ── Document title ── */
+  .doc-head { text-align: center; margin-bottom: 6px; }
+  .doc-title {
+    font-size: 16pt;
     font-weight: 700;
-    font-size: 10.5pt;
-    margin: 6px 0;
+    letter-spacing: 0.01em;
+    margin: 0;
   }
-  /* ── Concours title ── */
-  .concours {
-    text-align: center;
-    font-size: 13.5pt;
-    font-weight: 700;
-    margin: 22px 0 4px;
-  }
-  .concours-rule { border: 0; border-top: 1.5px solid #111; margin: 6px 0 14px; }
-  .epreuve {
-    text-align: center;
-    font-size: 12pt;
-    font-weight: 700;
-    margin-bottom: 14px;
-  }
-  /* ── Info table ── */
-  table.info {
-    border-collapse: collapse;
-    margin: 0 auto 8px;
-    font-size: 10.5pt;
-  }
-  table.info th, table.info td {
-    border: 1.2px solid #111;
-    padding: 4px 16px;
-    text-align: center;
-  }
-  table.info th { font-weight: 700; }
-  .source {
-    text-align: center;
-    font-size: 9pt;
-    font-style: italic;
+  .doc-subtitle {
+    font-size: 10pt;
     color: #444;
-    margin: 6px auto 0;
-    max-width: 92%;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 5px;
   }
+  .doc-rule {
+    border: 0;
+    border-top: 1.6px solid #111;
+    margin: 14px 0 0;
+  }
+  .doc-rule + .doc-rule {
+    border-top-width: 0.6px;
+    margin-top: 2px;
+    margin-bottom: 8px;
+  }
+
   /* ── Exercices ── */
-  .exercice { margin-top: 22px; }
-  .exercice-title {
-    font-size: 12pt;
-    font-weight: 700;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    margin: 0 0 8px;
+  .exercice { margin-top: 26px; }
+  .exercice-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
   }
-  .content p { margin: 6px 0; }
-  .content ol, .content ul { margin: 6px 0; padding-left: 24px; }
-  .content li { margin: 4px 0; }
+  .exercice-name {
+    font-size: 12.5pt;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .exercice-rule {
+    flex: 1;
+    border-top: 1px solid #333;
+    height: 0;
+  }
+
+  .content { text-align: justify; }
+  .content p { margin: 7px 0; }
+  .content ol, .content ul { margin: 7px 0; padding-left: 26px; }
+  .content li { margin: 5px 0; }
   .content h1, .content h2, .content h3 {
     font-size: 11.5pt;
-    margin: 12px 0 6px;
+    margin: 14px 0 6px;
   }
+  .content strong { font-weight: 700; }
   .content blockquote {
-    margin: 8px 0;
+    margin: 9px 0;
     padding-left: 12px;
     border-left: 2px solid #999;
     color: #333;
@@ -203,79 +188,67 @@ function buildExamHtml(args: {
     background: #f3f3f3;
     padding: 1px 4px;
   }
-  .content table { border-collapse: collapse; margin: 8px 0; }
+  .content table { border-collapse: collapse; margin: 9px 0; }
   .content table td, .content table th { border: 1px solid #333; padding: 4px 10px; }
-  .katex { font-size: 1.06em; color: #111; }
-  .katex-display { margin: 10px 0; }
+  .katex { font-size: 1.08em; color: #111; }
+  .katex-display { margin: 12px 0; }
   .math-scroll, .math-scroll__inner { overflow: visible !important; }
   .muted { color: #555; }
+
   /* ── Solutions part ── */
   .solutions-part { page-break-before: always; break-before: page; }
-  .solutions-title {
-    text-align: center;
-    font-size: 14pt;
-    font-weight: 700;
-    margin: 0 0 4px;
-  }
-  .solutions-sub {
-    text-align: center;
-    font-size: 10pt;
-    color: #444;
-    margin-bottom: 8px;
-  }
   .exercice, .content p, .content li { page-break-inside: auto; }
+
+  /* ── Author note ── */
+  .author-note {
+    margin-top: 34px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 9.5pt;
+    line-height: 1.6;
+    color: #222;
+    page-break-inside: avoid;
+  }
+  .author-note .note-title {
+    font-weight: 700;
+    font-size: 10pt;
+    margin-bottom: 4px;
+  }
+  .author-note a { color: #222; }
 </style>
 </head>
 <body>
 
-  <!-- Official header -->
-  <div class="head-center">
-    <div class="ar ar-line">\u0627\u0644\u062c\u0645\u0647\u0648\u0631\u064a\u0629 \u0627\u0644\u062c\u0632\u0627\u0626\u0631\u064a\u0629 \u0627\u0644\u062f\u064a\u0645\u0642\u0631\u0627\u0637\u064a\u0629 \u0627\u0644\u0634\u0639\u0628\u064a\u0629</div>
-    <div class="fr-line">R\u00e9publique Alg\u00e9rienne D\u00e9mocratique et Populaire</div>
+  <!-- Document title -->
+  <div class="doc-head">
+    <h1 class="doc-title">\u00c9preuve : ${epreuveLabel}</h1>
+    <div class="doc-subtitle">Concours d'acc\u00e8s au Doctorat LMD \u2014 ${year - 1}-${year}</div>
   </div>
-
-  <div class="head-row">
-    <div class="left">Minist\u00e8re de l'Enseignement Sup\u00e9rieur et de la Recherche Scientifique</div>
-    <div class="right ar">\u0648\u0632\u0627\u0631\u0629 \u0627\u0644\u062a\u0639\u0644\u064a\u0645 \u0627\u0644\u0639\u0627\u0644\u064a \u0648\u0627\u0644\u0628\u062d\u062b \u0627\u0644\u0639\u0644\u0645\u064a</div>
-  </div>
-
-  <hr class="double-rule">
-  <hr class="double-rule">
-
-  <div class="dept-row">
-    <div>${university ? escapeHtml(university) : 'Universit\u00e9'}<br>Facult\u00e9 des Sciences</div>
-    <div class="ar">\u0643\u0644\u064a\u0629 \u0627\u0644\u0639\u0644\u0648\u0645</div>
-  </div>
-
-  <hr class="double-rule">
-
-  <div class="dept-row">
-    <div>D\u00e9partement de Math\u00e9matiques</div>
-    <div class="ar">\u0642\u0633\u0645 \u0627\u0644\u0631\u064a\u0627\u0636\u064a\u0627\u062a</div>
-  </div>
-
-  <!-- Concours title -->
-  <div class="concours">Concours d'acc\u00e8s \u00e0 la premi\u00e8re ann\u00e9e Doctorat LMD ${year - 1}-${year}</div>
-  <hr class="concours-rule">
-  <div class="epreuve">\u00c9preuve : ${epreuveLabel}</div>
-
-  <!-- Info table -->
-  <table class="info">
-    <tr><th>Fili\u00e8re</th><th>Sp\u00e9cialit\u00e9s</th><th>Ann\u00e9e</th></tr>
-    <tr><td>Math\u00e9matiques</td><td>${escapeHtml(specialty || 'Math\u00e9matiques')}</td><td>${year}</td></tr>
-  </table>
-
-  ${source ? `<p class="source">${escapeHtml(source)}</p>` : ''}
+  <hr class="doc-rule">
+  <hr class="doc-rule">
 
   <!-- Part I: exercices -->
   ${exercicesHtml}
 
   <!-- Part II: solutions -->
   <div class="solutions-part">
-    <div class="solutions-title">Corrig\u00e9 \u2014 Solutions d\u00e9taill\u00e9es</div>
-    <div class="solutions-sub">${epreuveLabel} \u2014 ${year}</div>
-    <hr class="concours-rule">
+    <div class="doc-head">
+      <h1 class="doc-title">Corrig\u00e9 \u2014 Solutions d\u00e9taill\u00e9es</h1>
+      <div class="doc-subtitle">${epreuveLabel} \u2014 ${year - 1}-${year}</div>
+    </div>
+    <hr class="doc-rule">
+    <hr class="doc-rule">
     ${solutionsHtml}
+
+    <!-- Author note -->
+    <div class="author-note">
+      <div class="note-title">Note</div>
+      Les solutions pr\u00e9sent\u00e9es dans ce document ont \u00e9t\u00e9 r\u00e9dig\u00e9es par
+      <strong>Mostafa Abdelouahab</strong> \u2014 il ne s'agit pas du corrig\u00e9 officiel du concours.
+      Si vous remarquez une erreur, ou si vous avez une question ou une suggestion,
+      contactez-moi\u00a0: <strong>${CONTACT_EMAIL}</strong> \u2022 ${SITE_URL}
+    </div>
   </div>
 
 </body>
@@ -337,9 +310,7 @@ export async function GET(
     const html = buildExamHtml({
       year: parsed.year,
       examType: parsed.examType,
-      university: problems[0].university ?? '',
       specialty: problems[0].specialty ?? '',
-      source: problems[0].source ?? '',
       problems: rendered,
     });
 
@@ -351,7 +322,7 @@ export async function GET(
         waitUntil: 'load',
         timeout: 45000,
       });
-      /* Wait for webfonts (Amiri/Noto Serif) and the KaTeX stylesheet to settle */
+      /* Wait for webfonts and the KaTeX stylesheet to settle */
       await page
         .waitForNetworkIdle({ idleTime: 500, timeout: 15000 })
         .catch(() => {});
@@ -360,7 +331,7 @@ export async function GET(
       const pdf = await page.pdf({
         format: 'A4',
         printBackground: true,
-        margin: { top: '14mm', bottom: '16mm', left: '14mm', right: '14mm' },
+        margin: { top: '16mm', bottom: '16mm', left: '16mm', right: '16mm' },
         displayHeaderFooter: true,
         headerTemplate: '<span></span>',
         footerTemplate:
