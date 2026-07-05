@@ -1,6 +1,6 @@
-import { currentUser } from '@clerk/nextjs/server';
 import mongoose from 'mongoose';
 import { type NextRequest, NextResponse } from 'next/server';
+import { getSessionUser } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import BookModel from '@/lib/models/book';
 
@@ -61,7 +61,7 @@ function buildDownloadRedirect(request: NextRequest, fileUrl: string, fileName: 
 
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const user = await currentUser();
+    const user = await getSessionUser();
     if (!user) {
       const signInUrl = new URL('/sign-in', request.url);
       signInUrl.searchParams.set('redirect_url', request.nextUrl.pathname);

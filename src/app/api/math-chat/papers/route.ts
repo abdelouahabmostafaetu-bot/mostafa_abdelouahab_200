@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getSessionUser } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 
@@ -20,7 +20,10 @@ function tag(block: string, name: string): string {
 }
 
 export async function GET(req: NextRequest) {
-  await auth.protect();
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
+  }
 
   const q = req.nextUrl.searchParams.get('q')?.trim();
   if (!q) {
