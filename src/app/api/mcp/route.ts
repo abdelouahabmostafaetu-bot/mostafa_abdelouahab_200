@@ -206,6 +206,47 @@ function createMcpServer() {
     },
   );
 
+  server.tool(
+    "update_doctorate_solution",
+    "Update (or add) the solution text for an existing doctorate problem, identified by its slug (as returned by add_doctorate_exam or list_doctorate_exams).",
+    {
+      slug: z.string().min(1),
+      solution: z.string().min(1),
+    },
+    async ({ slug, solution }) => {
+      await connectToDatabase();
+
+      const updated = await DoctorateProblem.findOneAndUpdate(
+        { slug },
+        { $set: { solution: solution.trim() } },
+        { new: true },
+      )
+        .select("slug title")
+        .lean();
+
+      if (!updated) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `No doctorate problem found with slug "${slug}".`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Updated solution for "${updated.title}" (${updated.slug}).`,
+          },
+        ],
+      };
+    },
+  );
+
   return server;
 }
 
