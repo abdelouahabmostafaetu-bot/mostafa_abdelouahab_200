@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getSessionUser } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { DoctorateProblem } from '@/lib/models/doctorate-problem';
 import { checkRateLimit } from '@/lib/security';
@@ -260,6 +261,14 @@ export async function GET(
   { params }: { params: Promise<{ exam: string }> },
 ) {
   try {
+    /* ── Auth wall ── */
+    const user = await getSessionUser();
+    if (!user) {
+      const signInUrl = new URL('/sign-in', request.url);
+      signInUrl.searchParams.set('redirect_url', request.nextUrl.pathname);
+      return NextResponse.redirect(signInUrl, { status: 302 });
+    }
+
     const rateLimitResponse = checkRateLimit(
       request,
       'doctorate-exams:pdf',
