@@ -354,4 +354,124 @@ export default function LibraryPageClient({
                 }`}
               >
                 All ({allBooks.length})
-              </button
+              </button>
+              {categories.map(([name, count]) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setCategory(name)}
+                  className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                    category === name
+                      ? 'border-[var(--color-accent)] bg-[rgba(217,162,74,0.14)] text-[var(--color-text)]'
+                      : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]/60 hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  {name} ({count})
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                {filteredBooks.length === allBooks.length
+                  ? `Showing all ${allBooks.length} books`
+                  : `Found ${filteredBooks.length} of ${allBooks.length} books`}
+              </p>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+                Sort by
+                <select
+                  value={sortBy}
+                  onChange={(event) => setSortBy(event.target.value as SortOption)}
+                  className="h-8 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-xs text-[var(--color-text)] focus:border-[var(--color-accent)] focus:outline-none"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="title">Title A–Z</option>
+                  <option value="author">Author A–Z</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        ) : null}
+
+        {isLoading ? (
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]"
+              >
+                <div className="aspect-[2/3] animate-pulse bg-[var(--color-bg-muted)]" />
+                <div className="p-3">
+                  <div className="h-3 w-3/4 animate-pulse rounded bg-[var(--color-bg-muted)]" />
+                  <div className="mt-2 h-2 w-1/2 animate-pulse rounded bg-[var(--color-bg-muted)]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : allBooks.length === 0 && !errorMessage ? (
+          <div className="mt-12 rounded-xl border border-dashed border-[var(--color-border)] px-4 py-14 text-center">
+            <SiteIcon name="book" alt="" className="mx-auto mb-3 h-8 w-8 opacity-65" />
+            <p className="text-sm font-medium text-[var(--color-text)]">No books yet.</p>
+            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+              Add books from the admin panel.
+            </p>
+          </div>
+        ) : filteredBooks.length === 0 ? (
+          <div className="mt-10 rounded-xl border border-dashed border-[var(--color-border)] px-4 py-12 text-center">
+            <SiteIcon name="search" alt="" className="mx-auto mb-3 h-7 w-7 opacity-65" />
+            <p className="text-sm font-medium text-[var(--color-text)]">
+              No books match your search.
+            </p>
+            {hasActiveFilters ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery('');
+                  setCategory('All');
+                }}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                <X size={12} />
+                Clear filters
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <>
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+              {visibleBooks.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
+            </div>
+
+            {totalPages > 1 ? (
+              <div className="mt-10 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPage((value) => Math.max(1, value - 1))}
+                  disabled={safePage <= 1}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Previous books page"
+                >
+                  <ChevronLeft size={15} />
+                </button>
+                <span className="text-xs text-[var(--color-text-secondary)]">
+                  Page {safePage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                  disabled={safePage >= totalPages}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Next books page"
+                >
+                  <ChevronRight size={15} />
+                </button>
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
