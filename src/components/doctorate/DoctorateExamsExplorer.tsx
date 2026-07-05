@@ -113,6 +113,12 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
   return (
     <div className="pb-20 pt-24 md:pt-28">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        {/* Label */}
+        <p className="mb-6 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
+          <GraduationCap size={14} aria-hidden="true" />
+          Doctorate Entrance Exams — Algeria
+        </p>
+
         {/* Filters */}
         <div className="mb-8 flex flex-wrap items-center gap-2">
           <select
