@@ -48,9 +48,6 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const CONV_BASE = 'math-ai-conversations-v1';
 const ACTIVE_BASE = 'math-ai-active-v1';
 
-// Each signed-in user gets their own private history. We namespace the browser
-// storage keys by the user id so two people on the same device never see
-// each other’s chats.
 function convKeyFor(uid: string): string {
   return CONV_BASE + ':' + uid;
 }
@@ -867,7 +864,10 @@ export default function MathAIChat() {
         {previewHtml && (
           <div className="mb-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-muted)] px-3 py-2">
             <span className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">Live preview</span>
-            <div className="overflow-x-auto text-[var(--color-text)]" dangerouslySetInnerHTML= __html: previewHtml  />
+            <div
+              className="overflow-x-auto text-[var(--color-text)]"
+              dangerouslySetInnerHTML={buildPreviewMarkup(previewHtml)}
+            />
           </div>
         )}
         <MathInputTools activeMode={mode} onSelectMode={setMode} onInsertSymbol={insertSymbol} disabled={sending} />
@@ -918,4 +918,8 @@ export default function MathAIChat() {
       </div>
     </div>
   );
+}
+
+function buildPreviewMarkup(html: string): { __html: string } {
+  return { __html: html };
 }
