@@ -17,6 +17,7 @@ export interface IDoctorateProblem extends Document {
   problemNumber?: number;
   statement: string;
   solution: string;
+  remark: string;
   tags: string[];
   difficulty: 'easy' | 'medium' | 'hard' | 'very-hard';
   published: boolean;
@@ -80,6 +81,10 @@ const DoctorateProblemSchema = new Schema<IDoctorateProblem>(
       minlength: [10, 'Statement must be at least 10 characters'],
     },
     solution: {
+      type: String,
+      default: '',
+    },
+    remark: {
       type: String,
       default: '',
     },
