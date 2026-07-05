@@ -14,8 +14,9 @@ const MAX_PROBLEMS = 15;
 /**
  * POST /api/doctorate-problems/bulk — create a full exam at once.
  * Body: { examType, year, specialty, university, source, problems: [
- *   { title, problemNumber?, difficulty?, tags?, statement, solution? }
+ *   { problemNumber?, title?, difficulty?, tags?, statement, solution? }
  * ] }
+ * Titles are optional — exercices are auto-named "Exercice N".
  * Admin only. The whole batch is validated first; nothing is saved
  * unless every problem is valid.
  */
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
     if (!Array.isArray(problems) || problems.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'At least one problem is required' },
+        { success: false, error: 'At least one exercice is required' },
         { status: 400 },
       );
     }
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Maximum ${MAX_PROBLEMS} problems per exam upload`,
+          error: `Maximum ${MAX_PROBLEMS} exercices per exam upload`,
         },
         { status: 400 },
       );
@@ -69,37 +70,37 @@ export async function POST(request: NextRequest) {
     const universityStr = String(university ?? '').trim();
     const sourceStr = String(source ?? '').trim();
 
-    /* Validate every problem before saving anything */
+    /* Validate every exercice before saving anything */
     const docs: Array<Record<string, unknown>> = [];
     const slugs: string[] = [];
 
     for (let i = 0; i < problems.length; i += 1) {
       const p = problems[i] as Record<string, unknown>;
-      const label = `Problem ${i + 1}`;
+      const label = `Exercice ${i + 1}`;
 
-      const titleStr = String(p?.title ?? '').trim();
       const statementStr = String(p?.statement ?? '').trim();
-
-      if (!titleStr) {
-        return NextResponse.json(
-          { success: false, error: `${label}: title is required` },
-          { status: 400 },
-        );
-      }
-      if (titleStr.length < 3 || titleStr.length > 250) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `${label}: title must be between 3 and 250 characters`,
-          },
-          { status: 400 },
-        );
-      }
       if (!statementStr || statementStr.length < 10) {
         return NextResponse.json(
           {
             success: false,
-            error: `${label}: the problem statement is required (min 10 characters)`,
+            error: `${label}: the statement is required (min 10 characters)`,
+          },
+          { status: 400 },
+        );
+      }
+
+      const pnRaw = Number(p?.problemNumber);
+      const problemNumber =
+        Number.isInteger(pnRaw) && pnRaw > 0 && pnRaw < 100 ? pnRaw : i + 1;
+
+      /* Title is optional — default to the exercice number */
+      const titleStr =
+        String(p?.title ?? '').trim() || `Exercice ${problemNumber}`;
+      if (titleStr.length > 250) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `${label}: title must be less than 250 characters`,
           },
           { status: 400 },
         );
@@ -110,16 +111,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: `${label}: duplicate title within this exam ("${titleStr}")`,
+            error: `${label}: duplicate exercice ("${titleStr}") within this exam`,
           },
           { status: 400 },
         );
       }
       slugs.push(slug);
-
-      const pnRaw = Number(p?.problemNumber);
-      const problemNumber =
-        Number.isInteger(pnRaw) && pnRaw > 0 && pnRaw < 100 ? pnRaw : i + 1;
 
       docs.push({
         title: titleStr,
@@ -154,7 +151,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Already in the archive: "${existing[0].title}". Edit or remove it first.`,
+          error: `This exam already has "${existing[0].title}" in the archive (${existing[0].slug}). Edit or remove it first.`,
         },
         { status: 400 },
       );

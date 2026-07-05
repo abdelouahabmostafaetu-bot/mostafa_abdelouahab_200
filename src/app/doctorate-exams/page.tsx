@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { connectToDatabase } from '@/lib/mongodb';
 import { DoctorateProblem } from '@/lib/models/doctorate-problem';
-import { getCurrentAdminUser } from '@/lib/admin';
 import { mapDoctorateProblemSummary } from '@/lib/doctorate-problems';
 import type { DoctorateProblemSummary } from '@/types/doctorate-problem';
 import DoctorateExamsExplorer from '@/components/doctorate/DoctorateExamsExplorer';
@@ -11,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Doctorate Exam Archive — Algeria',
   description:
-    'Past mathematics doctorate (PhD) entrance exam problems in Algeria — general and specialist exams from previous years, with complete professional solutions.',
+    'Past mathematics doctorate (PhD) entrance exams in Algeria — general and specialist exams from previous years, with complete professional solutions.',
 };
 
 async function getProblems(): Promise<DoctorateProblemSummary[]> {
@@ -30,15 +29,6 @@ async function getProblems(): Promise<DoctorateProblemSummary[]> {
 }
 
 export default async function DoctorateExamsPage() {
-  const [problems, adminUser] = await Promise.all([
-    getProblems(),
-    getCurrentAdminUser(),
-  ]);
-
-  return (
-    <DoctorateExamsExplorer
-      problems={problems}
-      isAdmin={Boolean(adminUser)}
-    />
-  );
+  const problems = await getProblems();
+  return <DoctorateExamsExplorer problems={problems} />;
 }

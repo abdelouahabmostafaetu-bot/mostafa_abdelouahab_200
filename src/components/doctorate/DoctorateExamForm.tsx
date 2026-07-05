@@ -20,7 +20,6 @@ import type {
 type SaveState = 'idle' | 'saving' | 'done' | 'error';
 
 type ProblemDraft = {
-  title: string;
   difficulty: DoctorateDifficulty;
   tags: string;
   statement: string;
@@ -51,7 +50,6 @@ const labelClass =
 
 function emptyProblem(): ProblemDraft {
   return {
-    title: '',
     difficulty: 'medium',
     tags: '',
     statement: '',
@@ -62,9 +60,9 @@ function emptyProblem(): ProblemDraft {
 
 /**
  * DoctorateExamForm — add a FULL exam in one go: shared exam info
- * (type, year, specialty, university, source) + every problem of the
- * exam with its statement and solution. Problems are numbered
- * automatically in order.
+ * (type, year, specialty, university, source) + every exercice of the
+ * exam with its statement and solution. Exercices have no titles —
+ * they are numbered automatically (Exercice 1, Exercice 2, …).
  */
 export default function DoctorateExamForm() {
   const router = useRouter();
@@ -109,14 +107,9 @@ export default function DoctorateExamForm() {
       return;
     }
     for (let i = 0; i < problems.length; i += 1) {
-      if (!problems[i].title.trim()) {
-        setSaveState('error');
-        setErrorMsg(`Problem ${i + 1}: title is required.`);
-        return;
-      }
       if (!problems[i].statement.trim()) {
         setSaveState('error');
-        setErrorMsg(`Problem ${i + 1}: the statement is required.`);
+        setErrorMsg(`Exercice ${i + 1}: the statement is required.`);
         return;
       }
     }
@@ -135,7 +128,6 @@ export default function DoctorateExamForm() {
           university: university.trim(),
           source: source.trim(),
           problems: problems.map((p, i) => ({
-            title: p.title.trim(),
             problemNumber: i + 1,
             difficulty: p.difficulty,
             statement: p.statement.trim(),
@@ -232,7 +224,7 @@ export default function DoctorateExamForm() {
           <label className={labelClass}>
             Source{' '}
             <span className="normal-case font-normal">
-              (official exam reference — applied to every problem)
+              (official exam reference — applied to every exercice)
             </span>
           </label>
           <textarea
@@ -245,7 +237,7 @@ export default function DoctorateExamForm() {
         </div>
       </fieldset>
 
-      {/* ── Problems ── */}
+      {/* ── Exercices ── */}
       <div className="space-y-5">
         {problems.map((p, i) => (
           <fieldset
@@ -253,12 +245,13 @@ export default function DoctorateExamForm() {
             className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5"
           >
             <legend className="px-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--color-accent)]">
-              Problem {i + 1}
+              Exercice {i + 1}
             </legend>
 
             <div className="mb-4 flex items-center justify-between gap-2">
-              <p className="truncate text-sm font-medium text-[var(--color-text)]">
-                {p.title.trim() || `Problem ${i + 1} (untitled)`}
+              <p className="text-sm font-medium text-[var(--color-text)]">
+                Exercice {i + 1}
+                {p.statement.trim() ? '' : ' — (empty)'}
               </p>
               <div className="flex shrink-0 items-center gap-2">
                 <button
@@ -292,19 +285,6 @@ export default function DoctorateExamForm() {
 
             {!p.collapsed && (
               <div className="space-y-4">
-                <div>
-                  <label className={labelClass}>Title *</label>
-                  <input
-                    type="text"
-                    value={p.title}
-                    onChange={(e) =>
-                      updateProblem(i, { title: e.target.value })
-                    }
-                    placeholder={`e.g. Exercice ${i + 1} — Endomorphisme de R3 et matrice nilpotente`}
-                    className={inputClass}
-                  />
-                </div>
-
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className={labelClass}>Difficulty</label>
@@ -327,7 +307,7 @@ export default function DoctorateExamForm() {
                   </div>
                   <div>
                     <label className={labelClass}>
-                      Tags (comma separated)
+                      Tags (comma separated, optional)
                     </label>
                     <input
                       type="text"
@@ -342,7 +322,7 @@ export default function DoctorateExamForm() {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Problem Statement *</label>
+                  <label className={labelClass}>Statement *</label>
                   <AdminMarkdownEditor
                     value={p.statement}
                     onChange={(value: string) =>
@@ -378,7 +358,7 @@ export default function DoctorateExamForm() {
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
         >
           <Plus size={15} aria-hidden="true" />
-          Add another problem to this exam
+          Add another exercice to this exam
         </button>
       </div>
 
@@ -405,7 +385,7 @@ export default function DoctorateExamForm() {
               <CheckCircle2 size={14} /> Exam saved!
             </>
           ) : (
-            `Publish Exam (${problems.length} problem${problems.length !== 1 ? 's' : ''})`
+            `Publish Exam (${problems.length} exercice${problems.length !== 1 ? 's' : ''})`
           )}
         </button>
         <Link
