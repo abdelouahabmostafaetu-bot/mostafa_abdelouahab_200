@@ -19,7 +19,7 @@ async function getProblems(): Promise<DoctorateProblemSummary[]> {
     const problems = await DoctorateProblem.find({ published: true })
       .sort({ year: -1, problemNumber: 1, createdAt: -1 })
       .select(
-        'title slug examType specialty year university difficulty tags solution problemNumber createdAt',
+        'title slug examId examType specialty year university difficulty tags solution problemNumber createdAt',
       )
       .lean();
     return problems.map(mapDoctorateProblemSummary);
