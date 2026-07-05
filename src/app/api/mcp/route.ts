@@ -361,6 +361,35 @@ function createMcpServer() {
   );
 
   server.tool(
+    "normalize_university",
+    "Merge several spellings of the same university into one canonical name across ALL exams. Provide the canonical target name and the list of existing names to replace. Example: to='Universite Saad Dahlab - Blida 1', from=['Universite Blida 1','Universite de Blida 1'].",
+    {
+      to: z.string().min(1).max(200),
+      from: z.array(z.string().min(1)).min(1).max(30),
+    },
+    async ({ to, from }) => {
+      await connectToDatabase();
+
+      const target = to.trim();
+      const sources = [...new Set(from.map((s) => s.trim()).filter(Boolean))];
+
+      const res = await DoctorateProblem.updateMany(
+        { university: { $in: sources } },
+        { $set: { university: target } },
+      );
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Set university to \"${target}\" for ${res.modifiedCount ?? 0} exercise(s). Replaced: ${sources.join(", ")}`,
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
     "delete_doctorate_exam",
     "Delete every exercise belonging to one exam, identified by its numeric examId. Use list_doctorate_exams to find the examId first.",
     {
