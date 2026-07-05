@@ -184,26 +184,28 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
             {filtered.map((e) => (
               <div
                 key={e.key}
-                className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-7"
+                className="flex flex-wrap items-center gap-x-6 gap-y-4 py-7"
               >
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="font-serif text-2xl font-semibold leading-none text-[var(--color-text)]">
-                      {e.year}
-                    </span>
-                    <span
-                      className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${EXAM_BADGE[e.examType]}`}
-                    >
-                      {EXAM_TYPE_LABELS[e.examType]}
-                    </span>
-                  </div>
-                  <p className="mt-2.5 text-xs text-[var(--color-text-tertiary)]">
-                    {e.specialty}
-                    {e.university ? ` • ${e.university}` : ''}
-                  </p>
+                {/* Left: year + exam type */}
+                <div className="flex shrink-0 items-center gap-3">
+                  <span className="font-serif text-2xl font-semibold leading-none text-[var(--color-text)]">
+                    {e.year}
+                  </span>
+                  <span
+                    className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${EXAM_BADGE[e.examType]}`}
+                  >
+                    {EXAM_TYPE_LABELS[e.examType]}
+                  </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                {/* Center: specialty • university */}
+                <p className="min-w-[180px] flex-1 text-center text-sm text-[var(--color-text-secondary)]">
+                  {e.specialty}
+                  {e.university ? ` • ${e.university}` : ''}
+                </p>
+
+                {/* Right: actions */}
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
                   <Link
                     href={`/doctorate-exams/exam/${e.key}`}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
