@@ -12,7 +12,7 @@ import {
 type Props = { problems: DoctorateProblemSummary[]; isAuthenticated?: boolean };
 
 type ExamGroup = {
-  key: string; // `${year}-${examType}`
+  key: string; // route key: examId (e.g. "3") or legacy "${year}-${examType}"
   year: number;
   examType: DoctorateExamType;
   university: string;
@@ -31,15 +31,18 @@ const selectClass =
 
 /**
  * DoctorateExamsExplorer — minimal archive: dropdown filters + one clean
- * row per FULL exam (no boxes). Each exam can be opened in full or
+ * row per FULL exam (grouped by examId). Each exam can be opened in full or
  * downloaded directly as a styled PDF with all of its solutions.
  */
 export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Props) {
   const exams = useMemo(() => {
     const map = new Map<string, ExamGroup>();
     for (const p of problems) {
-      const key = `${p.year}-${p.examType}`;
-      const existing = map.get(key);
+      const hasId = p.examId != null;
+      // Group key is unique per exam paper; route key is what the URL uses.
+      const groupKey = hasId ? `id-${p.examId}` : `${p.year}-${p.examType}`;
+      const routeKey = hasId ? String(p.examId) : `${p.year}-${p.examType}`;
+      const existing = map.get(groupKey);
       if (existing) {
         if (!existing.university && p.university) {
           existing.university = p.university;
@@ -48,8 +51,8 @@ export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Pr
           existing.specialty = p.specialty;
         }
       } else {
-        map.set(key, {
-          key,
+        map.set(groupKey, {
+          key: routeKey,
           year: p.year,
           examType: p.examType,
           university: p.university,
