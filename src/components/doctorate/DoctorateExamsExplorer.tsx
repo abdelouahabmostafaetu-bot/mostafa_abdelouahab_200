@@ -2,13 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  CheckCircle2,
-  Download,
-  FileText,
-  GraduationCap,
-} from 'lucide-react';
+import { ArrowRight, Download, GraduationCap } from 'lucide-react';
 import {
   EXAM_TYPE_LABELS,
   type DoctorateExamType,
@@ -23,8 +17,6 @@ type ExamGroup = {
   examType: DoctorateExamType;
   university: string;
   specialty: string;
-  problemCount: number;
-  solutionCount: number;
 };
 
 const EXAM_BADGE: Record<DoctorateExamType, string> = {
@@ -38,9 +30,9 @@ const selectClass =
   'text-[var(--color-text-secondary)] outline-none transition-colors focus:border-[var(--color-accent)]';
 
 /**
- * DoctorateExamsExplorer — minimal archive: dropdown filters + one card
- * per FULL exam (not per problem). Each card opens the complete exam
- * or downloads it as a PDF with all solutions.
+ * DoctorateExamsExplorer — minimal archive: dropdown filters + one clean
+ * row per FULL exam (no boxes). Each exam can be opened in full or
+ * downloaded as a PDF with all of its solutions.
  */
 export default function DoctorateExamsExplorer({ problems }: Props) {
   const exams = useMemo(() => {
@@ -49,8 +41,6 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
       const key = `${p.year}-${p.examType}`;
       const existing = map.get(key);
       if (existing) {
-        existing.problemCount += 1;
-        if (p.hasSolution) existing.solutionCount += 1;
         if (!existing.university && p.university) {
           existing.university = p.university;
         }
@@ -64,8 +54,6 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
           examType: p.examType,
           university: p.university,
           specialty: p.specialty,
-          problemCount: 1,
-          solutionCount: p.hasSolution ? 1 : 0,
         });
       }
     }
@@ -112,7 +100,7 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
 
   return (
     <div className="pb-20 pt-24 md:pt-28">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6">
         {/* Label */}
         <p className="mb-6 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
           <GraduationCap size={14} aria-hidden="true" />
@@ -120,7 +108,7 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
         </p>
 
         {/* Filters */}
-        <div className="mb-8 flex flex-wrap items-center gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <select
             value={examType}
             onChange={(e) => setExamType(e.target.value)}
@@ -172,9 +160,9 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
           </select>
         </div>
 
-        {/* Exam cards */}
+        {/* Exams */}
         {filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[var(--color-border)] px-6 py-16 text-center">
+          <div className="px-6 py-20 text-center">
             <GraduationCap
               size={28}
               className="mx-auto mb-3 text-[var(--color-text-tertiary)]"
@@ -192,57 +180,40 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="divide-y divide-[var(--color-border)]">
             {filtered.map((e) => (
               <div
                 key={e.key}
-                className="flex flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-all hover:border-[var(--color-accent)]/50"
+                className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-7"
               >
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span
-                    className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${EXAM_BADGE[e.examType]}`}
-                  >
-                    {EXAM_TYPE_LABELS[e.examType]}
-                  </span>
-                  <span className="rounded-full border border-[var(--color-border)] px-2.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
-                    {e.year}
-                  </span>
-                </div>
-
-                <h2 className="mb-1 font-serif text-lg font-medium leading-snug text-[var(--color-text)]">
-                  {EXAM_TYPE_LABELS[e.examType]} — {e.year}
-                </h2>
-
-                <p className="mb-4 text-xs text-[var(--color-text-tertiary)]">
-                  {e.specialty}
-                  {e.university ? ` • ${e.university}` : ''}
-                </p>
-
-                <div className="mb-5 flex items-center gap-4 text-[11px] text-[var(--color-text-secondary)]">
-                  <span className="inline-flex items-center gap-1.5">
-                    <FileText size={12} aria-hidden="true" />
-                    {e.problemCount} exercice{e.problemCount !== 1 ? 's' : ''}
-                  </span>
-                  {e.solutionCount > 0 && (
-                    <span className="inline-flex items-center gap-1.5 text-emerald-400">
-                      <CheckCircle2 size={12} aria-hidden="true" />
-                      {e.solutionCount} solution
-                      {e.solutionCount !== 1 ? 's' : ''}
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="font-serif text-2xl font-semibold leading-none text-[var(--color-text)]">
+                      {e.year}
                     </span>
-                  )}
+                    <span
+                      className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${EXAM_BADGE[e.examType]}`}
+                    >
+                      {EXAM_TYPE_LABELS[e.examType]}
+                    </span>
+                  </div>
+                  <p className="mt-2.5 text-xs text-[var(--color-text-tertiary)]">
+                    {e.specialty}
+                    {e.university ? ` • ${e.university}` : ''}
+                  </p>
                 </div>
 
-                <div className="mt-auto flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/doctorate-exams/exam/${e.key}`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
                   >
                     View Full Exam
                     <ArrowRight size={12} aria-hidden="true" />
                   </Link>
                   <Link
                     href={`/doctorate-exams/download/${e.key}`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
                   >
                     <Download size={12} aria-hidden="true" />
                     Download PDF
