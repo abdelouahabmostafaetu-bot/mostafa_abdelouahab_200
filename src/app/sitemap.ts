@@ -13,6 +13,7 @@ const ROUTES: Array<{ path: string; priority: number; changeFrequency: ChangeFre
   { path: '/cv', priority: 0.8, changeFrequency: 'monthly' },
   { path: '/notes', priority: 0.7, changeFrequency: 'weekly' },
   { path: '/problems', priority: 0.7, changeFrequency: 'weekly' },
+  { path: '/doctorate-exams', priority: 0.7, changeFrequency: 'weekly' },
   { path: '/library', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/problems-with-coffee', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/contact', priority: 0.5, changeFrequency: 'yearly' },

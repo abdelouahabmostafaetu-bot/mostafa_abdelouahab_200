@@ -17,6 +17,7 @@ const navLinks = [
   { href: '/blog', label: 'Blog', icon: 'blog' },
   { href: '/notes', label: 'My Notes', icon: 'notebook' },
   { href: '/problems-with-coffee', label: 'Problems', icon: 'math' },
+  { href: '/doctorate-exams', label: 'Doctorate', icon: 'math' },
   { href: '/library', label: 'My Library', icon: 'library' },
 ] satisfies Array<{ href: string; label: string; icon: SiteIconName }>;
 
