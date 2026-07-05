@@ -9,7 +9,7 @@ import {
   type DoctorateProblemSummary,
 } from '@/types/doctorate-problem';
 
-type Props = { problems: DoctorateProblemSummary[] };
+type Props = { problems: DoctorateProblemSummary[]; isAuthenticated?: boolean };
 
 type ExamGroup = {
   key: string; // `${year}-${examType}`
@@ -34,7 +34,7 @@ const selectClass =
  * row per FULL exam (no boxes). Each exam can be opened in full or
  * downloaded directly as a styled PDF with all of its solutions.
  */
-export default function DoctorateExamsExplorer({ problems }: Props) {
+export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Props) {
   const exams = useMemo(() => {
     const map = new Map<string, ExamGroup>();
     for (const p of problems) {
@@ -213,14 +213,23 @@ export default function DoctorateExamsExplorer({ problems }: Props) {
                     View Full Exam
                     <ArrowRight size={12} aria-hidden="true" />
                   </Link>
-                  <a
-                    href={`/api/doctorate-exams/pdf/${e.key}`}
-                    download
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                  >
-                    <Download size={12} aria-hidden="true" />
-                    Download PDF
-                  </a>
+                  {isAuthenticated ? (
+                    <a
+                      href={`/api/doctorate-exams/pdf/${e.key}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                    >
+                      <Download size={12} aria-hidden="true" />
+                      Download PDF
+                    </a>
+                  ) : (
+                    <Link
+                      href={`/sign-in?redirect_url=${encodeURIComponent(`/api/doctorate-exams/pdf/${e.key}`)}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                    >
+                      <Download size={12} aria-hidden="true" />
+                      Sign in to download
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
