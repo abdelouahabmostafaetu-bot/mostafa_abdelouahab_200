@@ -7,6 +7,7 @@ import {
   BookOpenCheck,
   CalendarDays,
   CheckCircle2,
+  Download,
   GraduationCap,
   Search,
   Settings2,
@@ -113,7 +114,7 @@ export default function DoctorateExamsExplorer({ problems, isAdmin }: Props) {
                 className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
                 <Settings2 size={13} aria-hidden="true" />
-                Manage Problems
+                Manage Exams
               </Link>
             )}
           </div>
@@ -122,7 +123,8 @@ export default function DoctorateExamsExplorer({ problems, isAdmin }: Props) {
             exams — both the <strong>general exam</strong> and the{' '}
             <strong>specialist exam</strong> held every year — collected with
             sources and complete, carefully written solutions to help you
-            prepare.
+            prepare. Every exam can be downloaded as a PDF with all of its
+            solutions.
           </p>
         </header>
 
@@ -248,73 +250,94 @@ export default function DoctorateExamsExplorer({ problems, isAdmin }: Props) {
           </div>
         ) : (
           <div className="space-y-12">
-            {grouped.map(([groupYear, items]) => (
-              <section key={groupYear}>
-                <div className="mb-4 flex items-center gap-3">
-                  <h2 className="font-serif text-xl font-semibold text-[var(--color-text)]">
-                    {groupYear}
-                  </h2>
-                  <span className="h-px flex-1 bg-[var(--color-border)]" />
-                  <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                    {items.length} problem{items.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
+            {grouped.map(([groupYear, items]) => {
+              const typesInYear = [
+                ...new Set(items.map((i) => i.examType)),
+              ] as DoctorateExamType[];
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {items.map((p) => (
-                    <Link
-                      key={p.slug}
-                      href={`/doctorate-exams/${p.slug}`}
-                      className="group flex flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-all hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-hover)]"
-                    >
-                      <div className="mb-3 flex flex-wrap items-center gap-2">
-                        <span
-                          className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${EXAM_BADGE[p.examType]}`}
-                        >
-                          {EXAM_TYPE_LABELS[p.examType]}
-                        </span>
-                        {p.problemNumber ? (
-                          <span className="rounded-full border border-[var(--color-border)] px-2.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
-                            Problem {p.problemNumber}
+              return (
+                <section key={groupYear}>
+                  <div className="mb-2 flex items-center gap-3">
+                    <h2 className="font-serif text-xl font-semibold text-[var(--color-text)]">
+                      {groupYear}
+                    </h2>
+                    <span className="h-px flex-1 bg-[var(--color-border)]" />
+                    <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                      {items.length} problem{items.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Download the full exam + solutions */}
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {typesInYear.map((t) => (
+                      <Link
+                        key={t}
+                        href={`/doctorate-exams/download/${groupYear}-${t}`}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] px-3 py-1.5 text-[11px] font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                      >
+                        <Download size={11} aria-hidden="true" />
+                        Download {EXAM_TYPE_LABELS[t]} {groupYear} + Solutions
+                        (PDF)
+                      </Link>
+                    ))}
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {items.map((p) => (
+                      <Link
+                        key={p.slug}
+                        href={`/doctorate-exams/${p.slug}`}
+                        className="group flex flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-all hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-hover)]"
+                      >
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          <span
+                            className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${EXAM_BADGE[p.examType]}`}
+                          >
+                            {EXAM_TYPE_LABELS[p.examType]}
                           </span>
-                        ) : null}
-                        <span className="rounded-full border border-[var(--color-border)] px-2.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
-                          {DIFFICULTY_LABELS[p.difficulty] ?? p.difficulty}
-                        </span>
-                      </div>
-
-                      <h3 className="mb-1.5 font-serif text-base font-medium leading-snug text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] line-clamp-2">
-                        {p.title}
-                      </h3>
-
-                      <p className="mb-3 text-xs text-[var(--color-text-tertiary)]">
-                        {p.specialty}
-                        {p.university ? ` • ${p.university}` : ''}
-                      </p>
-
-                      <div className="mt-auto flex items-center justify-between gap-2">
-                        <div className="flex flex-wrap gap-1.5">
-                          {p.tags.slice(0, 3).map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]"
-                            >
-                              {tag}
+                          {p.problemNumber ? (
+                            <span className="rounded-full border border-[var(--color-border)] px-2.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+                              Problem {p.problemNumber}
                             </span>
-                          ))}
-                        </div>
-                        {p.hasSolution && (
-                          <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-emerald-400">
-                            <CheckCircle2 size={11} aria-hidden="true" />
-                            Solution
+                          ) : null}
+                          <span className="rounded-full border border-[var(--color-border)] px-2.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+                            {DIFFICULTY_LABELS[p.difficulty] ?? p.difficulty}
                           </span>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            ))}
+                        </div>
+
+                        <h3 className="mb-1.5 font-serif text-base font-medium leading-snug text-[var(--color-text)] transition-colors group-hover:text-[var(--color-accent)] line-clamp-2">
+                          {p.title}
+                        </h3>
+
+                        <p className="mb-3 text-xs text-[var(--color-text-tertiary)]">
+                          {p.specialty}
+                          {p.university ? ` • ${p.university}` : ''}
+                        </p>
+
+                        <div className="mt-auto flex items-center justify-between gap-2">
+                          <div className="flex flex-wrap gap-1.5">
+                            {p.tags.slice(0, 3).map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          {p.hasSolution && (
+                            <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-emerald-400">
+                              <CheckCircle2 size={11} aria-hidden="true" />
+                              Solution
+                            </span>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
       </div>

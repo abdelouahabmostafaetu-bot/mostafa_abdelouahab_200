@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/admin';
-import DoctorateProblemForm from '@/components/doctorate/DoctorateProblemForm';
+import DoctorateExamForm from '@/components/doctorate/DoctorateExamForm';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Add Doctorate Problem',
+  title: 'Add Doctorate Exam',
 };
 
-export default async function AddDoctorateProblemPage() {
+export default async function AddDoctorateExamPage() {
   await requireAdmin();
 
   return (
@@ -23,14 +23,16 @@ export default async function AddDoctorateProblemPage() {
             ← Back
           </Link>
           <h1 className="font-serif text-2xl font-semibold text-[var(--color-text)]">
-            Add Doctorate Problem
+            Add Doctorate Exam
           </h1>
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-            Add a past exam problem with its source and a complete solution.
+            Enter the exam information once, then add every problem of the
+            exam with its statement and solution. Problems are numbered
+            automatically in order.
           </p>
         </div>
 
-        <DoctorateProblemForm />
+        <DoctorateExamForm />
       </div>
     </div>
   );

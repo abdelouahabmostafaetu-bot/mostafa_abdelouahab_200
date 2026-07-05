@@ -37,7 +37,7 @@ export default async function AdminDoctorateExamsPage() {
             ← Back to Exam Archive
           </Link>
           <h1 className="font-serif text-2xl font-semibold text-[var(--color-text)] md:text-3xl">
-            Manage Doctorate Problems
+            Manage Doctorate Exams
           </h1>
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
             {published} published problem{published !== 1 ? 's' : ''}
@@ -53,11 +53,9 @@ export default async function AdminDoctorateExamsPage() {
             <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-accent)]/10">
               <SiteIcon name="add" alt="" className="h-5 w-5" />
             </div>
-            <p className="font-semibold text-[var(--color-text)]">
-              Add Problem
-            </p>
+            <p className="font-semibold text-[var(--color-text)]">Add Exam</p>
             <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Add a past exam problem with its source and full solution
+              Add a full exam with all of its problems and solutions in one go
             </p>
           </Link>
 
@@ -72,7 +70,7 @@ export default async function AdminDoctorateExamsPage() {
               Edit Problem
             </p>
             <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Update the statement, solution, source, or metadata
+              Update any problem’s statement, solution, source, or metadata
             </p>
           </Link>
 

@@ -6,6 +6,7 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
+  Download,
   Hourglass,
 } from 'lucide-react';
 import { connectToDatabase } from '@/lib/mongodb';
@@ -96,6 +97,7 @@ export default async function DoctorateProblemPage({ params }: PageProps) {
     problem.examType === 'general'
       ? 'border-[var(--color-accent)]/40 bg-[var(--color-accent)]/10 text-[var(--color-accent)]'
       : 'border-sky-500/40 bg-sky-500/10 text-sky-300';
+  const downloadHref = `/doctorate-exams/download/${problem.year}-${problem.examType}`;
 
   return (
     <div className="pb-20 pt-20 md:pt-28">
@@ -145,6 +147,17 @@ export default async function DoctorateProblemPage({ params }: PageProps) {
                   {problem.university}
                 </span>
               )}
+            </div>
+
+            {/* Download full exam */}
+            <div className="mt-4">
+              <Link
+                href={downloadHref}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                <Download size={12} aria-hidden="true" />
+                Download the full {problem.year} exam + all solutions (PDF)
+              </Link>
             </div>
           </header>
 
