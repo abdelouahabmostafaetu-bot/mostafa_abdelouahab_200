@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { MongoClient, type Db } from "mongodb"
 
-// Force Node.js runtime (native mongodb driver does not work on Edge)
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-// ---------- MongoDB connection (cached across invocations) ----------
 let cachedClient: MongoClient | null = null
 
 async function getDb(): Promise<Db> {
@@ -20,7 +18,6 @@ async function getDb(): Promise<Db> {
 
 const COLLECTION = "doctorateproblems"
 
-// ---------- Auth ----------
 function isAuthorized(req: NextRequest): boolean {
 	const key = process.env.EXAM_API_KEY
 	if (!key) return false
@@ -28,12 +25,11 @@ function isAuthorized(req: NextRequest): boolean {
 	return header === `Bearer ${key}`
 }
 
-// ---------- Helpers ----------
 function slugify(input: string): string {
 	return input
 		.toLowerCase()
 		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "") // strip accents
+		.replace(/[\u0300-\u036f]/g, "")
 		.replace(/[^a-z0-9]+/g, "-")
 		.replace(/^-+|-+$/g, "")
 		.slice(0, 200)
@@ -64,6 +60,8 @@ function validateExam(body: unknown): { ok: true; exam: ExamInput } | { ok: fals
 		return { ok: false, error: 'examType must be "general" or "specialist"' }
 	if (typeof b.year !== "number" || b.year < 1990 || b.year > 2100)
 		return { ok: false, error: "year must be a number between 1990 and 2100" }
+	if (b.examType === "specialist" && !b.specialty)
+		return { ok: false, error: "specialty is required when examType is specialist" }
 	if (!Array.isArray(b.problems) || b.problems.length < 1 || b.problems.length > 15)
 		return { ok: false, error: "problems must be an array of 1 to 15 items" }
 	for (const [i, p] of b.problems.entries()) {
@@ -122,7 +120,7 @@ export async function GET(req: NextRequest) {
 	}
 }
 
-// ---------- POST /api/exams ----------
+// ---------- POST /api/exams  (add ?force=true to override duplicate check) ----------
 export async function POST(req: NextRequest) {
 	if (!isAuthorized(req)) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -136,19 +134,20 @@ export async function POST(req: NextRequest) {
 		const exam = result.exam
 		const db = await getDb()
 		const col = db.collection(COLLECTION)
+		const force = new URL(req.url).searchParams.get("force") === "true"
 
-		// Duplicate check: same year + examType + university (+ specialty)
+		// Coarse duplicate check: same year + examType + university (+ specialty)
 		const dupFilter: Record<string, unknown> = {
 			year: exam.year,
 			examType: exam.examType,
 		}
 		if (exam.university) dupFilter.university = exam.university
 		if (exam.specialty) dupFilter.specialty = exam.specialty
-		const existing = await col.findOne(dupFilter, { projection: { examId: 1, title: 1 } })
-		const force = new URL(req.url).searchParams.get("force") === "true"
+		const existing = await col.findOne(dupFilter, { projection: { examId: 1 } })
 		if (existing && !force) {
 			return NextResponse.json(
 				{
+					duplicate: true,
 					error: "Possible duplicate exam",
 					existingExamId: existing.examId,
 					hint: "Compare with the existing exam. To insert anyway, call POST /api/exams?force=true",
@@ -177,22 +176,84 @@ export async function POST(req: NextRequest) {
 			difficulty: p.difficulty ?? null,
 			tags: p.tags ?? [],
 			slug: slugify(`${exam.year} ${exam.examType} ${p.title ?? `exercice-${i + 1}-exam-${examId}`}`),
+			published: true,
 			createdAt: now,
 			updatedAt: now,
 		}))
 
-		await col.insertMany(docs)
+		// Strong duplicate check: identical exercise titles => identical slugs
+		const slugs = docs.map((d) => d.slug)
+		const slugClashes = await col
+			.find({ slug: { $in: slugs } }, { projection: { slug: 1, examId: 1 } })
+			.toArray()
+
+		if (slugClashes.length > 0 && !force) {
+			return NextResponse.json(
+				{
+					duplicate: true,
+					error: "This exam already exists in the archive (identical exercise titles)",
+					existingExamId: slugClashes[0].examId,
+					conflictingSlugs: slugClashes.map((d) => d.slug),
+					hint: "This is almost certainly the same exam. Only use ?force=true if it is truly a different exam.",
+				},
+				{ status: 409 }
+			)
+		}
+
+		if (slugClashes.length > 0 && force) {
+			// Make slugs unique so the insert cannot hit the unique index
+			const taken = new Set(slugClashes.map((d) => d.slug))
+			for (const d of docs) {
+				if (taken.has(d.slug)) d.slug = `${d.slug}-${examId}`
+			}
+		}
+
+		try {
+			await col.insertMany(docs)
+		} catch (insertErr) {
+			// Rollback any partial insert so no half-exam is left behind
+			await col.deleteMany({ examId })
+			const msg = insertErr instanceof Error ? insertErr.message : ""
+			if (msg.includes("E11000")) {
+				return NextResponse.json(
+					{
+						duplicate: true,
+						error: "Insert aborted: an exercise with the same title/slug already exists. Nothing was saved (rolled back).",
+					},
+					{ status: 409 }
+				)
+			}
+			throw insertErr
+		}
 
 		return NextResponse.json(
 			{
 				success: true,
 				examId,
 				inserted: docs.length,
-				url: `https://www.mostafaabdelouahab.me/doctorate-exams/exam/${examId}`,
 				slugs: docs.map((d) => d.slug),
 			},
 			{ status: 201 }
 		)
+	} catch (err) {
+		return NextResponse.json(
+			{ error: err instanceof Error ? err.message : "Server error" },
+			{ status: 500 }
+		)
+	}
+}
+
+// ---------- PATCH /api/exams — one-time repair: set published on docs missing it ----------
+export async function PATCH(req: NextRequest) {
+	if (!isAuthorized(req)) {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+	}
+	try {
+		const db = await getDb()
+		const res = await db
+			.collection(COLLECTION)
+			.updateMany({ published: { $exists: false } }, { $set: { published: true } })
+		return NextResponse.json({ matched: res.matchedCount, modified: res.modifiedCount })
 	} catch (err) {
 		return NextResponse.json(
 			{ error: err instanceof Error ? err.message : "Server error" },
