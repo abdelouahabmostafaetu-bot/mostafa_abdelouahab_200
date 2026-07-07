@@ -117,8 +117,7 @@ async function handleImport(req: Request): Promise<Response> {
         return Response.json(
           {
             ok: false,
-            error:
-              'examId must be a number, e.g. { "action": "delete", "examId": 4 }',
+            error: 'examId must be a number, e.g. { "action": "delete", "examId": 4 }',
           },
           { status: 400, headers: corsHeaders }
         )
@@ -126,6 +125,57 @@ async function handleImport(req: Request): Promise<Response> {
       return deleteExam(examId)
     }
     // ===== END DELETE =====
+​
+    // ===== LIST DISTINCT VALUES =====
+    if (!Array.isArray(body) && body && body.action === "list_distinct") {
+      const db = await getDb()
+      const col = db.collection("doctorateproblems")
+      const universities = await col.distinct("university")
+      const specialties = await col.distinct("specialty")
+      return Response.json(
+        {
+          ok: true,
+          universities: (universities as string[]).filter(Boolean).sort(),
+          specialties: (specialties as string[]).filter(Boolean).sort(),
+        },
+        { headers: corsHeaders }
+      )
+    }
+    // ===== END LIST DISTINCT =====
+​
+    // ===== NORMALIZE universities / specialties =====
+    if (!Array.isArray(body) && body && body.action === "normalize") {
+      const db = await getDb()
+      const col = db.collection("doctorateproblems")
+      const results: { field: string; from: string; to: string; updated: number }[] = []
+​
+      const uniMap: Record<string, string> = body.universities ?? {}
+      const specMap: Record<string, string> = body.specialties ?? {}
+​
+      for (const [oldVal, newVal] of Object.entries(uniMap)) {
+        const r = await col.updateMany(
+          { university: oldVal },
+          { $set: { university: newVal, updatedAt: new Date() } }
+        )
+        if (r.modifiedCount > 0)
+          results.push({ field: "university", from: oldVal, to: String(newVal), updated: r.modifiedCount })
+      }
+​
+      for (const [oldVal, newVal] of Object.entries(specMap)) {
+        const r = await col.updateMany(
+          { specialty: oldVal },
+          { $set: { specialty: newVal, updatedAt: new Date() } }
+        )
+        if (r.modifiedCount > 0)
+          results.push({ field: "specialty", from: oldVal, to: String(newVal), updated: r.modifiedCount })
+      }
+​
+      return Response.json(
+        { ok: true, action: "normalize", changes: results.length, details: results },
+        { headers: corsHeaders }
+      )
+    }
+    // ===== END NORMALIZE =====
 ​
     const exams: any[] = Array.isArray(body) ? body : body.exams ?? []
     if (exams.length === 0) {
