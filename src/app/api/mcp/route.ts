@@ -1,15 +1,15 @@
 import { createMcpHandler } from "mcp-handler"
 import { z } from "zod"
 import { MongoClient, Db } from "mongodb"
-
+​
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 }
-
+​
 let cachedClient: MongoClient | null = null
-
+​
 async function getDb(): Promise<Db> {
   if (!cachedClient) {
     cachedClient = new MongoClient(process.env.MONGODB_URI as string)
@@ -17,7 +17,7 @@ async function getDb(): Promise<Db> {
   }
   return cachedClient.db("mylibrary")
 }
-
+​
 function slugify(text: string): string {
   return text
     .normalize("NFD")
@@ -26,7 +26,7 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
 }
-
+​
 async function nextExamId(db: Db): Promise<number> {
   const last = await db
     .collection("doctorateproblems")
@@ -37,14 +37,14 @@ async function nextExamId(db: Db): Promise<number> {
     .toArray()
   return (last[0]?.examId ?? 0) + 1
 }
-
+​
 function buildDocs(exam: any, examId: number) {
   const problems: any[] = exam.problems ?? exam.exercises ?? []
   const examType =
     String(exam.examType ?? "specialist").toLowerCase() === "general"
       ? "general"
       : "specialist"
-
+​
   return problems.map((p: any, i: number) => {
     const problemNumber = Number(p.problemNumber ?? i + 1)
     const title = String(p.title ?? `Exercice ${problemNumber}`)
@@ -69,13 +69,13 @@ function buildDocs(exam: any, examId: number) {
     }
   })
 }
-
+​
 async function importExams(exams: any[]) {
   const db = await getDb()
   const col = db.collection("doctorateproblems")
   let inserted = 0
   let updated = 0
-
+​
   for (const exam of exams) {
     const examId = exam.examId ?? (await nextExamId(db))
     const docs = buildDocs(exam, examId)
@@ -94,10 +94,39 @@ async function importExams(exams: any[]) {
   }
   return { inserted, updated }
 }
-
+​
+async function deleteExam(examId: number): Promise<Response> {
+  const db = await getDb()
+  const result = await db
+    .collection("doctorateproblems")
+    .deleteMany({ examId })
+  return Response.json(
+    { ok: true, action: "delete", examId, deletedProblems: result.deletedCount },
+    { headers: corsHeaders }
+  )
+}
+​
 async function handleImport(req: Request): Promise<Response> {
   try {
     const body = await req.json()
+​
+    // ===== DELETE EXAM BY examId =====
+    if (!Array.isArray(body) && body && body.action === "delete") {
+      const examId = Number(body.examId)
+      if (!Number.isFinite(examId)) {
+        return Response.json(
+          {
+            ok: false,
+            error:
+              'examId must be a number, e.g. { "action": "delete", "examId": 4 }',
+          },
+          { status: 400, headers: corsHeaders }
+        )
+      }
+      return deleteExam(examId)
+    }
+    // ===== END DELETE =====
+​
     const exams: any[] = Array.isArray(body) ? body : body.exams ?? []
     if (exams.length === 0) {
       return Response.json(
@@ -117,11 +146,11 @@ async function handleImport(req: Request): Promise<Response> {
     )
   }
 }
-
+​
 const mcpHandler = createMcpHandler((server) => {
   server.tool(
     "add_doctorate_exam",
-    "Add a doctorate exam. Each problem becomes one flat document in doctorateExams with a shared numeric examId.",
+    "Add a doctorate exam. Each problem becomes one flat document in doctorateproblems with a shared numeric examId.",
     {
       examType: z.enum(["general", "specialist"]),
       year: z.number(),
@@ -149,7 +178,27 @@ const mcpHandler = createMcpHandler((server) => {
       }
     }
   )
-
+​
+  server.tool(
+    "delete_doctorate_exam",
+    "Delete ALL problems of one exam by its numeric examId from doctorateproblems.",
+    { examId: z.number() },
+    async ({ examId }) => {
+      const db = await getDb()
+      const result = await db
+        .collection("doctorateproblems")
+        .deleteMany({ examId })
+      return {
+        content: [
+          {
+            type: "text",
+            text: `🗑️ Deleted ${result.deletedCount} problems from exam #${examId}`,
+          },
+        ],
+      }
+    }
+  )
+​
   server.tool(
     "list_doctorate_exams",
     "List recent doctorate exam problems, most recent first.",
@@ -169,20 +218,21 @@ const mcpHandler = createMcpHandler((server) => {
     }
   )
 })
-
+​
 export async function OPTIONS() {
   return new Response(null, { status: 204, headers: corsHeaders })
 }
-
+​
 export async function POST(req: Request) {
   const auth = req.headers.get("authorization")
   if (auth === `Bearer ${process.env.IMPORT_TOKEN}`) return handleImport(req)
   if (auth === `Bearer ${process.env.MCP_API_KEY}`) return mcpHandler(req)
   return new Response("Unauthorized", { status: 401, headers: corsHeaders })
 }
-
+​
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization")
   if (auth === `Bearer ${process.env.MCP_API_KEY}`) return mcpHandler(req)
   return new Response("Unauthorized", { status: 401, headers: corsHeaders })
 }
+​
