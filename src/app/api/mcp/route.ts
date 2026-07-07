@@ -2,6 +2,12 @@ import { createMcpHandler } from "mcp-handler"
 import { z } from "zod"
 import { MongoClient, Db } from "mongodb"
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+
 let cachedClient: MongoClient | null = null
 
 async function getDb(): Promise<Db> {
@@ -32,7 +38,6 @@ async function nextExamId(db: Db): Promise<number> {
   return (last[0]?.examId ?? 0) + 1
 }
 
-// كل تمرين → وثيقة مستقلة مطابقة تماماً لبنية قاعدتك
 function buildDocs(exam: any, examId: number) {
   const problems: any[] = exam.problems ?? exam.exercises ?? []
   const examType =
@@ -90,22 +95,29 @@ async function importExams(exams: any[]) {
   return { inserted, updated }
 }
 
-// ---------- استيراد Lovable ----------
 async function handleImport(req: Request): Promise<Response> {
   try {
     const body = await req.json()
     const exams: any[] = Array.isArray(body) ? body : body.exams ?? []
     if (exams.length === 0) {
-      return Response.json({ error: "No exams provided" }, { status: 400 })
+      return Response.json(
+        { error: "No exams provided" },
+        { status: 400, headers: corsHeaders }
+      )
     }
     const { inserted, updated } = await importExams(exams)
-    return Response.json({ ok: true, inserted, updated })
+    return Response.json(
+      { ok: true, inserted, updated },
+      { headers: corsHeaders }
+    )
   } catch (err: any) {
-    return Response.json({ error: err.message }, { status: 500 })
+    return Response.json(
+      { error: err.message },
+      { status: 500, headers: corsHeaders }
+    )
   }
 }
 
-// ---------- أدوات MCP ----------
 const mcpHandler = createMcpHandler((server) => {
   server.tool(
     "add_doctorate_exam",
@@ -158,16 +170,19 @@ const mcpHandler = createMcpHandler((server) => {
   )
 })
 
-// ---------- التوجيه ----------
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: corsHeaders })
+}
+
 export async function POST(req: Request) {
   const auth = req.headers.get("authorization")
   if (auth === `Bearer ${process.env.IMPORT_TOKEN}`) return handleImport(req)
   if (auth === `Bearer ${process.env.MCP_API_KEY}`) return mcpHandler(req)
-  return new Response("Unauthorized", { status: 401 })
+  return new Response("Unauthorized", { status: 401, headers: corsHeaders })
 }
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization")
   if (auth === `Bearer ${process.env.MCP_API_KEY}`) return mcpHandler(req)
-  return new Response("Unauthorized", { status: 401 })
+  return new Response("Unauthorized", { status: 401, headers: corsHeaders })
 }
