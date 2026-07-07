@@ -1,9 +1,10 @@
 import { MongoClient } from "mongodb"
 
-let cachedClient = null
-async function getClient() {
+let cachedClient: MongoClient | null = null
+
+async function getClient(): Promise<MongoClient> {
   if (cachedClient) return cachedClient
-  const client = new MongoClient(process.env.MONGODB_URI)
+  const client = new MongoClient(process.env.MONGODB_URI as string)
   await client.connect()
   cachedClient = client
   return client
@@ -19,7 +20,7 @@ export async function OPTIONS() {
   return new Response(null, { status: 200, headers: corsHeaders })
 }
 
-export async function POST(req) {
+export async function POST(req: Request) {
   const auth = req.headers.get("authorization") || ""
   const token = auth.replace(/^Bearer\s+/i, "")
   if (!process.env.IMPORT_TOKEN || token !== process.env.IMPORT_TOKEN) {
@@ -30,7 +31,7 @@ export async function POST(req) {
   }
   try {
     const body = await req.json()
-    const exams = Array.isArray(body) ? body : body?.exams
+    const exams: any[] = Array.isArray(body) ? body : body?.exams
     if (!Array.isArray(exams) || !exams.length) {
       return Response.json(
         { error: "Body must be { exams: [...] } or an array" },
@@ -39,8 +40,9 @@ export async function POST(req) {
     }
     const client = await getClient()
     const col = client.db("mylibrary").collection("doctorateExams")
-    let inserted = 0, updated = 0
-    const results = []
+    let inserted = 0
+    let updated = 0
+    const results: any[] = []
     for (const exam of exams) {
       if (!exam.title || !exam.year) {
         results.push({ ok: false, error: "Missing title/year", exam })
@@ -69,7 +71,7 @@ export async function POST(req) {
       { ok: true, inserted, updated, total, results },
       { headers: corsHeaders }
     )
-  } catch (err) {
+  } catch (err: any) {
     return Response.json(
       { error: String(err?.message || err) },
       { status: 500, headers: corsHeaders }
