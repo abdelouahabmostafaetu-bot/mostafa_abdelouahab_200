@@ -52,7 +52,8 @@ function buildDocs(exam: any, examId: number) {
       title,
       slug: `${Number(exam.year)}-${examType}-${slugify(title)}`,
       examType,
-      specialty: String(exam.specialty ?? ""),
+      // general exams have no specialty
+      specialty: examType === "general" ? "" : String(exam.specialty ?? ""),
       year: Number(exam.year),
       university: String(exam.university ?? ""),
       source: String(exam.source ?? ""),
@@ -176,6 +177,22 @@ async function handleImport(req: Request): Promise<Response> {
       )
     }
     // ===== END NORMALIZE =====
+​
+    // ===== CLEAR SPECIALTY FOR GENERAL EXAMS =====
+    if (!Array.isArray(body) && body && body.action === "clear_general_specialty") {
+      const db = await getDb()
+      const result = await db
+        .collection("doctorateproblems")
+        .updateMany(
+          { examType: "general" },
+          { $set: { specialty: "", updatedAt: new Date() } }
+        )
+      return Response.json(
+        { ok: true, action: "clear_general_specialty", updated: result.modifiedCount },
+        { headers: corsHeaders }
+      )
+    }
+    // ===== END CLEAR GENERAL SPECIALTY =====
 ​
     const exams: any[] = Array.isArray(body) ? body : body.exams ?? []
     if (exams.length === 0) {
