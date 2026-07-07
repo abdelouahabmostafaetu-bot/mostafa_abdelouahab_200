@@ -29,7 +29,7 @@ function slugify(text: string): string {
 
 async function nextExamId(db: Db): Promise<number> {
   const last = await db
-    .collection("doctorateExams")
+    .collection("doctorateproblems")
     .find({ examId: { $type: "number" } })
     .sort({ examId: -1 })
     .limit(1)
@@ -72,7 +72,7 @@ function buildDocs(exam: any, examId: number) {
 
 async function importExams(exams: any[]) {
   const db = await getDb()
-  const col = db.collection("doctorateExams")
+  const col = db.collection("doctorateproblems")
   let inserted = 0
   let updated = 0
 
@@ -159,7 +159,7 @@ const mcpHandler = createMcpHandler((server) => {
       const filter: Record<string, unknown> = {}
       if (year) filter.year = year
       const docs = await db
-        .collection("doctorateExams")
+        .collection("doctorateproblems")
         .find(filter)
         .sort({ createdAt: -1 })
         .limit(limit ?? 10)
