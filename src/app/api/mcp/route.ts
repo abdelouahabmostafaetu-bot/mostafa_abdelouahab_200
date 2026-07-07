@@ -116,10 +116,7 @@ async function handleImport(req: Request): Promise<Response> {
       const examId = Number(body.examId)
       if (!Number.isFinite(examId)) {
         return Response.json(
-          {
-            ok: false,
-            error: 'examId must be a number, e.g. { "action": "delete", "examId": 4 }',
-          },
+          { ok: false, error: 'examId must be a number' },
           { status: 400, headers: corsHeaders }
         )
       }
@@ -194,6 +191,107 @@ async function handleImport(req: Request): Promise<Response> {
     }
     // ===== END CLEAR GENERAL SPECIALTY =====
 ​
+    // ===== GET EXAM BY examId =====
+    if (!Array.isArray(body) && body && body.action === "get_exam") {
+      const examId = Number(body.examId)
+      if (!Number.isFinite(examId))
+        return Response.json({ ok: false, error: "examId must be a number" }, { status: 400, headers: corsHeaders })
+      const db = await getDb()
+      const problems = await db.collection("doctorateproblems")
+        .find({ examId }).sort({ problemNumber: 1 }).toArray()
+      if (problems.length === 0)
+        return Response.json({ ok: false, error: `No exam found with ID ${examId}` }, { status: 404, headers: corsHeaders })
+      return Response.json({ ok: true, examId, problems }, { headers: corsHeaders })
+    }
+    // ===== END GET EXAM =====
+​
+    // ===== UPDATE EXAM-LEVEL FIELDS (university, specialty, examType, year, source) =====
+    if (!Array.isArray(body) && body && body.action === "update_exam_fields") {
+      const examId = Number(body.examId)
+      if (!Number.isFinite(examId))
+        return Response.json({ ok: false, error: "examId must be a number" }, { status: 400, headers: corsHeaders })
+      const db = await getDb()
+      const fields: any = { updatedAt: new Date() }
+      if (body.university !== undefined) fields.university = body.university
+      if (body.specialty !== undefined) fields.specialty = body.specialty
+      if (body.examType !== undefined) fields.examType = body.examType
+      if (body.year !== undefined) fields.year = Number(body.year)
+      if (body.source !== undefined) fields.source = body.source
+      const result = await db.collection("doctorateproblems")
+        .updateMany({ examId }, { $set: fields })
+      return Response.json({ ok: true, action: "update_exam_fields", examId, updated: result.modifiedCount }, { headers: corsHeaders })
+    }
+    // ===== END UPDATE EXAM FIELDS =====
+​
+    // ===== UPDATE ONE PROBLEM BY SLUG =====
+    if (!Array.isArray(body) && body && body.action === "update_problem") {
+      const db = await getDb()
+      const fields: any = { updatedAt: new Date() }
+      if (body.title !== undefined) fields.title = body.title
+      if (body.difficulty !== undefined) fields.difficulty = body.difficulty
+      if (body.tags !== undefined)
+        fields.tags = Array.isArray(body.tags)
+          ? body.tags
+          : String(body.tags).split(",").map((t: string) => t.trim()).filter(Boolean)
+      if (body.statement !== undefined) fields.statement = body.statement
+      if (body.solution !== undefined) fields.solution = body.solution
+      const result = await db.collection("doctorateproblems")
+        .updateOne({ slug: body.slug }, { $set: fields })
+      return Response.json({ ok: true, action: "update_problem", updated: result.modifiedCount }, { headers: corsHeaders })
+    }
+    // ===== END UPDATE PROBLEM =====
+​
+    // ===== DELETE ONE PROBLEM BY SLUG =====
+    if (!Array.isArray(body) && body && body.action === "delete_problem") {
+      const db = await getDb()
+      const result = await db.collection("doctorateproblems").deleteOne({ slug: body.slug })
+      return Response.json({ ok: true, action: "delete_problem", deleted: result.deletedCount }, { headers: corsHeaders })
+    }
+    // ===== END DELETE PROBLEM =====
+​
+    // ===== ADD NEW PROBLEM TO EXISTING EXAM =====
+    if (!Array.isArray(body) && body && body.action === "add_problem") {
+      const db = await getDb()
+      const examId = Number(body.examId)
+      const problemNumber = Number(body.problemNumber ?? 1)
+      const title = String(body.title ?? `Exercice ${problemNumber}`)
+      const doc = {
+        title,
+        slug: `${examId}-new-${Date.now()}`,
+        examType: body.examType ?? "specialist",
+        specialty: body.specialty ?? "",
+        year: Number(body.year ?? 0),
+        university: body.university ?? "",
+        source: body.source ?? "",
+        problemNumber,
+        statement: body.statement ?? "",
+        solution: body.solution ?? "",
+        tags: Array.isArray(body.tags) ? body.tags : [],
+        difficulty: body.difficulty ?? "medium",
+        published: true,
+        __v: 0,
+        examId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      await db.collection("doctorateproblems").insertOne(doc)
+      return Response.json({ ok: true, action: "add_problem", examId }, { headers: corsHeaders })
+    }
+    // ===== END ADD PROBLEM =====
+​
+    // ===== UPDATE SPECIALTY BY examId =====
+    if (!Array.isArray(body) && body && body.action === "update_specialty") {
+      const examId = Number(body.examId)
+      const specialty = String(body.specialty ?? "")
+      if (!Number.isFinite(examId))
+        return Response.json({ ok: false, error: "examId must be a number" }, { status: 400, headers: corsHeaders })
+      const db = await getDb()
+      const result = await db.collection("doctorateproblems")
+        .updateMany({ examId }, { $set: { specialty, updatedAt: new Date() } })
+      return Response.json({ ok: true, action: "update_specialty", examId, specialty, updated: result.modifiedCount }, { headers: corsHeaders })
+    }
+    // ===== END UPDATE SPECIALTY =====
+​
     const exams: any[] = Array.isArray(body) ? body : body.exams ?? []
     if (exams.length === 0) {
       return Response.json(
@@ -252,16 +350,9 @@ const mcpHandler = createMcpHandler((server) => {
     { examId: z.number() },
     async ({ examId }) => {
       const db = await getDb()
-      const result = await db
-        .collection("doctorateproblems")
-        .deleteMany({ examId })
+      const result = await db.collection("doctorateproblems").deleteMany({ examId })
       return {
-        content: [
-          {
-            type: "text",
-            text: `🗑️ Deleted ${result.deletedCount} problems from exam #${examId}`,
-          },
-        ],
+        content: [{ type: "text", text: `🗑️ Deleted ${result.deletedCount} problems from exam #${examId}` }],
       }
     }
   )
