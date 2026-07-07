@@ -12,35 +12,85 @@ async function getDb(): Promise<Db> {
   return cachedClient.db("mylibrary")
 }
 
-// ---------- تنظيف وتصحيح الامتحان ليطابق schema الموقع ----------
-function normalizeExam(exam: any) {
-  const problems = (exam.problems ?? exam.exercises ?? []).map(
-    (p: any, i: number) => ({
-      problemNumber: Number(p.problemNumber ?? i + 1),
-      title: String(p.title ?? `Problème ${i + 1}`),
+function slugify(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
+async function nextExamId(db: Db): Promise<number> {
+  const last = await db
+    .collection("doctorateExams")
+    .find({ examId: { $type: "number" } })
+    .sort({ examId: -1 })
+    .limit(1)
+    .project({ examId: 1 })
+    .toArray()
+  return (last[0]?.examId ?? 0) + 1
+}
+
+// كل تمرين → وثيقة مستقلة مطابقة تماماً لبنية قاعدتك
+function buildDocs(exam: any, examId: number) {
+  const problems: any[] = exam.problems ?? exam.exercises ?? []
+  const examType =
+    String(exam.examType ?? "specialist").toLowerCase() === "general"
+      ? "general"
+      : "specialist"
+
+  return problems.map((p: any, i: number) => {
+    const problemNumber = Number(p.problemNumber ?? i + 1)
+    const title = String(p.title ?? `Exercice ${problemNumber}`)
+    return {
+      title,
+      slug: `${Number(exam.year)}-${examType}-${slugify(title)}`,
+      examType,
+      specialty: String(exam.specialty ?? ""),
+      year: Number(exam.year),
+      university: String(exam.university ?? ""),
+      source: String(exam.source ?? ""),
+      problemNumber,
+      statement: String(p.statement ?? ""),
+      solution: String(p.solution ?? ""),
+      tags: Array.isArray(p.tags) ? p.tags : [],
       difficulty: ["easy", "medium", "hard", "very-hard"].includes(p.difficulty)
         ? p.difficulty
         : "medium",
-      tags: Array.isArray(p.tags) ? p.tags : [],
-      statement: String(p.statement ?? ""),
-      solution: String(p.solution ?? ""),
-      remark: String(p.remark ?? ""),
-    })
-  )
-
-  const rawType = String(exam.examType ?? "specialist").toLowerCase()
-
-  return {
-    examType: rawType === "general" ? "general" : "specialist",
-    year: Number(exam.year),
-    university: String(exam.university ?? "Source inconnue"),
-    specialty: String(exam.specialty ?? exam.filiere ?? ""),
-    source: String(exam.source ?? exam.title ?? ""),
-    problems,
-  }
+      published: true,
+      __v: 0,
+      examId,
+    }
+  })
 }
 
-// ---------- استيراد Lovable (JSON عادي) ----------
+async function importExams(exams: any[]) {
+  const db = await getDb()
+  const col = db.collection("doctorateExams")
+  let inserted = 0
+  let updated = 0
+
+  for (const exam of exams) {
+    const examId = exam.examId ?? (await nextExamId(db))
+    const docs = buildDocs(exam, examId)
+    for (const doc of docs) {
+      const result = await col.updateOne(
+        { slug: doc.slug },
+        {
+          $set: { ...doc, updatedAt: new Date() },
+          $setOnInsert: { createdAt: new Date() },
+        },
+        { upsert: true }
+      )
+      if (result.upsertedCount > 0) inserted++
+      else if (result.modifiedCount > 0) updated++
+    }
+  }
+  return { inserted, updated }
+}
+
+// ---------- استيراد Lovable ----------
 async function handleImport(req: Request): Promise<Response> {
   try {
     const body = await req.json()
@@ -48,24 +98,8 @@ async function handleImport(req: Request): Promise<Response> {
     if (exams.length === 0) {
       return Response.json({ error: "No exams provided" }, { status: 400 })
     }
-
-    const db = await getDb()
-    const col = db.collection("doctorateExams")
-    let inserted = 0
-    let updated = 0
-
-    for (const raw of exams) {
-      const exam = normalizeExam(raw)
-      const result = await col.updateOne(
-        { year: exam.year, university: exam.university, source: exam.source },
-        { $set: exam, $setOnInsert: { createdAt: new Date() } },
-        { upsert: true }
-      )
-      if (result.upsertedCount > 0) inserted++
-      else if (result.modifiedCount > 0) updated++
-    }
-
-    return Response.json({ ok: true, inserted, updated, total: exams.length })
+    const { inserted, updated } = await importExams(exams)
+    return Response.json({ ok: true, inserted, updated })
   } catch (err: any) {
     return Response.json({ error: err.message }, { status: 500 })
   }
@@ -75,13 +109,14 @@ async function handleImport(req: Request): Promise<Response> {
 const mcpHandler = createMcpHandler((server) => {
   server.tool(
     "add_doctorate_exam",
-    "Add a doctorate exam to MongoDB. examType is 'general' or 'specialist', year is a number, problems is an array.",
+    "Add a doctorate exam. Each problem becomes one flat document in doctorateExams with a shared numeric examId.",
     {
       examType: z.enum(["general", "specialist"]),
       year: z.number(),
       university: z.string(),
       specialty: z.string(),
       source: z.string(),
+      examId: z.number().optional(),
       problems: z.array(
         z.object({
           problemNumber: z.number(),
@@ -90,19 +125,14 @@ const mcpHandler = createMcpHandler((server) => {
           tags: z.array(z.string()),
           statement: z.string(),
           solution: z.string(),
-          remark: z.string().optional(),
         })
       ),
     },
     async (args) => {
-      const db = await getDb()
-      const result = await db.collection("doctorateExams").insertOne({
-        ...args,
-        createdAt: new Date(),
-      })
+      const { inserted, updated } = await importExams([args])
       return {
         content: [
-          { type: "text", text: `✅ inserted id=${result.insertedId.toString()}` },
+          { type: "text", text: `✅ inserted=${inserted}, updated=${updated}` },
         ],
       }
     }
@@ -110,7 +140,7 @@ const mcpHandler = createMcpHandler((server) => {
 
   server.tool(
     "list_doctorate_exams",
-    "List recent doctorate exams, most recent first.",
+    "List recent doctorate exam problems, most recent first.",
     { limit: z.number().optional(), year: z.number().optional() },
     async ({ limit, year }) => {
       const db = await getDb()
@@ -121,34 +151,23 @@ const mcpHandler = createMcpHandler((server) => {
         .find(filter)
         .sort({ createdAt: -1 })
         .limit(limit ?? 10)
-        .project({ examType: 1, year: 1, specialty: 1, university: 1, source: 1 })
+        .project({ title: 1, examId: 1, year: 1, specialty: 1, university: 1 })
         .toArray()
       return { content: [{ type: "text", text: JSON.stringify(docs, null, 2) }] }
     }
   )
 })
 
-// ---------- التوجيه حسب المفتاح ----------
+// ---------- التوجيه ----------
 export async function POST(req: Request) {
   const auth = req.headers.get("authorization")
-
-  // Lovable يستعمل IMPORT_TOKEN → استيراد مباشر
-  if (auth === `Bearer ${process.env.IMPORT_TOKEN}`) {
-    return handleImport(req)
-  }
-
-  // عملاء MCP يستعملون MCP_API_KEY
-  if (auth === `Bearer ${process.env.MCP_API_KEY}`) {
-    return mcpHandler(req)
-  }
-
+  if (auth === `Bearer ${process.env.IMPORT_TOKEN}`) return handleImport(req)
+  if (auth === `Bearer ${process.env.MCP_API_KEY}`) return mcpHandler(req)
   return new Response("Unauthorized", { status: 401 })
 }
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization")
-  if (auth === `Bearer ${process.env.MCP_API_KEY}`) {
-    return mcpHandler(req)
-  }
+  if (auth === `Bearer ${process.env.MCP_API_KEY}`) return mcpHandler(req)
   return new Response("Unauthorized", { status: 401 })
 }
