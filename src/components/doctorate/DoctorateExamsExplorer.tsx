@@ -320,7 +320,7 @@ export default function DoctorateExamsExplorer({
                 </p>
               ) : null}
 
-              <div className="mt-5 flex items-center gap-2.5 border-t border-[var(--border)] pt-4">
+              <div className="mt-5 flex items-center gap-2.5 pt-4 border-t border-[var(--border)]">
                 <Link
                   href={`/doctorate-exams/exam/${exam.key}`}
                   className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
