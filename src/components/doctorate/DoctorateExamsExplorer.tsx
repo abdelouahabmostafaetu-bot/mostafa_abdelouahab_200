@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import { ArrowRight, Download, GraduationCap } from 'lucide-react';
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, Download, GraduationCap } from "lucide-react";
 import {
   EXAM_TYPE_LABELS,
   type DoctorateExamType,
   type DoctorateProblemSummary,
-} from '@/types/doctorate-problem';
+} from "@/types/doctorate-problem";
 
 type Props = { problems: DoctorateProblemSummary[]; isAuthenticated?: boolean };
 
@@ -21,20 +21,23 @@ type ExamGroup = {
 
 const EXAM_BADGE: Record<DoctorateExamType, string> = {
   general:
-    'border-[var(--color-accent)]/40 bg-[var(--color-accent)]/10 text-[var(--color-accent)]',
-  specialist: 'border-sky-500/40 bg-sky-500/10 text-sky-300',
+    "border-[var(--color-accent)]/40 bg-[var(--color-accent)]/10 text-[var(--color-accent)]",
+  specialist: "border-sky-500/40 bg-sky-500/10 text-sky-300",
 };
 
 const selectClass =
-  'rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-xs ' +
-  'text-[var(--color-text-secondary)] outline-none transition-colors focus:border-[var(--color-accent)]';
+  "rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-xs " +
+  "text-[var(--color-text-secondary)] outline-none transition-colors focus:border-[var(--color-accent)]";
 
 /**
  * DoctorateExamsExplorer — minimal archive: dropdown filters + one clean
  * row per FULL exam (grouped by examId). Each exam can be opened in full or
  * downloaded directly as a styled PDF with all of its solutions.
  */
-export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Props) {
+export default function DoctorateExamsExplorer({
+  problems,
+  isAuthenticated,
+}: Props) {
   const exams = useMemo(() => {
     const map = new Map<string, ExamGroup>();
     for (const p of problems) {
@@ -65,10 +68,10 @@ export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Pr
     );
   }, [problems]);
 
-  const [examType, setExamType] = useState<string>('all');
-  const [year, setYear] = useState<string>('all');
-  const [university, setUniversity] = useState<string>('all');
-  const [specialty, setSpecialty] = useState<string>('all');
+  const [examType, setExamType] = useState<string>("all");
+  const [year, setYear] = useState<string>("all");
+  const [university, setUniversity] = useState<string>("all");
+  const [specialty, setSpecialty] = useState<string>("all");
 
   const years = useMemo(
     () => [...new Set(exams.map((e) => e.year))].sort((a, b) => b - a),
@@ -83,8 +86,8 @@ export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Pr
   );
   const specialties = useMemo(
     () =>
-      [...new Set(exams.map((e) => e.specialty).filter(Boolean))].sort(
-        (a, b) => a.localeCompare(b),
+      [...new Set(exams.map((e) => e.specialty).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b),
       ),
     [exams],
   );
@@ -92,10 +95,10 @@ export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Pr
   const filtered = useMemo(
     () =>
       exams.filter((e) => {
-        if (examType !== 'all' && e.examType !== examType) return false;
-        if (year !== 'all' && String(e.year) !== year) return false;
-        if (university !== 'all' && e.university !== university) return false;
-        if (specialty !== 'all' && e.specialty !== specialty) return false;
+        if (examType !== "all" && e.examType !== examType) return false;
+        if (year !== "all" && String(e.year) !== year) return false;
+        if (university !== "all" && e.university !== university) return false;
+        if (specialty !== "all" && e.specialty !== specialty) return false;
         return true;
       }),
     [exams, examType, year, university, specialty],
@@ -110,57 +113,77 @@ export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Pr
           Doctorate Entrance Exams — Algeria
         </p>
 
-        {/* Filters */}
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <select
-            value={examType}
-            onChange={(e) => setExamType(e.target.value)}
-            className={selectClass}
-            aria-label="Filter by exam type"
-          >
-            <option value="all">All exams</option>
-            <option value="general">General Exam</option>
-            <option value="specialist">Specialist Exam</option>
-          </select>
-          <select
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className={selectClass}
-            aria-label="Filter by year"
-          >
-            <option value="all">All years</option>
-            {years.map((y) => (
-              <option key={y} value={String(y)}>
-                {y}
-              </option>
-            ))}
-          </select>
-          <select
-            value={university}
-            onChange={(e) => setUniversity(e.target.value)}
-            className={selectClass}
-            aria-label="Filter by university"
-          >
-            <option value="all">All universities</option>
-            {universities.map((u) => (
-              <option key={u} value={u}>
-                {u}
-              </option>
-            ))}
-          </select>
-          <select
-            value={specialty}
-            onChange={(e) => setSpecialty(e.target.value)}
-            className={selectClass}
-            aria-label="Filter by specialty"
-          >
-            <option value="all">All specialties</option>
-            {specialties.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+        {/* Filters + combined download */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={examType}
+              onChange={(e) => setExamType(e.target.value)}
+              className={selectClass}
+              aria-label="Filter by exam type"
+            >
+              <option value="all">All exams</option>
+              <option value="general">General Exam</option>
+              <option value="specialist">Specialist Exam</option>
+            </select>
+            <select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className={selectClass}
+              aria-label="Filter by year"
+            >
+              <option value="all">All years</option>
+              {years.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            <select
+              value={university}
+              onChange={(e) => setUniversity(e.target.value)}
+              className={selectClass}
+              aria-label="Filter by university"
+            >
+              <option value="all">All universities</option>
+              {universities.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
+            <select
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              className={selectClass}
+              aria-label="Filter by specialty"
+            >
+              <option value="all">All specialties</option>
+              {specialties.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {isAuthenticated ? (
+            <a
+              href="/api/doctorate-exams/pdf/general-all"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
+            >
+              <Download size={12} aria-hidden="true" />
+              Download all general exams — problems only (PDF)
+            </a>
+          ) : (
+            <Link
+              href={`/sign-in?redirect_url=${encodeURIComponent("/api/doctorate-exams/pdf/general-all")}`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[#0f0e0d] transition-opacity hover:opacity-90"
+            >
+              <Download size={12} aria-hidden="true" />
+              Sign in to download all general exams (PDF)
+            </Link>
+          )}
         </div>
 
         {/* Exams */}
@@ -173,13 +196,13 @@ export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Pr
             />
             <p className="text-sm font-medium text-[var(--color-text)]">
               {exams.length === 0
-                ? 'The archive is being prepared'
-                : 'No exams match your filters'}
+                ? "The archive is being prepared"
+                : "No exams match your filters"}
             </p>
             <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
               {exams.length === 0
-                ? 'Past exams and solutions will appear here soon.'
-                : 'Try choosing different filters.'}
+                ? "Past exams and solutions will appear here soon."
+                : "Try choosing different filters."}
             </p>
           </div>
         ) : (
@@ -204,7 +227,7 @@ export default function DoctorateExamsExplorer({ problems, isAuthenticated }: Pr
                 {/* Center: specialty • university */}
                 <p className="min-w-[180px] flex-1 text-center text-sm text-[var(--color-text-secondary)]">
                   {e.specialty}
-                  {e.university ? ` • ${e.university}` : ''}
+                  {e.university ? ` • ${e.university}` : ""}
                 </p>
 
                 {/* Right: actions */}

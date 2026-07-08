@@ -1,16 +1,17 @@
-import type { Metadata } from 'next';
-import { connectToDatabase } from '@/lib/mongodb';
-import { DoctorateProblem } from '@/lib/models/doctorate-problem';
-import { mapDoctorateProblemSummary } from '@/lib/doctorate-problems';
-import type { DoctorateProblemSummary } from '@/types/doctorate-problem';
-import DoctorateExamsExplorer from '@/components/doctorate/DoctorateExamsExplorer';
+import type { Metadata } from "next";
+import { connectToDatabase } from "@/lib/mongodb";
+import { DoctorateProblem } from "@/lib/models/doctorate-problem";
+import { mapDoctorateProblemSummary } from "@/lib/doctorate-problems";
+import type { DoctorateProblemSummary } from "@/types/doctorate-problem";
+import DoctorateExamsExplorer from "@/components/doctorate/DoctorateExamsExplorer";
+import { getSessionUser } from "@/lib/auth";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: 'Doctorate Exam Archive — Algeria',
+  title: "Doctorate Exam Archive — Algeria",
   description:
-    'Past mathematics doctorate (PhD) entrance exams in Algeria — general and specialist exams from previous years, with complete professional solutions.',
+    "Past mathematics doctorate (PhD) entrance exams in Algeria — general and specialist exams from previous years, with complete professional solutions.",
 };
 
 async function getProblems(): Promise<DoctorateProblemSummary[]> {
@@ -19,7 +20,7 @@ async function getProblems(): Promise<DoctorateProblemSummary[]> {
     const problems = await DoctorateProblem.find({ published: true })
       .sort({ year: -1, problemNumber: 1, createdAt: -1 })
       .select(
-        'title slug examId examType specialty year university difficulty tags solution problemNumber createdAt',
+        "title slug examId examType specialty year university difficulty tags solution problemNumber createdAt",
       )
       .lean();
     return problems.map(mapDoctorateProblemSummary);
@@ -29,6 +30,11 @@ async function getProblems(): Promise<DoctorateProblemSummary[]> {
 }
 
 export default async function DoctorateExamsPage() {
-  const problems = await getProblems();
-  return <DoctorateExamsExplorer problems={problems} />;
+  const [problems, user] = await Promise.all([getProblems(), getSessionUser()]);
+  return (
+    <DoctorateExamsExplorer
+      problems={problems}
+      isAuthenticated={Boolean(user)}
+    />
+  );
 }
