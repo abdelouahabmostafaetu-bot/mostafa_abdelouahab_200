@@ -1,48 +1,86 @@
-import React from 'react';
-import SiteIcon, { type SiteIconName } from '@/components/ui/SiteIcon';
+import Link from 'next/link';
+import { GraduationCap, BookOpen, MapPin, ArrowRight, FileText } from 'lucide-react';
 
 const profileFacts = [
-  { label: 'Institution', value: 'University of Mila', icon: 'research' },
-  { label: 'Department', value: 'Fundamental Mathematics', icon: 'math' },
-  { label: 'Location', value: 'Mila, Algeria', icon: 'home' },
-] satisfies Array<{ label: string; value: string; icon: SiteIconName }>;
+  { label: 'Institution', value: 'University of Mila', Icon: GraduationCap },
+  { label: 'Department', value: 'Fundamental Mathematics', Icon: BookOpen },
+  { label: 'Location', value: 'Mila, Algeria', Icon: MapPin },
+] as const;
 
 export default function ProfileSection() {
   return (
-    <section className="py-10 md:py-20 border-b border-[var(--color-border)]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6">
-        <div className="text-center md:text-left">
-          <p className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-accent)] md:mb-3 md:gap-2 md:text-xs md:tracking-[0.2em]">
-            <SiteIcon name="document" alt="" className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            Curriculum Vitae
-          </p>
-          <h1
-            className="mb-3 text-[clamp(1.75rem,9vw,2.25rem)] font-bold text-[var(--color-text)] md:mb-6 md:text-5xl"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
-            Abdelouahab Mostafa
-          </h1>
-          <p className="mx-auto line-clamp-2 max-w-2xl text-[13px] leading-5 text-[var(--color-text-secondary)] md:mx-0 md:line-clamp-none md:text-lg md:leading-relaxed">
-            Master&apos;s student in fundamental mathematics, interested in analysis and topology.
-          </p>
+    <section className="mx-auto w-full max-w-3xl px-5 pt-16 pb-10 md:pt-24 md:pb-14">
+      {/* Eyebrow */}
+      <p className="mb-5 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+        Mathematics Researcher
+      </p>
 
-          <div className="mt-6 border-t border-[var(--color-border)] pt-5 md:mt-10 md:pt-8">
-            <div className="grid grid-cols-3 gap-3 text-left md:gap-8">
-              {profileFacts.map((item) => (
-                <div key={item.label}>
-                  <p className="inline-flex items-center gap-1 text-[8px] font-medium uppercase tracking-[0.12em] text-[var(--color-text-tertiary)] md:gap-2 md:text-[10px] md:tracking-[0.2em]">
-                    <SiteIcon name={item.icon} alt="" className="h-3 w-3 md:h-3.5 md:w-3.5" />
-                    {item.label}
-                  </p>
-                  <p className="mt-1 text-[11px] font-medium leading-4 text-[var(--color-text)] md:mt-1.5 md:text-base md:leading-normal">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* Name */}
+      <h1
+        className="font-normal text-[var(--color-text)]"
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 'clamp(2.4rem, 7vw, 3.6rem)',
+          lineHeight: 1.05,
+          letterSpacing: '-0.02em',
+        }}
+      >
+        Abdelouahab Mostafa
+      </h1>
+
+      {/* Lede */}
+      <p
+        className="mt-6 max-w-[52ch] text-[var(--color-text-secondary)]"
+        style={{ fontSize: '1.075rem', lineHeight: 1.7 }}
+      >
+        Master&rsquo;s student in fundamental mathematics, interested in analysis
+        and topology. I keep notes, work through problems, and write about the
+        ideas I find beautiful.
+      </p>
+
+      {/* Actions */}
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <Link
+          href="/cv"
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-200"
+          style={{
+            background: 'var(--color-accent)',
+            color: 'var(--color-bg)',
+          }}
+        >
+          <FileText size={16} />
+          Curriculum Vitae
+        </Link>
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-medium text-[var(--color-text)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          Read the blog
+          <ArrowRight size={15} />
+        </Link>
       </div>
+
+      {/* Facts */}
+      <dl className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-xl border sm:grid-cols-3"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-border)' }}
+      >
+        {profileFacts.map(({ label, value, Icon }) => (
+          <div
+            key={label}
+            className="flex flex-col gap-2 p-5"
+            style={{ background: 'var(--color-bg-elevated)' }}
+          >
+            <div className="flex items-center gap-2">
+              <Icon size={15} style={{ color: 'var(--color-accent)' }} />
+              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-tertiary)]">
+                {label}
+              </dt>
+            </div>
+            <dd className="text-[0.95rem] text-[var(--color-text)]">{value}</dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }
