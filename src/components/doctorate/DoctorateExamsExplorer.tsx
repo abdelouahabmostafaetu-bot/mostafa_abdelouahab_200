@@ -4,17 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Download,
   GraduationCap,
+  Lock,
   Search,
   X,
-  Lock,
-  Building2,
-  CalendarDays,
-  Layers,
-  CheckCircle2,
-  FileText,
-  SlidersHorizontal,
 } from "lucide-react";
 import {
   EXAM_TYPE_LABELS,
@@ -25,82 +21,47 @@ import {
 type Props = { problems: DoctorateProblemSummary[]; isAuthenticated?: boolean };
 
 type ExamGroup = {
-  key: string; // route key: examId (e.g. "3") or legacy "${year}-${examType}"
+  key: string;
   year: number;
   examType: DoctorateExamType;
   university: string;
   specialty: string;
-  problemCount: number;
-  solutionCount: number;
-  tags: string[];
 };
 
-type SortMode = "newest" | "oldest";
+const EXAMS_PER_PAGE = 6;
 
 const selectClass =
-  "w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-xs " +
+  "h-11 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm " +
   "text-[var(--color-text-secondary)] outline-none transition-colors focus:border-[var(--color-accent)]";
 
 function ExamTypeBadge({ type }: { type: DoctorateExamType }) {
-  const isGeneral = type === "general";
   return (
-    <span
-      className="inline-flex items-center rounded-md border px-2 py-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.08em]"
-      style={
-        isGeneral
-          ? {
-              borderColor: "color-mix(in oklab, var(--color-accent) 40%, transparent)",
-              background: "color-mix(in oklab, var(--color-accent) 12%, transparent)",
-              color: "var(--color-accent)",
-            }
-          : {
-              borderColor: "rgba(56, 189, 248, 0.4)",
-              background: "rgba(56, 189, 248, 0.12)",
-              color: "rgb(125, 211, 252)",
-            }
-      }
-    >
+    <span className="rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-tertiary)]">
       {EXAM_TYPE_LABELS[type]}
     </span>
   );
 }
 
-function StatCell({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string | number;
-  label: string;
-}) {
-  return (
-    <div
-      className="flex flex-col gap-1.5 p-4 md:p-5"
-      style={{ background: "var(--color-bg-elevated)" }}
-    >
-      <div className="flex items-center gap-2 text-[var(--color-accent)]">
-        {icon}
-        <span
-          className="text-2xl font-normal text-[var(--color-text)] md:text-[1.7rem]"
-          style={{ fontFamily: "var(--font-serif)", fontVariantNumeric: "tabular-nums" }}
-        >
-          {value}
-        </span>
-      </div>
-      <span className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-tertiary)]">
-        {label}
-      </span>
-    </div>
-  );
+function compactPages(currentPage: number, totalPages: number) {
+  const pages: Array<number | "dots"> = [];
+  for (let page = 1; page <= totalPages; page += 1) {
+    const shouldShow =
+      page === 1 ||
+      page === totalPages ||
+      Math.abs(page - currentPage) <= 1;
+
+    if (shouldShow) {
+      pages.push(page);
+    } else if (pages[pages.length - 1] !== "dots") {
+      pages.push("dots");
+    }
+  }
+  return pages;
 }
 
 /**
- * DoctorateExamsExplorer — a browsable archive of past doctorate entrance
- * exams. Search, live stats, and year-grouped timeline are all derived from
- * the `problems` prop on the client; no data fetching or DB access happens
- * here. Each exam links to its full view and (for signed-in users) a printable
- * PDF, using the same routes as before.
+ * DoctorateExamsExplorer — simple public archive browser.
+ * Data comes from the server prop only. No database calls happen here.
  */
 export default function DoctorateExamsExplorer({
   problems,
@@ -113,14 +74,10 @@ export default function DoctorateExamsExplorer({
       const groupKey = hasId ? `id-${p.examId}` : `${p.year}-${p.examType}`;
       const routeKey = hasId ? String(p.examId) : `${p.year}-${p.examType}`;
       const existing = map.get(groupKey);
+
       if (existing) {
-        existing.problemCount += 1;
-        if (p.hasSolution) existing.solutionCount += 1;
         if (!existing.university && p.university) existing.university = p.university;
         if (!existing.specialty && p.specialty) existing.specialty = p.specialty;
-        for (const t of p.tags ?? []) {
-          if (t && !existing.tags.includes(t)) existing.tags.push(t);
-        }
       } else {
         map.set(groupKey, {
           key: routeKey,
@@ -128,165 +85,113 @@ export default function DoctorateExamsExplorer({
           examType: p.examType,
           university: p.university,
           specialty: p.specialty,
-          problemCount: 1,
-          solutionCount: p.hasSolution ? 1 : 0,
-          tags: [...(p.tags ?? [])].filter(Boolean),
         });
       }
     }
-    return [...map.values()];
+
+    return [...map.values()].sort(
+      (a, b) => b.year - a.year || a.examType.localeCompare(b.examType),
+    );
   }, [problems]);
 
   const [query, setQuery] = useState("");
   const [examType, setExamType] = useState<"all" | DoctorateExamType>("all");
-  const [year, setYear] = useState<string>("all");
-  const [university, setUniversity] = useState<string>("all");
-  const [specialty, setSpecialty] = useState<string>("all");
-  const [sort, setSort] = useState<SortMode>("newest");
+  const [year, setYear] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const years = useMemo(
     () => [...new Set(exams.map((e) => e.year))].sort((a, b) => b - a),
     [exams],
   );
-  const universities = useMemo(
-    () =>
-      [...new Set(exams.map((e) => e.university).filter(Boolean))].sort((a, b) =>
-        a.localeCompare(b),
-      ),
-    [exams],
-  );
-  const specialties = useMemo(
-    () =>
-      [...new Set(exams.map((e) => e.specialty).filter(Boolean))].sort((a, b) =>
-        a.localeCompare(b),
-      ),
-    [exams],
-  );
-
-  const stats = useMemo(() => {
-    const totalProblems = exams.reduce((sum, e) => sum + e.problemCount, 0);
-    return {
-      exams: exams.length,
-      problems: totalProblems,
-      years: years.length,
-      universities: universities.length,
-    };
-  }, [exams, years, universities]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const result = exams.filter((e) => {
+    return exams.filter((e) => {
       if (examType !== "all" && e.examType !== examType) return false;
       if (year !== "all" && String(e.year) !== year) return false;
-      if (university !== "all" && e.university !== university) return false;
-      if (specialty !== "all" && e.specialty !== specialty) return false;
-      if (q) {
-        const haystack = [
-          e.specialty,
-          e.university,
-          String(e.year),
-          EXAM_TYPE_LABELS[e.examType],
-          ...e.tags,
-        ]
-          .join(" ")
-          .toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
-      return true;
+      if (!q) return true;
+
+      return [e.specialty, e.university, String(e.year), EXAM_TYPE_LABELS[e.examType]]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
     });
-    result.sort((a, b) =>
-      sort === "newest"
-        ? b.year - a.year || a.examType.localeCompare(b.examType)
-        : a.year - b.year || a.examType.localeCompare(b.examType),
-    );
-    return result;
-  }, [exams, examType, year, university, specialty, query, sort]);
+  }, [exams, examType, year, query]);
 
-  const grouped = useMemo(() => {
-    const map = new Map<number, ExamGroup[]>();
-    for (const e of filtered) {
-      const bucket = map.get(e.year);
-      if (bucket) bucket.push(e);
-      else map.set(e.year, [e]);
-    }
-    return [...map.entries()].sort(([a], [b]) =>
-      sort === "newest" ? b - a : a - b,
-    );
-  }, [filtered, sort]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / EXAMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const visibleExams = filtered.slice(
+    (safePage - 1) * EXAMS_PER_PAGE,
+    safePage * EXAMS_PER_PAGE,
+  );
+  const pages = compactPages(safePage, totalPages);
 
-  const activeFilters =
-    (examType !== "all" ? 1 : 0) +
-    (year !== "all" ? 1 : 0) +
-    (university !== "all" ? 1 : 0) +
-    (specialty !== "all" ? 1 : 0) +
-    (query.trim() ? 1 : 0);
+  const resetToFirstPage = () => setCurrentPage(1);
 
-  const clearAll = () => {
+  const clearFilters = () => {
     setQuery("");
     setExamType("all");
     setYear("all");
-    setUniversity("all");
-    setSpecialty("all");
+    setCurrentPage(1);
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-5 pb-24">
-      {/* ── Header ── */}
-      <header className="pt-14 pb-8 md:pt-20">
+    <main className="mx-auto w-full max-w-3xl px-5 pb-24 pt-14 md:pt-20">
+      {/* Header */}
+      <header className="mb-10">
         <div className="mb-4 flex items-center gap-2 text-[var(--color-accent)]">
           <GraduationCap size={18} />
-          <span className="text-[0.7rem] font-semibold uppercase tracking-[0.22em]">
-            Doctorate Entrance Exams — Algeria
+          <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em]">
+            Doctorate Entrance Exams
           </span>
         </div>
+
         <h1
           className="font-normal text-[var(--color-text)]"
           style={{
             fontFamily: "var(--font-serif)",
-            fontSize: "clamp(2.1rem, 6vw, 3.1rem)",
-            lineHeight: 1.05,
+            fontSize: "clamp(2rem, 6vw, 3rem)",
+            lineHeight: 1.06,
             letterSpacing: "-0.02em",
           }}
         >
-          Exam Archive
+          Browse exams simply.
         </h1>
+
         <p className="mt-5 max-w-[58ch] text-[var(--color-text-secondary)]" style={{ lineHeight: 1.7 }}>
-          Past mathematics doctorate (PhD) entrance exams from Algerian
-          universities: general and specialist papers from previous years, each
-          with complete, professionally written solutions.
+          Choose a year or exam type, search by university or specialty, then open the full exam. Results are paginated so the page stays easy to read on phone and computer.
         </p>
       </header>
 
-      {/* ── Live stats ── */}
-      <div
-        className="mb-10 grid grid-cols-2 gap-px overflow-hidden rounded-xl border md:grid-cols-4"
-        style={{ borderColor: "var(--color-border)", background: "var(--color-border)" }}
+      {/* Controls */}
+      <section
+        className="mb-8 rounded-xl border p-4 md:p-5"
+        style={{ borderColor: "var(--color-border)", background: "var(--color-bg-elevated)" }}
+        aria-label="Exam filters"
       >
-        <StatCell icon={<FileText size={16} />} value={stats.exams} label="Exams" />
-        <StatCell icon={<Layers size={16} />} value={stats.problems} label="Problems" />
-        <StatCell icon={<CalendarDays size={16} />} value={stats.years} label="Years" />
-        <StatCell icon={<Building2 size={16} />} value={stats.universities} label="Universities" />
-      </div>
-
-      {/* ── Search + sort ── */}
-      <div className="mb-3 flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
+        <div className="relative mb-3">
           <Search
             size={16}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
           />
           <input
-            type="text"
+            type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by specialty, university, year, or topic"
+            onChange={(e) => {
+              setQuery(e.target.value);
+              resetToFirstPage();
+            }}
+            placeholder="Search university, specialty, or year"
             aria-label="Search exams"
-            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] py-2.5 pl-9 pr-9 text-sm text-[var(--color-text)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)]"
+            className="h-11 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] pl-9 pr-9 text-sm text-[var(--color-text)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)]"
           />
           {query ? (
             <button
               type="button"
-              onClick={() => setQuery("")}
+              onClick={() => {
+                setQuery("");
+                resetToFirstPage();
+              }}
               aria-label="Clear search"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text)]"
             >
@@ -294,210 +199,195 @@ export default function DoctorateExamsExplorer({
             </button>
           ) : null}
         </div>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortMode)}
-          aria-label="Sort exams"
-          className={"sm:w-44 " + selectClass}
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-        </select>
-      </div>
 
-      {/* ── Filters ── */}
-      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3">
-        <select
-          value={examType}
-          onChange={(e) => setExamType(e.target.value as "all" | DoctorateExamType)}
-          className={selectClass}
-          aria-label="Filter by exam type"
-        >
-          <option value="all">All exam types</option>
-          <option value="general">General Exam</option>
-          <option value="specialist">Specialist Exam</option>
-        </select>
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className={selectClass}
-          aria-label="Filter by year"
-        >
-          <option value="all">All years</option>
-          {years.map((y) => (
-            <option key={y} value={String(y)}>
-              {y}
-            </option>
-          ))}
-        </select>
-        <select
-          value={university}
-          onChange={(e) => setUniversity(e.target.value)}
-          className={selectClass}
-          aria-label="Filter by university"
-        >
-          <option value="all">All universities</option>
-          {universities.map((u) => (
-            <option key={u} value={u}>
-              {u}
-            </option>
-          ))}
-        </select>
-        <select
-          value={specialty}
-          onChange={(e) => setSpecialty(e.target.value)}
-          className={"md:col-span-3 " + selectClass}
-          aria-label="Filter by specialty"
-        >
-          <option value="all">All specialties</option>
-          {specialties.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+          <select
+            value={examType}
+            onChange={(e) => {
+              setExamType(e.target.value as "all" | DoctorateExamType);
+              resetToFirstPage();
+            }}
+            className={selectClass}
+            aria-label="Filter by exam type"
+          >
+            <option value="all">All exam types</option>
+            <option value="general">General Exam</option>
+            <option value="specialist">Specialist Exam</option>
+          </select>
 
-      {/* ── Active filter summary ── */}
-      <div className="mt-4 flex items-center justify-between">
-        <p className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
-          <SlidersHorizontal size={13} />
-          Showing {filtered.length} of {exams.length} exam{exams.length !== 1 ? "s" : ""}
-        </p>
-        {activeFilters > 0 ? (
+          <select
+            value={year}
+            onChange={(e) => {
+              setYear(e.target.value);
+              resetToFirstPage();
+            }}
+            className={selectClass}
+            aria-label="Filter by year"
+          >
+            <option value="all">All years</option>
+            {years.map((y) => (
+              <option key={y} value={String(y)}>
+                {y}
+              </option>
+            ))}
+          </select>
+
           <button
             type="button"
-            onClick={clearAll}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-accent)] transition-colors hover:text-[var(--color-accent-hover)]"
+            onClick={clearFilters}
+            className="h-11 rounded-lg border px-4 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            style={{ borderColor: "var(--color-border)" }}
           >
-            <X size={13} />
-            Clear filters ({activeFilters})
+            Clear
           </button>
-        ) : null}
-      </div>
+        </div>
+      </section>
 
-      {/* ── Results ── */}
-      {filtered.length === 0 ? (
-        <div
-          className="mt-10 rounded-xl border border-dashed px-6 py-16 text-center"
+      {/* Results */}
+      {visibleExams.length === 0 ? (
+        <section
+          className="rounded-xl border border-dashed px-6 py-14 text-center"
           style={{ borderColor: "var(--color-border)" }}
         >
           <p className="text-[var(--color-text)]" style={{ fontFamily: "var(--font-serif)", fontSize: "1.25rem" }}>
-            {exams.length === 0
-              ? "The archive is being prepared"
-              : "No exams match your filters"}
+            No exams found.
           </p>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            {exams.length === 0
-              ? "Past exams and solutions will appear here soon."
-              : "Try a different search or clear the filters."}
+            Try a different search or clear the filters.
           </p>
-        </div>
+        </section>
       ) : (
-        <div className="mt-10 space-y-12">
-          {grouped.map(([groupYear, groupExams]) => (
-            <section key={groupYear}>
-              {/* Year heading */}
-              <div className="mb-5 flex items-baseline gap-3">
-                <h2
-                  className="font-normal text-[var(--color-text)]"
-                  style={{ fontFamily: "var(--font-serif)", fontSize: "1.6rem", fontVariantNumeric: "tabular-nums" }}
-                >
-                  {groupYear}
-                </h2>
-                <span className="h-px flex-1" style={{ background: "var(--color-border)" }} />
-                <span className="text-xs text-[var(--color-text-tertiary)]">
-                  {groupExams.length} exam{groupExams.length !== 1 ? "s" : ""}
-                </span>
-              </div>
+        <section className="space-y-3" aria-label="Exam list">
+          {visibleExams.map((exam) => (
+            <article
+              key={exam.key}
+              className="rounded-xl border p-5 transition-colors hover:border-[var(--color-accent)]"
+              style={{ borderColor: "var(--color-border)", background: "var(--color-bg-elevated)" }}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <span
+                      className="text-[var(--color-text)]"
+                      style={{ fontFamily: "var(--font-serif)", fontSize: "1.15rem", fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {exam.year}
+                    </span>
+                    <ExamTypeBadge type={exam.examType} />
+                  </div>
 
-              {/* Exam rows */}
-              <div className="space-y-3">
-                {groupExams.map((e) => (
-                  <article
-                    key={e.key}
-                    className="group rounded-xl border p-5 transition-colors duration-200 hover:border-[var(--color-accent)] md:p-6"
-                    style={{ borderColor: "var(--color-border)", background: "var(--color-bg-elevated)" }}
+                  <h2 className="text-base font-medium text-[var(--color-text)]">
+                    {exam.specialty || "Mathematics"}
+                  </h2>
+                  {exam.university ? (
+                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                      {exam.university}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="flex shrink-0 gap-2">
+                  <Link
+                    href={`/doctorate-exams/exam/${exam.key}`}
+                    className="inline-flex h-10 items-center gap-1.5 rounded-lg px-3.5 text-sm font-medium transition-colors"
+                    style={{ background: "var(--color-accent)", color: "var(--color-bg)" }}
                   >
-                    <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                      {/* Info */}
-                      <div className="min-w-0">
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <ExamTypeBadge type={e.examType} />
-                          {e.specialty ? (
-                            <span
-                              className="text-[var(--color-text)]"
-                              style={{ fontFamily: "var(--font-serif)", fontSize: "1.1rem" }}
-                            >
-                              {e.specialty}
-                            </span>
-                          ) : null}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[var(--color-text-secondary)]">
-                          {e.university ? (
-                            <span className="inline-flex items-center gap-1.5">
-                              <Building2 size={13} className="text-[var(--color-text-tertiary)]" />
-                              {e.university}
-                            </span>
-                          ) : null}
-                          <span className="inline-flex items-center gap-1.5">
-                            <Layers size={13} className="text-[var(--color-text-tertiary)]" />
-                            {e.problemCount} problem{e.problemCount !== 1 ? "s" : ""}
-                          </span>
-                          <span className="inline-flex items-center gap-1.5">
-                            <CheckCircle2
-                              size={13}
-                              className={
-                                e.solutionCount > 0
-                                  ? "text-[var(--color-accent)]"
-                                  : "text-[var(--color-text-tertiary)]"
-                              }
-                            />
-                            {e.solutionCount}/{e.problemCount} solved
-                          </span>
-                        </div>
-                      </div>
+                    Open
+                    <ArrowRight size={15} />
+                  </Link>
 
-                      {/* Actions */}
-                      <div className="flex shrink-0 items-center gap-2.5">
-                        <Link
-                          href={`/doctorate-exams/exam/${e.key}`}
-                          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-200"
-                          style={{ background: "var(--color-accent)", color: "var(--color-bg)" }}
-                        >
-                          View Full Exam
-                          <ArrowRight size={15} />
-                        </Link>
-                        {isAuthenticated ? (
-                          <Link
-                            href={`/doctorate-exams/download/${e.key}`}
-                            className="inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                            style={{ borderColor: "var(--color-border)" }}
-                            aria-label="Download exam as PDF"
-                          >
-                            <Download size={15} />
-                            <span className="hidden sm:inline">PDF</span>
-                          </Link>
-                        ) : (
-                          <Link
-                            href="/sign-in"
-                            className="inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2.5 text-sm font-medium text-[var(--color-text-tertiary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                            style={{ borderColor: "var(--color-border)" }}
-                            aria-label="Sign in to download"
-                          >
-                            <Lock size={14} />
-                            <span className="hidden sm:inline">PDF</span>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                ))}
+                  {isAuthenticated ? (
+                    <Link
+                      href={`/doctorate-exams/download/${exam.key}`}
+                      className="inline-flex h-10 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                      style={{ borderColor: "var(--color-border)" }}
+                      aria-label="Download exam PDF"
+                    >
+                      <Download size={15} />
+                      PDF
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/sign-in"
+                      className="inline-flex h-10 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                      style={{ borderColor: "var(--color-border)" }}
+                      aria-label="Sign in to download PDF"
+                    >
+                      <Lock size={14} />
+                      PDF
+                    </Link>
+                  )}
+                </div>
               </div>
-            </section>
+            </article>
           ))}
-        </div>
+        </section>
       )}
-    </div>
+
+      {/* Pagination */}
+      {filtered.length > EXAMS_PER_PAGE ? (
+        <nav className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between" aria-label="Exam pagination">
+          <p className="text-sm text-[var(--color-text-tertiary)]">
+            Page {safePage} of {totalPages}
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={safePage === 1}
+              className="inline-flex h-10 items-center gap-1 rounded-lg border px-3 text-sm text-[var(--color-text-secondary)] transition-colors disabled:opacity-40"
+              style={{ borderColor: "var(--color-border)" }}
+            >
+              <ChevronLeft size={15} />
+              Previous
+            </button>
+
+            <div className="hidden items-center gap-1 sm:flex">
+              {pages.map((page, index) =>
+                page === "dots" ? (
+                  <span key={`dots-${index}`} className="px-2 text-sm text-[var(--color-text-tertiary)]">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className="h-10 min-w-10 rounded-lg border px-3 text-sm font-medium transition-colors"
+                    style={
+                      page === safePage
+                        ? {
+                            borderColor: "var(--color-accent)",
+                            background: "var(--color-accent)",
+                            color: "var(--color-bg)",
+                          }
+                        : {
+                            borderColor: "var(--color-border)",
+                            color: "var(--color-text-secondary)",
+                          }
+                    }
+                    aria-current={page === safePage ? "page" : undefined}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              disabled={safePage === totalPages}
+              className="inline-flex h-10 items-center gap-1 rounded-lg border px-3 text-sm text-[var(--color-text-secondary)] transition-colors disabled:opacity-40"
+              style={{ borderColor: "var(--color-border)" }}
+            >
+              Next
+              <ChevronRight size={15} />
+            </button>
+          </div>
+        </nav>
+      ) : null}
+    </main>
   );
 }
