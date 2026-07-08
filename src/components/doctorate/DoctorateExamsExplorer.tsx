@@ -9,8 +9,6 @@ import {
   Download,
   GraduationCap,
   Lock,
-  Search,
-  X,
 } from "lucide-react";
 import {
   EXAM_TYPE_LABELS,
@@ -94,7 +92,6 @@ export default function DoctorateExamsExplorer({
     );
   }, [problems]);
 
-  const [query, setQuery] = useState("");
   const [examType, setExamType] = useState<"all" | DoctorateExamType>("all");
   const [year, setYear] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -105,18 +102,12 @@ export default function DoctorateExamsExplorer({
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
     return exams.filter((e) => {
       if (examType !== "all" && e.examType !== examType) return false;
       if (year !== "all" && String(e.year) !== year) return false;
-      if (!q) return true;
-
-      return [e.specialty, e.university, String(e.year), EXAM_TYPE_LABELS[e.examType]]
-        .join(" ")
-        .toLowerCase()
-        .includes(q);
+      return true;
     });
-  }, [exams, examType, year, query]);
+  }, [exams, examType, year]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / EXAMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
@@ -129,7 +120,6 @@ export default function DoctorateExamsExplorer({
   const resetToFirstPage = () => setCurrentPage(1);
 
   const clearFilters = () => {
-    setQuery("");
     setExamType("all");
     setYear("all");
     setCurrentPage(1);
@@ -138,29 +128,13 @@ export default function DoctorateExamsExplorer({
   return (
     <main className="mx-auto w-full max-w-3xl px-5 pb-24 pt-14 md:pt-20">
       {/* Header */}
-      <header className="mb-10">
-        <div className="mb-4 flex items-center gap-2 text-[var(--color-accent)]">
+      <header className="mb-8">
+        <div className="flex items-center gap-2 text-[var(--color-accent)]">
           <GraduationCap size={18} />
           <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em]">
             Doctorate Entrance Exams
           </span>
         </div>
-
-        <h1
-          className="font-normal text-[var(--color-text)]"
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: "clamp(2rem, 6vw, 3rem)",
-            lineHeight: 1.06,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Browse exams simply.
-        </h1>
-
-        <p className="mt-5 max-w-[58ch] text-[var(--color-text-secondary)]" style={{ lineHeight: 1.7 }}>
-          Choose a year or exam type, search by university or specialty, then open the full exam. Results are paginated so the page stays easy to read on phone and computer.
-        </p>
       </header>
 
       {/* Controls */}
@@ -169,37 +143,6 @@ export default function DoctorateExamsExplorer({
         style={{ borderColor: "var(--color-border)", background: "var(--color-bg-elevated)" }}
         aria-label="Exam filters"
       >
-        <div className="relative mb-3">
-          <Search
-            size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-          />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              resetToFirstPage();
-            }}
-            placeholder="Search university, specialty, or year"
-            aria-label="Search exams"
-            className="h-11 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] pl-9 pr-9 text-sm text-[var(--color-text)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)]"
-          />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                resetToFirstPage();
-              }}
-              aria-label="Clear search"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text)]"
-            >
-              <X size={15} />
-            </button>
-          ) : null}
-        </div>
-
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
           <select
             value={examType}
@@ -253,7 +196,7 @@ export default function DoctorateExamsExplorer({
             No exams found.
           </p>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            Try a different search or clear the filters.
+            Try a different year or exam type.
           </p>
         </section>
       ) : (
