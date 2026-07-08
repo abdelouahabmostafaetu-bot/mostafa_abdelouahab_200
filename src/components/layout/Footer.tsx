@@ -1,70 +1,106 @@
-import Link from "next/link";
-import { Mail } from "lucide-react";
-import SiteIcon from "@/components/ui/SiteIcon";
+import Link from 'next/link';
+import { Mail, Github } from 'lucide-react';
+
+const siteLinks = [
+  { href: '/blog', label: 'Blog' },
+  { href: '/notes', label: 'My Notes' },
+  { href: '/problems-with-coffee', label: 'Problems' },
+  { href: '/library', label: 'My Library' },
+];
+
+const aboutLinks = [
+  { href: '/cv', label: 'Curriculum Vitae' },
+  { href: '/contact', label: 'Contact' },
+];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-[var(--color-border)] bg-[var(--color-bg)]">
-      <div className="max-w-5xl mx-auto px-4 py-7 sm:px-6 sm:py-12">
-        <div className="flex flex-col gap-5 sm:gap-8 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-[var(--color-text)] mb-1.5 tracking-tight sm:text-base sm:mb-2">
+    <footer
+      className="mt-24 border-t"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-muted)' }}
+    >
+      <div className="mx-auto w-full max-w-5xl px-5 py-14">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
+          {/* Identity */}
+          <div className="md:col-span-2">
+            <p
+              className="text-[var(--color-text)]"
+              style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem' }}
+            >
               Abdelouahab Mostafa
             </p>
-            <p className="max-w-sm text-xs leading-5 text-[var(--color-text-secondary)] sm:text-sm sm:leading-6">
+            <p className="mt-3 max-w-[38ch] text-sm leading-relaxed text-[var(--color-text-secondary)]">
               Notes, articles, and research-oriented writing in mathematics from
               Mila, Algeria.
             </p>
+            <div className="mt-5 flex items-center gap-3">
+              <a
+                href="https://github.com/abdelouahabmostafaetu-bot"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                style={{ borderColor: 'var(--color-border)' }}
+              >
+                <Github size={17} />
+              </a>
+              <a
+                href="mailto:mostafaabdelouahab.etu@centre-univ-mila.dz"
+                aria-label="Email"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                style={{ borderColor: 'var(--color-border)' }}
+              >
+                <Mail size={17} />
+              </a>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-3 sm:text-sm">
-            <Link
-              href="/blog"
-              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/cv"
-              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
-            >
-              CV
-            </Link>
-            <Link
-              href="/contact"
-              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors duration-200"
-            >
-              Contact
-            </Link>
-            <a
-              href="mailto:mostafaabdelouahab.etu@centre-univ-mila.dz"
-              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-2.5 py-1.5 text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] sm:gap-2 sm:rounded-lg sm:px-3 sm:py-2"
-              aria-label="Email"
-            >
-              <Mail size={15} />
-              Email
-            </a>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-2.5 py-1.5 text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] sm:gap-2 sm:rounded-lg sm:px-3 sm:py-2"
-              aria-label="GitHub"
-            >
-              <SiteIcon
-                name="github"
-                alt=""
-                className="h-3.5 w-3.5 sm:h-4 sm:w-4"
-              />
-              GitHub
-            </a>
+          {/* Explore */}
+          <div>
+            <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
+              Explore
+            </p>
+            <ul className="space-y-2.5">
+              {siteLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-[var(--color-text-secondary)] transition-colors duration-150 hover:text-[var(--color-accent)]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* About */}
+          <div>
+            <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
+              About
+            </p>
+            <ul className="space-y-2.5">
+              {aboutLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-[var(--color-text-secondary)] transition-colors duration-150 hover:text-[var(--color-accent)]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        <div className="mt-5 pt-4 border-t border-[var(--color-border)] flex flex-col gap-2 text-[11px] text-[var(--color-text-tertiary)] sm:mt-8 sm:pt-6 sm:gap-3 sm:text-xs sm:flex-row sm:items-center sm:justify-between">
-          <span>&copy; {currentYear} Abdelouahab Mostafa</span>
+        <div
+          className="mt-12 border-t pt-6 text-sm text-[var(--color-text-tertiary)]"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          &copy; {currentYear} Abdelouahab Mostafa
         </div>
       </div>
     </footer>
