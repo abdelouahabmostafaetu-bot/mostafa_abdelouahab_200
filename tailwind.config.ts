@@ -10,6 +10,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // ---- Semantic tokens (resolve to CSS variables in globals.css) ----
+        bg: {
+          DEFAULT: 'var(--bg)',
+          subtle: 'var(--bg-subtle)',
+        },
+        surface: {
+          DEFAULT: 'var(--surface)',
+          raised: 'var(--surface-raised)',
+          // dark ramp (replaces the old light-slate scale)
+          50: '#191410',
+          100: '#1d1712',
+          200: '#241d16',
+          300: '#2f2720',
+        },
+        border: {
+          DEFAULT: 'var(--border)',
+          strong: 'var(--border-strong)',
+        },
+        content: {
+          DEFAULT: 'var(--text)',
+          muted: 'var(--text-muted)',
+          subtle: 'var(--text-subtle)',
+        },
+        // ---- Primary (warm neutral) ramp ----
         primary: {
           50: '#f7f4ef',
           100: '#eae4da',
@@ -22,23 +46,22 @@ const config: Config = {
           800: '#211b16',
           900: '#161311',
         },
+        // ---- Accent (gold) ramp — unified around #c9a45c ----
         accent: {
-          50: '#fdf6e9',
-          100: '#f8e8c8',
-          200: '#f0d49b',
-          300: '#e7bf6f',
-          400: '#e0b05a',
-          500: '#d9a24a',
-          600: '#c08a35',
-          700: '#9e6f28',
-          800: '#7c561f',
-          900: '#5e4118',
-        },
-        surface: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
+          DEFAULT: 'var(--accent)',
+          hover: 'var(--accent-hover)',
+          strong: 'var(--accent-strong)',
+          muted: 'var(--accent-muted)',
+          50: '#faf3e4',
+          100: '#f2e3c2',
+          200: '#e7cd93',
+          300: '#d9b56d',
+          400: '#c9a45c',
+          500: '#bd9550',
+          600: '#a9843f',
+          700: '#8a6a32',
+          800: '#6b5127',
+          900: '#4d3a1c',
         },
       },
       fontFamily: {
@@ -51,8 +74,18 @@ const config: Config = {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }],
       },
       borderRadius: {
-        'xl': '0.75rem',
+        xl: '0.75rem',
         '2xl': '1rem',
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
+        raised: 'var(--shadow-raised)',
+        soft: 'var(--shadow-sm)',
+      },
+      maxWidth: {
+        reading: 'var(--content-narrow)',
+        content: 'var(--content)',
+        wide: 'var(--content-wide)',
       },
       transitionDuration: {
         '250': '250ms',
@@ -63,7 +96,7 @@ const config: Config = {
             maxWidth: '75ch',
             color: 'var(--tw-prose-body)',
             a: {
-              color: '#d9a24a',
+              color: 'var(--accent)',
               textDecoration: 'underline',
               fontWeight: '500',
             },
