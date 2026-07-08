@@ -9,6 +9,7 @@ import {
   Download,
   GraduationCap,
   Lock,
+  SearchX,
 } from "lucide-react";
 import {
   EXAM_TYPE_LABELS,
@@ -29,12 +30,21 @@ type ExamGroup = {
 const EXAMS_PER_PAGE = 6;
 
 const selectClass =
-  "h-11 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm " +
-  "text-[var(--color-text-secondary)] outline-none transition-colors focus:border-[var(--color-accent)]";
+  "h-11 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm " +
+  "text-[var(--text-muted)] outline-none transition-colors duration-150 motion-reduce:transition-none " +
+  "hover:border-[var(--border-strong)] focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:w-auto";
 
+/** Color-coded tag using accent variants only. */
 function ExamTypeBadge({ type }: { type: DoctorateExamType }) {
+  const isGeneral = type === "general";
   return (
-    <span className="rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-tertiary)]">
+    <span
+      className={`inline-flex items-center rounded-[var(--radius-full)] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.08em] ${
+        isGeneral
+          ? "bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/30"
+          : "bg-[var(--surface-raised)] text-[var(--accent-strong)] ring-1 ring-inset ring-[var(--border-strong)]"
+      }`}
+    >
       {EXAM_TYPE_LABELS[type]}
     </span>
   );
@@ -44,9 +54,7 @@ function compactPages(currentPage: number, totalPages: number) {
   const pages: Array<number | "dots"> = [];
   for (let page = 1; page <= totalPages; page += 1) {
     const shouldShow =
-      page === 1 ||
-      page === totalPages ||
-      Math.abs(page - currentPage) <= 1;
+      page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
 
     if (shouldShow) {
       pages.push(page);
@@ -139,6 +147,12 @@ export default function DoctorateExamsExplorer({
 
   const resetToFirstPage = () => setCurrentPage(1);
 
+  const hasActiveFilters =
+    examType !== "all" ||
+    year !== "all" ||
+    university !== "all" ||
+    specialty !== "all";
+
   const clearFilters = () => {
     setExamType("all");
     setYear("all");
@@ -148,24 +162,29 @@ export default function DoctorateExamsExplorer({
   };
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-5 pb-24 pt-14 md:pt-20">
-      {/* Header */}
-      <header className="mb-8">
-        <div className="flex items-center gap-2 text-[var(--color-accent)]">
-          <GraduationCap size={18} />
-          <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em]">
-            Doctorate Entrance Exams
-          </span>
-        </div>
+    <div className="mx-auto max-w-wide px-4 py-10 sm:px-6 md:py-14">
+      {/* ===== Header ===== */}
+      <header className="max-w-2xl">
+        <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--accent)]">
+          <GraduationCap className="h-4 w-4" aria-hidden="true" />
+          Doctorate Entrance Exams
+        </p>
+        <h1 className="mt-3 font-serif text-3xl leading-tight text-[var(--text)] sm:text-4xl">
+          Doctorate Exam Archive
+        </h1>
+        <p className="mt-4 text-[0.95rem] leading-relaxed text-[var(--text-muted)]">
+          Past mathematics doctorate (PhD) entrance exams in Algeria — general
+          and specialist papers from previous years, with complete solutions.
+        </p>
+        <p className="mt-4 text-sm text-[var(--text-subtle)]">
+          <span className="font-semibold text-[var(--text)]">{exams.length}</span>{" "}
+          {exams.length === 1 ? "exam" : "exams"} archived
+        </p>
       </header>
 
-      {/* Controls */}
-      <section
-        className="mb-8 rounded-xl border p-4 md:p-5"
-        style={{ borderColor: "var(--color-border)", background: "var(--color-bg-elevated)" }}
-        aria-label="Exam filters"
-      >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+      {/* ===== Filter bar ===== */}
+      <div className="mt-8 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <select
             value={examType}
             onChange={(e) => {
@@ -231,102 +250,113 @@ export default function DoctorateExamsExplorer({
             ))}
           </select>
 
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="h-11 rounded-lg border px-4 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            style={{ borderColor: "var(--color-border)" }}
-          >
-            Clear
-          </button>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] px-3 text-sm font-medium text-[var(--accent)] transition-colors duration-150 hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:ml-auto"
+            >
+              <SearchX className="h-4 w-4" aria-hidden="true" />
+              Clear filters
+            </button>
+          )}
         </div>
-      </section>
 
-      {/* Results */}
+        {hasActiveFilters && (
+          <p className="mt-3 text-xs text-[var(--text-subtle)]">
+            Showing{" "}
+            <span className="font-semibold text-[var(--text-muted)]">
+              {filtered.length}
+            </span>{" "}
+            of {exams.length}
+          </p>
+        )}
+      </div>
+
+      {/* ===== Results ===== */}
       {visibleExams.length === 0 ? (
-        <section
-          className="rounded-xl border border-dashed px-6 py-14 text-center"
-          style={{ borderColor: "var(--color-border)" }}
-        >
-          <p className="text-[var(--color-text)]" style={{ fontFamily: "var(--font-serif)", fontSize: "1.25rem" }}>
-            No exams found.
+        <div className="mt-12 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-full)] bg-[var(--surface)] text-[var(--text-subtle)]">
+            <SearchX className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <h2 className="mt-5 font-serif text-xl text-[var(--text)]">
+            No exams match your filters
+          </h2>
+          <p className="mt-2 max-w-sm text-sm text-[var(--text-muted)]">
+            Try widening your selection, or clear the filters to see every
+            archived exam.
           </p>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            Try a different filter.
-          </p>
-        </section>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            >
+              <SearchX className="h-4 w-4" aria-hidden="true" />
+              Clear filters
+            </button>
+          )}
+        </div>
       ) : (
-        <section className="space-y-3" aria-label="Exam list">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleExams.map((exam) => (
             <article
               key={exam.key}
-              className="rounded-xl border p-5 transition-colors hover:border-[var(--color-accent)]"
-              style={{ borderColor: "var(--color-border)", background: "var(--color-bg-elevated)" }}
+              className="group flex flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)]/50 hover:shadow-[var(--shadow-raised)] motion-reduce:transform-none motion-reduce:transition-none"
             >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span
-                      className="text-[var(--color-text)]"
-                      style={{ fontFamily: "var(--font-serif)", fontSize: "1.15rem", fontVariantNumeric: "tabular-nums" }}
-                    >
-                      {exam.year}
-                    </span>
-                    <ExamTypeBadge type={exam.examType} />
-                  </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
+                  {exam.year}
+                </span>
+                <ExamTypeBadge type={exam.examType} />
+              </div>
 
-                  <h2 className="text-base font-medium text-[var(--color-text)]">
-                    {exam.specialty || "Mathematics"}
-                  </h2>
-                  {exam.university ? (
-                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                      {exam.university}
-                    </p>
-                  ) : null}
-                </div>
+              <h2 className="mt-4 font-serif text-xl leading-snug text-[var(--text)]">
+                {exam.specialty || "Mathematics"}
+              </h2>
+              {exam.university ? (
+                <p className="mt-1.5 text-sm text-[var(--text-muted)]">
+                  {exam.university}
+                </p>
+              ) : null}
 
-                <div className="flex shrink-0 gap-2">
-                  <Link
-                    href={`/doctorate-exams/exam/${exam.key}`}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-lg px-3.5 text-sm font-medium transition-colors"
-                    style={{ background: "var(--color-accent)", color: "var(--color-bg)" }}
+              <div className="mt-5 flex items-center gap-2.5 pt-4 border-t border-[var(--border)]">
+                <Link
+                  href={`/doctorate-exams/exam/${exam.key}`}
+                  className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
+                >
+                  Open
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+
+                {isAuthenticated ? (
+                  <a
+                    href={`/doctorate-exams/download/${exam.key}`}
+                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
                   >
-                    Open
-                    <ArrowRight size={15} />
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                    PDF
+                  </a>
+                ) : (
+                  <Link
+                    href="/sign-in"
+                    aria-label="Sign in to download the PDF"
+                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                  >
+                    <Lock className="h-4 w-4" aria-hidden="true" />
+                    PDF
                   </Link>
-
-                  {isAuthenticated ? (
-                    <Link
-                      href={`/doctorate-exams/download/${exam.key}`}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                      style={{ borderColor: "var(--color-border)" }}
-                      aria-label="Download exam PDF"
-                    >
-                      <Download size={15} />
-                      PDF
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/sign-in"
-                      className="inline-flex h-10 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                      style={{ borderColor: "var(--color-border)" }}
-                      aria-label="Sign in to download PDF"
-                    >
-                      <Lock size={14} />
-                      PDF
-                    </Link>
-                  )}
-                </div>
+                )}
               </div>
             </article>
           ))}
-        </section>
+        </div>
       )}
 
-      {/* Pagination */}
+      {/* ===== Pagination ===== */}
       {filtered.length > EXAMS_PER_PAGE ? (
-        <nav className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between" aria-label="Exam pagination">
-          <p className="text-sm text-[var(--color-text-tertiary)]">
+        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+          <p className="text-sm text-[var(--text-subtle)]">
             Page {safePage} of {totalPages}
           </p>
 
@@ -335,38 +365,32 @@ export default function DoctorateExamsExplorer({
               type="button"
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
               disabled={safePage === 1}
-              className="inline-flex h-10 items-center gap-1 rounded-lg border px-3 text-sm text-[var(--color-text-secondary)] transition-colors disabled:opacity-40"
-              style={{ borderColor: "var(--color-border)" }}
+              className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text)] disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
-              <ChevronLeft size={15} />
-              Previous
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Previous</span>
             </button>
 
-            <div className="hidden items-center gap-1 sm:flex">
+            <div className="flex items-center gap-1">
               {pages.map((page, index) =>
                 page === "dots" ? (
-                  <span key={`dots-${index}`} className="px-2 text-sm text-[var(--color-text-tertiary)]">
-                    ...
+                  <span
+                    key={`dots-${index}`}
+                    className="px-1 text-sm text-[var(--text-subtle)]"
+                  >
+                    …
                   </span>
                 ) : (
                   <button
                     key={page}
                     type="button"
                     onClick={() => setCurrentPage(page)}
-                    className="h-10 min-w-10 rounded-lg border px-3 text-sm font-medium transition-colors"
-                    style={
-                      page === safePage
-                        ? {
-                            borderColor: "var(--color-accent)",
-                            background: "var(--color-accent)",
-                            color: "var(--color-bg)",
-                          }
-                        : {
-                            borderColor: "var(--color-border)",
-                            color: "var(--color-text-secondary)",
-                          }
-                    }
                     aria-current={page === safePage ? "page" : undefined}
+                    className={`h-11 min-w-11 rounded-[var(--radius-md)] border px-3 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none ${
+                      page === safePage
+                        ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--bg)]"
+                        : "border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+                    }`}
                   >
                     {page}
                   </button>
@@ -376,17 +400,18 @@ export default function DoctorateExamsExplorer({
 
             <button
               type="button"
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
               disabled={safePage === totalPages}
-              className="inline-flex h-10 items-center gap-1 rounded-lg border px-3 text-sm text-[var(--color-text-secondary)] transition-colors disabled:opacity-40"
-              style={{ borderColor: "var(--color-border)" }}
+              className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text)] disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
-              Next
-              <ChevronRight size={15} />
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
-        </nav>
+        </div>
       ) : null}
-    </main>
+    </div>
   );
 }
