@@ -39,10 +39,10 @@ function ExamTypeBadge({ type }: { type: DoctorateExamType }) {
   const isGeneral = type === "general";
   return (
     <span
-      className={`inline-flex items-center rounded-[var(--radius-full)] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.08em] ${
+      className={`inline-flex items-center rounded-[var(--radius-full)] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.08em] ring-1 ring-inset ${
         isGeneral
-          ? "bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/30"
-          : "bg-[var(--surface-raised)] text-[var(--accent-strong)] ring-1 ring-inset ring-[var(--border-strong)]"
+          ? "bg-[var(--accent-soft)] text-[var(--accent)] ring-[var(--accent-muted)]"
+          : "bg-[var(--surface-raised)] text-[var(--accent-strong)] ring-[var(--border-strong)]"
       }`}
     >
       {EXAM_TYPE_LABELS[type]}
@@ -302,7 +302,7 @@ export default function DoctorateExamsExplorer({
           {visibleExams.map((exam) => (
             <article
               key={exam.key}
-              className="group flex flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)]/50 hover:shadow-[var(--shadow-raised)] motion-reduce:transform-none motion-reduce:transition-none"
+              className="group flex flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-raised)] motion-reduce:transform-none motion-reduce:transition-none"
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
@@ -320,7 +320,7 @@ export default function DoctorateExamsExplorer({
                 </p>
               ) : null}
 
-              <div className="mt-5 flex items-center gap-2.5 pt-4 border-t border-[var(--border)]">
+              <div className="mt-5 flex items-center gap-2.5 border-t border-[var(--border)] pt-4">
                 <Link
                   href={`/doctorate-exams/exam/${exam.key}`}
                   className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
