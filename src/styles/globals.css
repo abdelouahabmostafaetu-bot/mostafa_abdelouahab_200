@@ -5,52 +5,118 @@
 /* ===== Base Styles ===== */
 @layer base {
   :root {
+    /* ===== Typefaces ===== */
     --font-sans: var(--font-source-sans), system-ui, sans-serif;
     --font-serif: var(--font-fraunces), 'Georgia', serif;
     --font-reading: var(--font-source-serif), 'Georgia', serif;
 
-    /* Site palette — refined dark academia */
-    --bg-main: #15110d;
-    --bg-card: #1d1712;
-    --border: #2f2720;
-    --text-main: #f4efe6;
-    --text-muted: #bcae9d;
-    --accent-gold: #c9a45c;
+    /* =====================================================================
+       DESIGN TOKENS  —  single source of truth
+       Refined dark-academia palette + gold accent (#c9a45c).
+       Every legacy --color-* / --bg-* / --tag-* var below is an ALIAS that
+       resolves to these canonical tokens, so existing pages keep working.
+       ===================================================================== */
 
-    --color-primary: var(--text-main);
-    --color-accent: var(--accent-gold);
-    --color-accent-hover: #d9b56d;
-    --color-accent-light: #e7cd93;
-    --color-surface: var(--bg-card);
-    --color-bg: var(--bg-main);
-    --color-bg-muted: #191410;
-    --color-bg-elevated: var(--bg-card);
-    --color-text: var(--text-main);
+    /* ---- Color: canonical ---- */
+    --bg: #15110d;             /* page background */
+    --bg-subtle: #191410;      /* muted section band */
+    --surface: #1d1712;        /* cards, panels */
+    --surface-raised: #241d16; /* hover / elevated surface */
+    --border: #2f2720;         /* default borders */
+    --border-strong: #463829;  /* emphasized borders */
+    --text: #f4efe6;           /* primary text  (~14:1 on --bg) */
+    --text-muted: #bcae9d;     /* secondary text (~8:1) */
+    --text-subtle: #9a8c79;    /* meta / tertiary (~4.6:1, AA) */
+    --accent: #c9a45c;         /* gold — links, markers (~7:1) */
+    --accent-hover: #d9b56d;   /* gold hover */
+    --accent-strong: #e7cd93;  /* bright gold — active */
+    --accent-muted: #a9843f;   /* subdued gold */
+    --accent-soft: rgba(201, 164, 92, 0.1); /* tint fills */
+    --accent-rgb: 201, 164, 92;
+
+    /* ---- Type scale (modular ~1.25) ---- */
+    --fs-xs: 0.75rem;    --lh-xs: 1.5;
+    --fs-sm: 0.875rem;   --lh-sm: 1.55;
+    --fs-base: 1rem;     --lh-base: 1.65;
+    --fs-lg: 1.125rem;   --lh-lg: 1.6;
+    --fs-xl: 1.375rem;   --lh-xl: 1.4;
+    --fs-2xl: 1.75rem;   --lh-2xl: 1.25;
+    --fs-3xl: 2.25rem;   --lh-3xl: 1.15;
+    --fs-4xl: 2.75rem;   --lh-4xl: 1.1;
+    --fs-5xl: 3.5rem;    --lh-5xl: 1.05;
+    --tracking-tight: -0.015em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.18em; /* eyebrow / kicker */
+
+    /* ---- Spacing (4 / 8 px base) ---- */
+    --space-1: 0.25rem; /* 4  */
+    --space-2: 0.5rem;  /* 8  */
+    --space-3: 0.75rem; /* 12 */
+    --space-4: 1rem;    /* 16 */
+    --space-6: 1.5rem;  /* 24 */
+    --space-8: 2rem;    /* 32 */
+    --space-12: 3rem;   /* 48 */
+    --space-16: 4rem;   /* 64 */
+    --space-24: 6rem;   /* 96 */
+
+    /* ---- Radius ---- */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+
+    /* ---- Shadows ---- */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.38);
+    --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.28);
+
+    /* ---- Content widths ---- */
+    --content-narrow: 680px; /* prose / notes reading measure */
+    --content: 880px;        /* problem detail (matches existing) */
+    --content-wide: 1120px;  /* page shell */
+
+    /* =====================================================================
+       LEGACY ALIASES  —  do not remove. Map old names to canonical tokens.
+       ===================================================================== */
+    --bg-main: var(--bg);
+    --bg-card: var(--surface);
+    --text-main: var(--text);
+    --accent-gold: var(--accent);
+
+    --color-primary: var(--text);
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-light: var(--accent-strong);
+    --color-surface: var(--surface);
+    --color-bg: var(--bg);
+    --color-bg-muted: var(--bg-subtle);
+    --color-bg-elevated: var(--surface);
+    --color-text: var(--text);
     --color-text-secondary: var(--text-muted);
-    --color-text-tertiary: #8f8272;
+    --color-text-tertiary: var(--text-subtle);
     --color-border: var(--border);
     --color-border-light: #272019;
-    --color-hover: #241d16;
-    --color-gold: var(--accent-gold);
-    --color-gold-muted: #a9843f;
+    --color-hover: var(--surface-raised);
+    --color-gold: var(--accent);
+    --color-gold-muted: var(--accent-muted);
     --article-bg: #181310;
     --article-bg-soft: #1e1813;
-    --article-accent: var(--accent-gold);
-    --article-accent-soft: rgba(201, 164, 92, 0.1);
-    --article-gold: var(--color-accent-light);
-    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.5);
-    --shadow-card:
-      0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --article-accent: var(--accent);
+    --article-accent-soft: var(--accent-soft);
+    --article-gold: var(--accent-strong);
+    --shadow-soft: var(--shadow-sm);
 
-    --tag-bg: var(--bg-card);
+    --tag-bg: var(--surface);
     --tag-border: var(--border);
     --tag-text: var(--text-muted);
     --tag-bg-hover: #29211a;
-    --tag-border-hover: #463829;
-    --tag-text-hover: var(--text-main);
+    --tag-border-hover: var(--border-strong);
+    --tag-text-hover: var(--text);
     --tag-bg-active: rgba(201, 164, 92, 0.14);
-    --tag-border-active: var(--accent-gold);
-    --tag-text-active: var(--text-main);
+    --tag-border-active: var(--accent);
+    --tag-text-active: var(--text);
   }
 
   html {
