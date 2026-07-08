@@ -94,6 +94,8 @@ export default function DoctorateExamsExplorer({
 
   const [examType, setExamType] = useState<"all" | DoctorateExamType>("all");
   const [year, setYear] = useState("all");
+  const [university, setUniversity] = useState("all");
+  const [specialty, setSpecialty] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
 
   const years = useMemo(
@@ -101,13 +103,31 @@ export default function DoctorateExamsExplorer({
     [exams],
   );
 
+  const universities = useMemo(
+    () =>
+      [...new Set(exams.map((e) => e.university).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [exams],
+  );
+
+  const specialties = useMemo(
+    () =>
+      [...new Set(exams.map((e) => e.specialty).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [exams],
+  );
+
   const filtered = useMemo(() => {
     return exams.filter((e) => {
       if (examType !== "all" && e.examType !== examType) return false;
       if (year !== "all" && String(e.year) !== year) return false;
+      if (university !== "all" && e.university !== university) return false;
+      if (specialty !== "all" && e.specialty !== specialty) return false;
       return true;
     });
-  }, [exams, examType, year]);
+  }, [exams, examType, year, university, specialty]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / EXAMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
@@ -122,6 +142,8 @@ export default function DoctorateExamsExplorer({
   const clearFilters = () => {
     setExamType("all");
     setYear("all");
+    setUniversity("all");
+    setSpecialty("all");
     setCurrentPage(1);
   };
 
@@ -143,7 +165,7 @@ export default function DoctorateExamsExplorer({
         style={{ borderColor: "var(--color-border)", background: "var(--color-bg-elevated)" }}
         aria-label="Exam filters"
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
           <select
             value={examType}
             onChange={(e) => {
@@ -175,6 +197,40 @@ export default function DoctorateExamsExplorer({
             ))}
           </select>
 
+          <select
+            value={university}
+            onChange={(e) => {
+              setUniversity(e.target.value);
+              resetToFirstPage();
+            }}
+            className={selectClass}
+            aria-label="Filter by university"
+          >
+            <option value="all">All universities</option>
+            {universities.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={specialty}
+            onChange={(e) => {
+              setSpecialty(e.target.value);
+              resetToFirstPage();
+            }}
+            className={selectClass}
+            aria-label="Filter by specialty"
+          >
+            <option value="all">All specialties</option>
+            {specialties.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+
           <button
             type="button"
             onClick={clearFilters}
@@ -196,7 +252,7 @@ export default function DoctorateExamsExplorer({
             No exams found.
           </p>
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            Try a different year or exam type.
+            Try a different filter.
           </p>
         </section>
       ) : (
