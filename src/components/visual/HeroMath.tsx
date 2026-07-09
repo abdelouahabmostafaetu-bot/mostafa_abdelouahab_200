@@ -8,14 +8,13 @@ type HeroMathProps = {
 /**
  * HeroMath — decorative animated hero artwork.
  *
- * Pure SVG + CSS (no client hooks), so it can be lazy-loaded with next/dynamic.
- * Layers: a soft token gradient mesh (gently "breathing"), a faint drifting
- * grid, a parametric Lissajous curve that draws on via `.draw-path`, and a
- * couple of slowly drifting equation glyphs. All motion is defined in the
- * self-contained <style> below (and the shared `.drift`/`.draw-path` classes),
- * every animation disabled under prefers-reduced-motion. Sits behind content
- * (aria-hidden) and is constrained to its container so it never overflows
- * small screens. Reads an optional `--hero-parallax` offset set by HeroArt.
+ * Pure SVG + CSS (no client hooks), lazy-loadable via next/dynamic. Layers:
+ * a soft token gradient mesh that gently breathes AND slowly shifts, a faint
+ * drifting grid, a parametric Lissajous curve that draws on once then a second
+ * curve that loops its path-draw and gently "morphs" (scale/rotate wobble), and
+ * slowly drifting equation glyphs. All motion lives in the scoped <style> and
+ * shared `.drift`/`.draw-path` classes, every animation disabled under
+ * prefers-reduced-motion. aria-hidden, clipped to its box (no mobile overflow).
  */
 export default function HeroMath({ className = '', style }: HeroMathProps) {
   return (
@@ -27,30 +26,48 @@ export default function HeroMath({ className = '', style }: HeroMathProps) {
       {/* Scoped, self-contained hero motion (unique names, reduced-motion safe) */}
       <style>{`
         @keyframes heroMeshBreathe {
-          0%   { transform: scale(1) translate3d(0,0,0); opacity: 0.9; }
-          100% { transform: scale(1.06) translate3d(0,-1.5%,0); opacity: 1; }
+          0%   { transform: scale(1) rotate(0deg) translate3d(0,0,0); opacity: 0.9; }
+          100% { transform: scale(1.06) rotate(3deg) translate3d(0,-1.5%,0); opacity: 1; }
         }
         @keyframes heroGlyphDrift {
           0%   { transform: translate3d(0,0,0); }
           100% { transform: translate3d(0,-14px,0); }
         }
+        @keyframes heroCurveMorph {
+          0%   { transform: scale(1) rotate(0deg); }
+          50%  { transform: scale(1.04) rotate(2.5deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        @keyframes heroDrawLoop {
+          0%   { stroke-dashoffset: 2400; opacity: 0.15; }
+          45%  { opacity: 0.55; }
+          100% { stroke-dashoffset: 0; opacity: 0.15; }
+        }
         .hero-mesh-breathe {
-          animation: heroMeshBreathe 14s ease-in-out infinite alternate;
+          animation: heroMeshBreathe 16s ease-in-out infinite alternate;
           transform-origin: 60% 40%;
           will-change: transform, opacity;
         }
-        .hero-glyph-drift {
-          animation: heroGlyphDrift 9s ease-in-out infinite alternate;
+        .hero-glyph-drift { animation: heroGlyphDrift 9s ease-in-out infinite alternate; will-change: transform; }
+        .hero-curve-morph {
+          animation: heroCurveMorph 12s ease-in-out infinite;
+          transform-origin: 300px 260px;
           will-change: transform;
         }
+        .hero-draw-loop {
+          stroke-dasharray: 2400;
+          animation: heroDrawLoop 9s ease-in-out infinite;
+          will-change: stroke-dashoffset, opacity;
+        }
         @media (prefers-reduced-motion: reduce) {
-          .hero-mesh-breathe, .hero-glyph-drift {
+          .hero-mesh-breathe, .hero-glyph-drift, .hero-curve-morph, .hero-draw-loop {
             animation: none !important;
           }
+          .hero-draw-loop { stroke-dashoffset: 0 !important; opacity: 0.3 !important; }
         }
       `}</style>
 
-      {/* Gradient mesh (token-driven), gently breathing */}
+      {/* Gradient mesh (token-driven), gently breathing + shifting */}
       <div className="hero-mesh-breathe absolute inset-0 bg-hero-mesh" />
 
       {/* SVG art */}
@@ -77,24 +94,26 @@ export default function HeroMath({ className = '', style }: HeroMathProps) {
           ))}
         </g>
 
-        {/* Parametric Lissajous curve, draws on */}
-        <path
-          className="draw-path"
-          style={{ '--draw-len': 2600 } as CSSProperties}
-          d="M300 90 C 470 120 520 300 420 430 C 340 530 200 520 150 400 C 100 280 180 130 300 90 Z"
-          stroke="url(#hero-stroke)"
-          strokeWidth={2}
-          strokeLinecap="round"
-        />
-        <path
-          className="draw-path"
-          style={{ '--draw-len': 2200, animationDelay: '0.4s' } as CSSProperties}
-          d="M300 160 C 410 180 450 300 390 400 C 330 490 240 480 210 390 C 175 290 220 190 300 160 Z"
-          stroke="var(--accent)"
-          strokeWidth={1.25}
-          opacity={0.5}
-          strokeLinecap="round"
-        />
+        {/* Morphing curve group */}
+        <g className="hero-curve-morph">
+          {/* Base Lissajous curve, draws on once */}
+          <path
+            className="draw-path"
+            style={{ '--draw-len': 2600 } as CSSProperties}
+            d="M300 90 C 470 120 520 300 420 430 C 340 530 200 520 150 400 C 100 280 180 130 300 90 Z"
+            stroke="url(#hero-stroke)"
+            strokeWidth={2}
+            strokeLinecap="round"
+          />
+          {/* Inner curve that loops its path-draw continuously */}
+          <path
+            className="hero-draw-loop"
+            d="M300 160 C 410 180 450 300 390 400 C 330 490 240 480 210 390 C 175 290 220 190 300 160 Z"
+            stroke="var(--accent)"
+            strokeWidth={1.25}
+            strokeLinecap="round"
+          />
+        </g>
 
         {/* Nodes */}
         <circle cx="300" cy="90" r="5" fill="var(--accent)" />
