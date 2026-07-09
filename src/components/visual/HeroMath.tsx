@@ -9,11 +9,13 @@ type HeroMathProps = {
  * HeroMath — decorative animated hero artwork.
  *
  * Pure SVG + CSS (no client hooks), so it can be lazy-loaded with next/dynamic.
- * Layers: a soft token gradient mesh, a faint drifting grid, a parametric
- * Lissajous curve that draws on via `.draw-path`, and a couple of quiet
- * equation glyphs. All motion classes (`drift`, `draw-path`) are disabled under
- * prefers-reduced-motion in globals.css. Sits behind content (aria-hidden) and
- * is constrained to its container so it never overflows small screens.
+ * Layers: a soft token gradient mesh (gently "breathing"), a faint drifting
+ * grid, a parametric Lissajous curve that draws on via `.draw-path`, and a
+ * couple of slowly drifting equation glyphs. All motion is defined in the
+ * self-contained <style> below (and the shared `.drift`/`.draw-path` classes),
+ * every animation disabled under prefers-reduced-motion. Sits behind content
+ * (aria-hidden) and is constrained to its container so it never overflows
+ * small screens. Reads an optional `--hero-parallax` offset set by HeroArt.
  */
 export default function HeroMath({ className = '', style }: HeroMathProps) {
   return (
@@ -22,8 +24,34 @@ export default function HeroMath({ className = '', style }: HeroMathProps) {
       className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`.trim()}
       style={style}
     >
-      {/* Gradient mesh (token-driven) */}
-      <div className="absolute inset-0 bg-hero-mesh" />
+      {/* Scoped, self-contained hero motion (unique names, reduced-motion safe) */}
+      <style>{`
+        @keyframes heroMeshBreathe {
+          0%   { transform: scale(1) translate3d(0,0,0); opacity: 0.9; }
+          100% { transform: scale(1.06) translate3d(0,-1.5%,0); opacity: 1; }
+        }
+        @keyframes heroGlyphDrift {
+          0%   { transform: translate3d(0,0,0); }
+          100% { transform: translate3d(0,-14px,0); }
+        }
+        .hero-mesh-breathe {
+          animation: heroMeshBreathe 14s ease-in-out infinite alternate;
+          transform-origin: 60% 40%;
+          will-change: transform, opacity;
+        }
+        .hero-glyph-drift {
+          animation: heroGlyphDrift 9s ease-in-out infinite alternate;
+          will-change: transform;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-mesh-breathe, .hero-glyph-drift {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Gradient mesh (token-driven), gently breathing */}
+      <div className="hero-mesh-breathe absolute inset-0 bg-hero-mesh" />
 
       {/* SVG art */}
       <svg
@@ -73,8 +101,9 @@ export default function HeroMath({ className = '', style }: HeroMathProps) {
         <circle cx="420" cy="430" r="4" fill="var(--accent-2)" />
         <circle cx="150" cy="400" r="4" fill="var(--accent)" opacity={0.7} />
 
-        {/* Quiet equation glyphs */}
+        {/* Quiet equation glyphs, slowly drifting */}
         <text
+          className="hero-glyph-drift"
           x="70"
           y="140"
           fontSize="46"
@@ -85,6 +114,8 @@ export default function HeroMath({ className = '', style }: HeroMathProps) {
           ∫
         </text>
         <text
+          className="hero-glyph-drift"
+          style={{ animationDelay: '1.2s', animationDuration: '11s' }}
           x="470"
           y="520"
           fontSize="40"
