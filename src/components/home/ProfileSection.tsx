@@ -59,7 +59,7 @@ export default function ProfileSection() {
             className="flex items-start gap-3 bg-[var(--surface)] p-5"
           >
             <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent-soft)] text-[var(--accent)]">
-              <Icon className="h-4.5 w-4.5" aria-hidden="true" />
+              <Icon className="h-5 w-5" aria-hidden="true" />
             </span>
             <div>
               <dt className="text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--text-subtle)]">
