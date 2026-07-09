@@ -93,7 +93,7 @@ function BookCard({ book }: { book: LibraryBook }) {
   const category = getBookCategory(book);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] motion-reduce:transform-none motion-reduce:transition-none">
+    <article className="card-sheen group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none motion-reduce:active:scale-100">
       {/* Cover: real image if present, else deterministic generative art */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--bg-subtle)]">
         {coverUrl ? (
@@ -140,7 +140,7 @@ function BookCard({ book }: { book: LibraryBook }) {
               href={downloadUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+              className="btn-sheen inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               Download
@@ -289,7 +289,7 @@ export default function LibraryPageClient({
   const hasActiveFilters = query.trim() !== '' || category !== 'All';
 
   const chipClass = (active: boolean) =>
-    `inline-flex min-h-[36px] items-center rounded-[var(--radius-full)] border px-3.5 text-[11px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none ${
+    `inline-flex min-h-[36px] items-center rounded-[var(--radius-full)] border px-3.5 text-[11px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 ${
       active
         ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--text)]'
         : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]'
@@ -321,7 +321,7 @@ export default function LibraryPageClient({
           {showAdminLink ? (
             <Link
               href="/library/admin"
-              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
             >
               <Settings className="h-4 w-4" aria-hidden="true" />
               Admin
@@ -446,7 +446,7 @@ export default function LibraryPageClient({
                 setQuery('');
                 setCategory('All');
               }}
-              className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+              className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
             >
               <X className="h-4 w-4" aria-hidden="true" />
               Clear filters
@@ -473,7 +473,7 @@ export default function LibraryPageClient({
                 type="button"
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
                 disabled={safePage <= 1}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.95] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                 aria-label="Previous books page"
               >
                 <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -485,7 +485,7 @@ export default function LibraryPageClient({
                 type="button"
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
                 disabled={safePage >= totalPages}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.95] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                 aria-label="Next books page"
               >
                 <ChevronRight className="h-4 w-4" aria-hidden="true" />
