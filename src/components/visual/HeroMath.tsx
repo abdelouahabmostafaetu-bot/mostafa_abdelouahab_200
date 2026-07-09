@@ -1,0 +1,100 @@
+import type { CSSProperties } from 'react';
+
+type HeroMathProps = {
+  className?: string;
+  style?: CSSProperties;
+};
+
+/**
+ * HeroMath — decorative animated hero artwork.
+ *
+ * Pure SVG + CSS (no client hooks), so it can be lazy-loaded with next/dynamic.
+ * Layers: a soft token gradient mesh, a faint drifting grid, a parametric
+ * Lissajous curve that draws on via `.draw-path`, and a couple of quiet
+ * equation glyphs. All motion classes (`drift`, `draw-path`) are disabled under
+ * prefers-reduced-motion in globals.css. Sits behind content (aria-hidden) and
+ * is constrained to its container so it never overflows small screens.
+ */
+export default function HeroMath({ className = '', style }: HeroMathProps) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`.trim()}
+      style={style}
+    >
+      {/* Gradient mesh (token-driven) */}
+      <div className="absolute inset-0 bg-hero-mesh" />
+
+      {/* SVG art */}
+      <svg
+        className="drift absolute right-[-10%] top-1/2 h-[120%] w-[80%] -translate-y-1/2 sm:right-0 sm:w-[62%]"
+        viewBox="0 0 600 600"
+        fill="none"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          <linearGradient id="hero-stroke" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--accent)" />
+            <stop offset="100%" stopColor="var(--accent-2)" />
+          </linearGradient>
+        </defs>
+
+        {/* Faint grid */}
+        <g stroke="var(--border-strong)" strokeWidth={1} opacity={0.35}>
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <line key={`h${i}`} x1="0" y1={i * 100} x2="600" y2={i * 100} />
+          ))}
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <line key={`v${i}`} x1={i * 100} y1="0" x2={i * 100} y2="600" />
+          ))}
+        </g>
+
+        {/* Parametric Lissajous curve, draws on */}
+        <path
+          className="draw-path"
+          style={{ ['--draw-len' as string]: 2600 }}
+          d="M300 90 C 470 120 520 300 420 430 C 340 530 200 520 150 400 C 100 280 180 130 300 90 Z"
+          stroke="url(#hero-stroke)"
+          strokeWidth={2}
+          strokeLinecap="round"
+        />
+        <path
+          className="draw-path"
+          style={{ ['--draw-len' as string]: 2200, animationDelay: '0.4s' }}
+          d="M300 160 C 410 180 450 300 390 400 C 330 490 240 480 210 390 C 175 290 220 190 300 160 Z"
+          stroke="var(--accent)"
+          strokeWidth={1.25}
+          opacity={0.5}
+          strokeLinecap="round"
+        />
+
+        {/* Nodes */}
+        <circle cx="300" cy="90" r="5" fill="var(--accent)" />
+        <circle cx="420" cy="430" r="4" fill="var(--accent-2)" />
+        <circle cx="150" cy="400" r="4" fill="var(--accent)" opacity={0.7} />
+
+        {/* Quiet equation glyphs */}
+        <text
+          x="70"
+          y="140"
+          fontSize="46"
+          fontFamily="Georgia, serif"
+          fill="var(--accent)"
+          opacity={0.28}
+        >
+          ∫
+        </text>
+        <text
+          x="470"
+          y="520"
+          fontSize="40"
+          fontFamily="Georgia, serif"
+          fill="var(--accent-2)"
+          opacity={0.3}
+        >
+          ∑
+        </text>
+      </svg>
+    </div>
+  );
+}
