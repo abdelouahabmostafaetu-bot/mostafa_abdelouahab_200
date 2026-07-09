@@ -34,6 +34,27 @@
     --accent-soft: rgba(201, 164, 92, 0.1); /* tint fills */
     --accent-rgb: 201, 164, 92;
 
+    /* ---- Secondary accent (chalk / blackboard teal) ----
+       Cool counterpoint to gold. Use SPARINGLY: gradient mesh, the odd tag,
+       decorative motifs. Must never compete with gold as the primary. */
+    --accent-2: #6fae9f;
+    --accent-2-strong: #8ac6b8;
+    --accent-2-muted: #4f8377;
+    --accent-2-soft: rgba(111, 174, 159, 0.09);
+    --accent-2-rgb: 111, 174, 159;
+
+    /* ---- Decorative surfaces ---- */
+    /* Low-opacity radial mesh: warm gold + cool teal drifting over --bg. */
+    --gradient-hero:
+      radial-gradient(60% 55% at 18% 22%, rgba(201, 164, 92, 0.14), transparent 60%),
+      radial-gradient(55% 50% at 85% 15%, rgba(111, 174, 159, 0.1), transparent 62%),
+      radial-gradient(70% 60% at 65% 90%, rgba(201, 164, 92, 0.07), transparent 65%);
+    --gradient-divider:
+      linear-gradient(90deg, transparent, var(--accent), transparent);
+    /* Faint tileable paper noise (SVG data URI, ~AA-safe, sits behind text). */
+    --noise:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+
     /* ---- Type scale (modular ~1.25) ---- */
     --fs-xs: 0.75rem;    --lh-xs: 1.5;
     --fs-sm: 0.875rem;   --lh-sm: 1.55;
@@ -44,7 +65,10 @@
     --fs-3xl: 2.25rem;   --lh-3xl: 1.15;
     --fs-4xl: 2.75rem;   --lh-4xl: 1.1;
     --fs-5xl: 3.5rem;    --lh-5xl: 1.05;
+    /* Editorial display size for hero / oversized headings. */
+    --fs-display: clamp(2.5rem, 8vw, 5.5rem);
     --tracking-tight: -0.015em;
+    --tracking-display: -0.02em;
     --tracking-normal: 0;
     --tracking-wide: 0.18em; /* eyebrow / kicker */
 
@@ -71,6 +95,8 @@
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.38);
     --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.28);
+    /* Gold glow for hover emphasis. */
+    --shadow-glow: 0 0 0 1px rgba(201, 164, 92, 0.25), 0 12px 32px rgba(201, 164, 92, 0.12);
 
     /* ---- Content widths ---- */
     --content-narrow: 680px; /* prose / notes reading measure */
@@ -809,6 +835,55 @@
   .prose-academic td {
     @apply border border-[var(--color-border)] px-4 py-3 text-sm;
   }
+
+  /* =====================================================================
+     EDITORIAL REDESIGN  —  shared visual utilities
+     ===================================================================== */
+
+  /* Oversized display heading for heros / section titles. */
+  .display-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: var(--fs-display);
+    line-height: 1.02;
+    letter-spacing: var(--tracking-display);
+  }
+
+  /* Eyebrow / kicker label. */
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--accent);
+  }
+
+  /* Oversized editorial section number, e.g. "01". */
+  .section-index {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1;
+    color: var(--accent-muted);
+    opacity: 0.5;
+  }
+
+  /* Hairline gradient divider. */
+  .rule-glow {
+    height: 1px;
+    border: 0;
+    background: var(--gradient-divider);
+    opacity: 0.5;
+  }
+
+  /* Paper-noise overlay: attach to a positioned ancestor. Behind content. */
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--noise);
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1031,6 +1106,56 @@
   .stagger-5 {
     animation-delay: 0.5s;
   }
+
+  /* ---- Scroll-reveal (paired with the <Reveal> IntersectionObserver) ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ---- Hero entrance (staggered rise, driven by animation-delay) ---- */
+  .rise {
+    opacity: 0;
+    animation: riseUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* ---- Slow drift for hero SVG art ---- */
+  .drift {
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+
+  /* ---- SVG path draw-on for the hero curve ---- */
+  .draw-path {
+    stroke-dasharray: var(--draw-len, 1200);
+    stroke-dashoffset: var(--draw-len, 1200);
+    animation: drawPath 2.4s ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .rise,
+    .drift,
+    .draw-path,
+    .fade-in,
+    .fade-in-up,
+    .slide-in-left,
+    .slide-in-right {
+      animation: none !important;
+      transition: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      stroke-dashoffset: 0 !important;
+    }
+  }
 }
 
 @keyframes fadeIn {
@@ -1072,5 +1197,31 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes riseUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(0, -12px, 0) scale(1.03);
+  }
+}
+
+@keyframes drawPath {
+  to {
+    stroke-dashoffset: 0;
   }
 }
