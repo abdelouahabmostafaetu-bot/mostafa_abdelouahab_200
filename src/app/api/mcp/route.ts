@@ -3,21 +3,21 @@ import { MongoClient } from "mongodb";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-
-/* ── Vercel runtime ─────────────────────────────────────────────────────── */
+​
+/* ── Vercel runtime ───────────────────────────────────────── */
 export const runtime = "nodejs";
 export const maxDuration = 60;
-
-/* ── CORS ───────────────────────────────────────────────────────────────── */
+​
+/* ── CORS ──────────────────────────────────────────────── */
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
-
-/* ── Mongo connection (cached across warm invocations) ─────────────────── */
+​
+/* ── Mongo connection (cached across warm invocations) ────────── */
 let cachedClient: MongoClient | null = null;
-
+​
 async function getDb(): Promise<Db> {
   if (!cachedClient) {
     cachedClient = new MongoClient(process.env.MONGODB_URI as string);
@@ -25,8 +25,8 @@ async function getDb(): Promise<Db> {
   }
   return cachedClient.db("mylibrary");
 }
-
-/* ── Helpers ────────────────────────────────────────────────────────────── */
+​
+/* ── Helpers ─────────────────────────────────────────── */
 function slugify(text: string): string {
   return text
     .normalize("NFD")
@@ -35,7 +35,7 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
+​
 async function nextExamId(db: Db): Promise<number> {
   const last = await db
     .collection("doctorateproblems")
@@ -46,14 +46,14 @@ async function nextExamId(db: Db): Promise<number> {
     .toArray();
   return (last[0]?.examId ?? 0) + 1;
 }
-
+​
 function buildDocs(exam: any, examId: number) {
   const problems: any[] = exam.problems ?? exam.exercises ?? [];
   const examType =
     String(exam.examType ?? "specialist").toLowerCase() === "general"
       ? "general"
       : "specialist";
-
+​
   return problems.map((p: any, i: number) => {
     const problemNumber = Number(p.problemNumber ?? i + 1);
     const title = String(p.title ?? `Exercice ${problemNumber}`);
@@ -79,13 +79,13 @@ function buildDocs(exam: any, examId: number) {
     };
   });
 }
-
+​
 async function importExams(exams: any[]) {
   const db = await getDb();
   const col = db.collection("doctorateproblems");
   let inserted = 0;
   let updated = 0;
-
+​
   for (const exam of exams) {
     const examId = exam.examId ?? (await nextExamId(db));
     const docs = buildDocs(exam, examId);
@@ -104,7 +104,7 @@ async function importExams(exams: any[]) {
   }
   return { inserted, updated };
 }
-
+​
 async function deleteExam(examId: number): Promise<Response> {
   const db = await getDb();
   const result = await db
@@ -120,12 +120,12 @@ async function deleteExam(examId: number): Promise<Response> {
     { headers: corsHeaders },
   );
 }
-
+​
 /* ── REST-style import/admin endpoint (unchanged, Bearer IMPORT_TOKEN) ──── */
 async function handleImport(req: Request): Promise<Response> {
   try {
     const body = await req.json();
-
+​
     // ===== DELETE EXAM BY examId =====
     if (!Array.isArray(body) && body && body.action === "delete") {
       const examId = Number(body.examId);
@@ -137,7 +137,7 @@ async function handleImport(req: Request): Promise<Response> {
       }
       return deleteExam(examId);
     }
-
+​
     // ===== LIST DISTINCT VALUES =====
     if (!Array.isArray(body) && body && body.action === "list_distinct") {
       const db = await getDb();
@@ -153,7 +153,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== NORMALIZE universities / specialties =====
     if (!Array.isArray(body) && body && body.action === "normalize") {
       const db = await getDb();
@@ -164,10 +164,10 @@ async function handleImport(req: Request): Promise<Response> {
         to: string;
         updated: number;
       }[] = [];
-
+​
       const uniMap: Record<string, string> = body.universities ?? {};
       const specMap: Record<string, string> = body.specialties ?? {};
-
+​
       for (const [oldVal, newVal] of Object.entries(uniMap)) {
         const r = await col.updateMany(
           { university: oldVal },
@@ -181,7 +181,7 @@ async function handleImport(req: Request): Promise<Response> {
             updated: r.modifiedCount,
           });
       }
-
+​
       for (const [oldVal, newVal] of Object.entries(specMap)) {
         const r = await col.updateMany(
           { specialty: oldVal },
@@ -195,7 +195,7 @@ async function handleImport(req: Request): Promise<Response> {
             updated: r.modifiedCount,
           });
       }
-
+​
       return Response.json(
         {
           ok: true,
@@ -206,7 +206,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== CLEAR SPECIALTY FOR GENERAL EXAMS =====
     if (
       !Array.isArray(body) &&
@@ -229,7 +229,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== GET EXAM BY examId =====
     if (!Array.isArray(body) && body && body.action === "get_exam") {
       const examId = Number(body.examId);
@@ -254,7 +254,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== UPDATE EXAM-LEVEL FIELDS =====
     if (!Array.isArray(body) && body && body.action === "update_exam_fields") {
       const examId = Number(body.examId);
@@ -283,7 +283,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== UPDATE ONE PROBLEM BY SLUG =====
     if (!Array.isArray(body) && body && body.action === "update_problem") {
       const db = await getDb();
@@ -307,7 +307,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== DELETE ONE PROBLEM BY SLUG =====
     if (!Array.isArray(body) && body && body.action === "delete_problem") {
       const db = await getDb();
@@ -319,7 +319,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== ADD NEW PROBLEM TO EXISTING EXAM =====
     if (!Array.isArray(body) && body && body.action === "add_problem") {
       const db = await getDb();
@@ -351,7 +351,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     // ===== UPDATE SPECIALTY BY examId =====
     if (!Array.isArray(body) && body && body.action === "update_specialty") {
       const examId = Number(body.examId);
@@ -376,7 +376,7 @@ async function handleImport(req: Request): Promise<Response> {
         { headers: corsHeaders },
       );
     }
-
+​
     const exams: any[] = Array.isArray(body) ? body : (body.exams ?? []);
     if (exams.length === 0) {
       return Response.json(
@@ -396,7 +396,7 @@ async function handleImport(req: Request): Promise<Response> {
     );
   }
 }
-
+​
 /* ── MCP server (official @modelcontextprotocol/sdk, no third-party wrapper) ─
  *
  * Built fresh per request to stay stateless — required for Vercel
@@ -408,7 +408,7 @@ function createMcpServer(): McpServer {
     name: "doctorate-exams-mcp",
     version: "1.0.0",
   });
-
+​
   server.tool(
     "add_doctorate_exam",
     "Add a doctorate exam. Each problem becomes one flat document in doctorateproblems with a shared numeric examId.",
@@ -442,7 +442,7 @@ function createMcpServer(): McpServer {
       };
     },
   );
-
+​
   server.tool(
     "delete_doctorate_exam",
     "Delete ALL problems of one exam by its numeric examId from doctorateproblems.",
@@ -462,7 +462,7 @@ function createMcpServer(): McpServer {
       };
     },
   );
-
+​
   server.tool(
     "list_doctorate_exams",
     "List recent doctorate exam problems, most recent first.",
@@ -485,10 +485,10 @@ function createMcpServer(): McpServer {
       };
     },
   );
-
+​
   return server;
 }
-
+​
 /**
  * Runs a single MCP JSON-RPC request through the official SDK's Streamable
  * HTTP transport, in stateless + JSON-only mode.
@@ -498,38 +498,37 @@ function createMcpServer(): McpServer {
  *
  * By default WebStandardStreamableHTTPServerTransport replies over an SSE
  * stream and rejects requests whose `Accept` header does not include
- * `text/event-stream`. Notion's Custom MCP Server client does not always
- * send that header. Setting `enableJsonResponse: true` makes the transport
- * always reply with a normal `application/json` response instead — no SSE
- * involved anywhere in this route.
+ * `text/event-stream`. ClickUp's / Notion's Custom MCP Server client does not
+ * always send that header. Setting `enableJsonResponse: true` makes the
+ * transport always reply with a normal `application/json` response instead.
  */
 async function handleMcp(req: Request): Promise<Response> {
   let server: McpServer | undefined;
-
+​
   try {
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined, // stateless: no session cookie/header issued
       enableJsonResponse: true, // disables the SSE requirement entirely
     });
-
+​
     server = createMcpServer();
     await server.connect(transport);
-
+​
     const response = await transport.handleRequest(req);
-
+​
     // Re-attach CORS headers on top of the SDK's JSON-RPC response.
     const headers = new Headers(response.headers);
     for (const [key, value] of Object.entries(corsHeaders)) {
       headers.set(key, value);
     }
-
+​
     return new Response(response.body, {
       status: response.status,
       headers,
     });
   } catch (error) {
     console.error("[MCP] handler error:", error);
-
+​
     return Response.json(
       {
         jsonrpc: "2.0",
@@ -549,41 +548,76 @@ async function handleMcp(req: Request): Promise<Response> {
     }
   }
 }
-
-/* ── Route handlers ───────────────────────────────────────────────────── */
-
+​
+/* ── Route handlers ─────────────────────────────────────── */
+​
 export async function OPTIONS() {
   return new Response(null, { status: 204, headers: corsHeaders });
 }
-
+​
 /**
  * POST /api/mcp
  *
- * Two Bearer-token-gated paths share this endpoint:
- *   - IMPORT_TOKEN → REST-style admin/import actions (handleImport)
- *   - MCP_API_KEY  → MCP JSON-RPC protocol calls (handleMcp)
+ * FIX FOR CLICKUP:
+ * The old code routed purely by token:
+ *   IMPORT_TOKEN -> handleImport  (exam REST API)
+ *   MCP_API_KEY  -> handleMcp     (MCP protocol)
+ * If both env vars had the same value — or ClickUp used the import token —
+ * every MCP `initialize` request fell into handleImport and returned
+ * { "error": "No exams provided" }, so ClickUp could never validate the
+ * connection.
+ *
+ * Now we route by REQUEST CONTENT: any valid-token request whose body is a
+ * JSON-RPC 2.0 message (what every MCP client, incl. ClickUp, sends) goes to
+ * the MCP handler. Everything else stays on the REST admin/import path
+ * (import token only). Exam logic is completely untouched.
  */
 export async function POST(req: Request): Promise<Response> {
   const auth = req.headers.get("authorization");
-
-  if (auth === `Bearer ${process.env.IMPORT_TOKEN}`) {
-    return handleImport(req);
+​
+  const importAuth = `Bearer ${process.env.IMPORT_TOKEN}`;
+  const mcpAuth = `Bearer ${process.env.MCP_API_KEY}`;
+​
+  // Only our two known Bearer tokens are allowed at all.
+  if (auth !== importAuth && auth !== mcpAuth) {
+    return new Response("Unauthorized", { status: 401, headers: corsHeaders });
   }
-
-  if (auth === `Bearer ${process.env.MCP_API_KEY}`) {
+​
+  // Peek at a CLONE of the body so the real request body stays intact
+  // for whichever handler we forward to.
+  let looksLikeMcp = false;
+  try {
+    const preview: any = await req.clone().json();
+    looksLikeMcp =
+      !!preview &&
+      !Array.isArray(preview) &&
+      preview.jsonrpc === "2.0" &&
+      typeof preview.method === "string";
+  } catch {
+    looksLikeMcp = false;
+  }
+​
+  // Any MCP JSON-RPC call -> MCP handler, regardless of which valid token
+  // was used. This is the ClickUp fix.
+  if (looksLikeMcp) {
     return handleMcp(req);
   }
-
+​
+  // Non-MCP body -> REST admin/import path, import token only.
+  if (auth === importAuth) {
+    return handleImport(req);
+  }
+​
+  // MCP key used with a non-MCP body is not allowed for admin import.
   return new Response("Unauthorized", { status: 401, headers: corsHeaders });
 }
-
+​
 /**
  * GET /api/mcp
  *
- * Plain, unauthenticated health check. SSE has been removed entirely, so
- * GET no longer needs to open a stream for the MCP protocol — Notion talks
- * to this server exclusively over POST (see handleMcp / enableJsonResponse).
+ * Plain, unauthenticated health check.
  */
 export async function GET(): Promise<Response> {
   return Response.json({ status: "ok" }, { headers: corsHeaders });
 }
+​
