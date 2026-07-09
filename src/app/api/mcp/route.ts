@@ -514,7 +514,24 @@ async function handleMcp(req: Request): Promise<Response> {
     server = createMcpServer();
     await server.connect(transport);
 ​
-    const response = await transport.handleRequest(req);
+    // FIX FOR 406 "Not Acceptable":
+    // Even with enableJsonResponse:true, the SDK still rejects requests whose
+    // Accept header does not include BOTH application/json and text/event-stream.
+    // Clients like ClickUp / PowerShell don't send text/event-stream, so we
+    // rebuild the request with an Accept header the SDK accepts. The response
+    // still comes back as plain JSON because of enableJsonResponse:true.
+    const bodyText = await req.text();
+    const patchedHeaders = new Headers(req.headers);
+    patchedHeaders.set("accept", "application/json, text/event-stream");
+    patchedHeaders.set("content-type", "application/json");
+​
+    const patchedReq = new Request(req.url, {
+      method: "POST",
+      headers: patchedHeaders,
+      body: bodyText,
+    });
+​
+    const response = await transport.handleRequest(patchedReq);
 ​
     // Re-attach CORS headers on top of the SDK's JSON-RPC response.
     const headers = new Headers(response.headers);
