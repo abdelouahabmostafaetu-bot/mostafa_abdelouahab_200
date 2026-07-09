@@ -111,11 +111,11 @@ function BookCard({ book }: { book: LibraryBook }) {
             className="transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transform-none"
           />
         )}
-        <span className="absolute left-2 top-2 inline-flex items-center rounded-[var(--radius-full)] bg-[var(--bg)]/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--accent)] backdrop-blur-sm">
+        <span className="absolute left-2 top-2 inline-flex items-center rounded-[var(--radius-full)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--accent)]">
           {category}
         </span>
         {book.fileSize ? (
-          <span className="absolute right-2 top-2 inline-flex items-center rounded-[var(--radius-full)] bg-[var(--bg)]/80 px-2 py-0.5 text-[10px] font-medium text-[var(--text-subtle)] backdrop-blur-sm">
+          <span className="absolute right-2 top-2 inline-flex items-center rounded-[var(--radius-full)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-subtle)]">
             {formatFileSize(book.fileSize)}
           </span>
         ) : null}
