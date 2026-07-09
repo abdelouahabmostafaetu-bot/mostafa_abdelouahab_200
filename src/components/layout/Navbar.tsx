@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut, Menu, X, LayoutDashboard } from 'lucide-react';
@@ -50,6 +50,20 @@ export default function Navbar() {
   const [authLoaded, setAuthLoaded] = useState(false);
   const pathname = usePathname();
 
+  // Sliding active-link indicator (desktop only).
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const [indicator, setIndicator] = useState<{
+    left: number;
+    width: number;
+    ready: boolean;
+  }>({ left: 0, width: 0, ready: false });
+
+  const isActive = useCallback(
+    (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href)),
+    [pathname],
+  );
+
   // Close the mobile drawer whenever the route changes.
   useEffect(() => {
     setIsOpen(false);
@@ -95,12 +109,39 @@ export default function Navbar() {
     };
   }, [pathname]);
 
-  const links = navLinks;
+  // Position the sliding indicator under the active link. Recomputes on route
+  // change and on resize (rAF-throttled). useLayoutEffect avoids a flash.
+  const measure = useCallback(() => {
+    const active = navLinks.find((l) => isActive(l.href));
+    const el = active ? linkRefs.current[active.href] : null;
+    const container = listRef.current;
+    if (!el || !container) {
+      setIndicator((prev) => ({ ...prev, ready: false }));
+      return;
+    }
+    setIndicator({ left: el.offsetLeft, width: el.offsetWidth, ready: true });
+  }, [isActive]);
 
-  const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
-  };
+  useLayoutEffect(() => {
+    measure();
+  }, [measure]);
+
+  useEffect(() => {
+    let ticking = false;
+    const onResize = () => {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          measure();
+          ticking = false;
+        });
+      }
+    };
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+  }, [measure]);
+
+  const links = navLinks;
 
   return (
     <header
@@ -128,14 +169,20 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Center: desktop links */}
-        <div className="hidden flex-1 items-center justify-center gap-1 md:flex">
+        {/* Center: desktop links with a single sliding indicator */}
+        <div
+          ref={listRef}
+          className="relative hidden flex-1 items-center justify-center gap-1 md:flex"
+        >
           {links.map((link) => {
             const active = isActive(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                ref={(el) => {
+                  linkRefs.current[link.href] = el;
+                }}
                 aria-current={active ? 'page' : undefined}
                 className={`relative rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                   active
@@ -144,12 +191,19 @@ export default function Navbar() {
                 }`}
               >
                 {link.label}
-                {active && (
-                  <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-[var(--accent)]" />
-                )}
               </Link>
             );
           })}
+          {/* Sliding indicator: transform/width transition, disabled for reduced motion */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-0 h-0.5 rounded-full bg-[var(--accent)] transition-[transform,width,opacity] duration-300 ease-out motion-reduce:transition-none"
+            style={{
+              width: `${indicator.width}px`,
+              transform: `translateX(${indicator.left}px)`,
+              opacity: indicator.ready ? 1 : 0,
+            }}
+          />
         </div>
 
         {/* Right: account (desktop) */}
