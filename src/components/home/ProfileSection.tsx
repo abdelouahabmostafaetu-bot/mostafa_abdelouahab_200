@@ -22,10 +22,7 @@ export default function ProfileSection() {
 
       <div className="relative z-10 mx-auto max-w-wide px-4 pb-16 pt-16 sm:px-6 md:pb-24 md:pt-24">
         {/* Eyebrow */}
-        <p
-          className="eyebrow rise"
-          style={{ animationDelay: '0.05s' }}
-        >
+        <p className="eyebrow rise" style={{ animationDelay: '0.05s' }}>
           Mathematics Researcher
         </p>
 
@@ -76,7 +73,7 @@ export default function ProfileSection() {
           {profileFacts.map(({ label, value, Icon }) => (
             <div
               key={label}
-              className="flex items-start gap-3 bg-[var(--surface)]/90 p-5 backdrop-blur-sm"
+              className="flex items-start gap-3 bg-[var(--surface)] p-5"
             >
               <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent-soft)] text-[var(--accent)]">
                 <Icon className="h-5 w-5" aria-hidden="true" />
