@@ -74,7 +74,7 @@ function ExamTypeTag({ type }: { type: DoctorateExamType }) {
   const isGeneral = type === 'general';
   return (
     <span
-      className={`inline-flex items-center rounded-[var(--radius-full)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] ring-1 ring-inset ${
+      className={`inline-flex items-center rounded-[var(--radius-full)] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.08em] ring-1 ring-inset ${
         isGeneral
           ? 'bg-[var(--accent-soft)] text-[var(--accent)] ring-[var(--accent-muted)]'
           : 'bg-[var(--surface-raised)] text-[var(--accent-strong)] ring-[var(--border-strong)]'
@@ -119,7 +119,7 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
       {/* Back */}
       <Link
         href="/doctorate-exams"
-        className="inline-flex min-h-[44px] items-center gap-2 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-[var(--radius-sm)]"
+        className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-[var(--radius-sm)]"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Exam Archive
@@ -127,11 +127,11 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
 
       {/* ===== Exam header ===== */}
       <header className="mt-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] sm:p-8">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <ExamTypeTag type={examType} />
+        <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
             {year}
           </span>
+          <ExamTypeTag type={examType} />
           <span className="text-sm text-[var(--text-subtle)]">
             {problems.length} exercice{problems.length !== 1 ? 's' : ''}
           </span>
@@ -141,7 +141,7 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
           {examLabel} — {year}
         </h1>
 
-        <div className="mt-3 flex flex-col gap-1.5 text-[0.95rem] text-[var(--text-muted)] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
+        <div className="mt-3 flex flex-col gap-1.5 text-sm text-[var(--text-muted)] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
           <span>{first.specialty}</span>
           {first.university && (
             <span className="inline-flex items-center gap-1.5">
@@ -152,24 +152,22 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
         </div>
 
         {first.source && (
-          <p className="mt-3 text-sm italic text-[var(--text-subtle)]">
-            {first.source}
-          </p>
+          <p className="mt-3 text-xs text-[var(--text-subtle)]">{first.source}</p>
         )}
 
         <div className="mt-6 border-t border-[var(--border)] pt-6">
           {user ? (
-            <Link
+            <a
               href={`/doctorate-exams/download/${exam}`}
-              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] sm:w-auto motion-reduce:transition-none"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               Download exam + all solutions (PDF)
-            </Link>
+            </a>
           ) : (
             <Link
               href="/sign-in"
-              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-5 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:w-auto motion-reduce:transition-none"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-5 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
               <Lock className="h-4 w-4" aria-hidden="true" />
               Sign in to download
@@ -184,45 +182,50 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
           const n = p.problemNumber ?? i + 1;
           const hasSolution = Boolean(String(p.solution ?? '').trim());
           return (
-            <article
+            <section
               key={String(p._id)}
-              className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] sm:p-7"
+              className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)]"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="font-serif text-xl text-[var(--text)] sm:text-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4 sm:px-6">
+                <h2 className="font-serif text-lg text-[var(--text)]">
                   Exercice {n}
                 </h2>
-                <span className="inline-flex items-center rounded-[var(--radius-full)] border border-[var(--border)] bg-[var(--bg-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--text-subtle)]">
+                <span className="inline-flex items-center rounded-[var(--radius-full)] bg-[var(--bg-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">
                   {DIFFICULTY_LABELS[p.difficulty] ?? p.difficulty}
                 </span>
               </div>
 
-              <div className="prose-academic blog-content mt-4">
-                <MDXContent content={p.statement} />
+              <div className="px-5 py-5 sm:px-6">
+                <div className="prose-academic blog-content">
+                  <MDXContent content={p.statement} />
+                </div>
               </div>
 
               {hasSolution ? (
-                <div className="mt-6 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
+                <div className="border-t border-[var(--border)]">
                   <SolutionReveal>
-                    <div className="prose-academic blog-content border-t border-[var(--border)] px-5 py-5">
+                    <div className="prose-academic blog-content px-5 pb-6 sm:px-6">
                       <MDXContent content={p.solution} />
                     </div>
                   </SolutionReveal>
                 </div>
               ) : (
-                <div className="mt-6 flex items-start gap-3 rounded-[var(--radius-md)] border border-dashed border-[var(--border)] bg-[var(--bg-subtle)] px-5 py-4">
-                  <Hourglass className="mt-0.5 h-4 w-4 shrink-0 text-[var(--text-subtle)]" aria-hidden="true" />
+                <div className="flex items-start gap-3 border-t border-[var(--border)] px-5 py-5 sm:px-6">
+                  <Hourglass
+                    className="mt-0.5 h-5 w-5 shrink-0 text-[var(--text-subtle)]"
+                    aria-hidden="true"
+                  />
                   <div>
                     <p className="text-sm font-medium text-[var(--text)]">
                       Solution coming soon
                     </p>
-                    <p className="mt-0.5 text-sm text-[var(--text-muted)]">
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">
                       The worked solution for this exercice is being prepared.
                     </p>
                   </div>
                 </div>
               )}
-            </article>
+            </section>
           );
         })}
       </div>
@@ -231,7 +234,7 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
       <div className="mt-10">
         <Link
           href="/doctorate-exams"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to the exam archive
