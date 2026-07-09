@@ -4,8 +4,8 @@ import Tag from '@/components/blog/Tag';
 import { getAllTags, getBlogPosts } from '@/lib/content';
 import Pagination from '@/components/blog/Pagination';
 import Link from 'next/link';
+import { SquarePen } from 'lucide-react';
 import { getCurrentAdminUser } from '@/lib/admin';
-import SiteIcon from '@/components/ui/SiteIcon';
 import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 
 const POSTS_PER_PAGE = 15;
@@ -32,95 +32,90 @@ export default async function BlogPage({
     ? allPosts.filter((post) => post.tags.includes(activeTag))
     : allPosts;
 
-  const currentPage = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10) || 1);
+  const currentPage = Math.max(
+    1,
+    parseInt(resolvedSearchParams.page || '1', 10) || 1,
+  );
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const startIdx = (safePage - 1) * POSTS_PER_PAGE;
   const posts = await Promise.all(
-    filteredPosts.slice(startIdx, startIdx + POSTS_PER_PAGE).map(async (post) => ({
-      ...post,
-      titleHtml: await renderInlineMarkdownPreviewToHtml(post.title),
-    })),
+    filteredPosts
+      .slice(startIdx, startIdx + POSTS_PER_PAGE)
+      .map(async (post) => ({
+        ...post,
+        titleHtml: await renderInlineMarkdownPreviewToHtml(post.title),
+      })),
   );
 
   return (
-    <div className="pt-20 pb-20">
-      <div className="max-w-5xl mx-auto px-4 md:px-6">
-        <div className="mb-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-[10px] md:text-xs uppercase tracking-[0.18em] text-[var(--color-accent)] font-medium mb-2">
-                <SiteIcon name="blog" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
-                Writing
-              </p>
-              <h1
-                className="text-2xl md:text-4xl font-semibold text-[var(--color-text)] mb-3"
-                style={{ fontFamily: 'var(--font-serif)' }}
-              >
-                Blog
-              </h1>
-              <p className="max-w-2xl text-[12px] md:text-sm leading-6 md:leading-7 text-[var(--color-text-secondary)]">
-                {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
-                {activeTag ? ` tagged "${activeTag}"` : ''}
-                {totalPages > 1 ? ` \u00b7 Page ${safePage} of ${totalPages}` : ''}
-              </p>
-            </div>
+    <div className="mx-auto max-w-wide px-4 py-10 sm:px-6 md:py-14">
+      {/* ===== Header ===== */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <header>
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--accent)]">
+            Writing
+          </p>
+          <h1 className="mt-3 font-serif text-3xl leading-tight text-[var(--text)] sm:text-4xl">
+            Blog
+          </h1>
+          <p className="mt-3 text-sm text-[var(--text-muted)]">
+            {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
+            {activeTag ? ` tagged \u201c${activeTag}\u201d` : ''}
+            {totalPages > 1 ? ` \u00b7 Page ${safePage} of ${totalPages}` : ''}
+          </p>
+        </header>
 
-            {adminUser ? (
-              <Link
-                href="/blog/admin"
-                className="inline-flex items-center rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-              >
-                <SiteIcon name="settings" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
-                Manage Posts
-              </Link>
-            ) : null}
-          </div>
+        {adminUser ? (
+          <Link
+            href="/blog/admin"
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+          >
+            <SquarePen className="h-4 w-4" aria-hidden="true" />
+            Manage Posts
+          </Link>
+        ) : null}
+      </div>
 
-          {allTags.length > 0 ? (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {allTags.map(({ tag, count }) => (
-                <Tag key={tag} tag={tag} count={count} active={tag === activeTag} size="sm" />
-              ))}
-            </div>
+      {/* ===== Tag filter ===== */}
+      {allTags.length > 0 ? (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {allTags.map(({ tag, count }) => (
+            <Tag key={tag} tag={tag} count={count} active={tag === activeTag} />
+          ))}
+        </div>
+      ) : null}
+
+      {/* ===== Grid ===== */}
+      {posts.length > 0 ? (
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <PostCard key={post.slug} {...post} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-12 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-6 py-16 text-center">
+          <p className="text-sm text-[var(--text-muted)]">
+            {activeTag ? 'No posts found for this tag.' : 'No blog posts yet.'}
+          </p>
+          {!activeTag && adminUser ? (
+            <Link
+              href="/blog/admin"
+              className="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            >
+              <SquarePen className="h-4 w-4" aria-hidden="true" />
+              Open Blog Admin
+            </Link>
           ) : null}
         </div>
+      )}
 
-        {posts.length > 0 ? (
-          <div>
-            {posts.map((post, index) => (
-              <PostCard
-                key={post.slug}
-                slug={post.slug}
-                title={post.title}
-                titleHtml={post.titleHtml}
-                category={post.category}
-                excerpt={post.excerpt}
-                readingTime={post.readingTime}
-                coverImageUrl={post.coverImageUrl}
-                tags={post.tags}
-                isLast={index === posts.length - 1}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-20 text-center">
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {activeTag ? 'No posts found for this tag.' : 'No blog posts yet.'}
-            </p>
-            {!activeTag && adminUser ? (
-              <Link
-                href="/blog/admin"
-                className="mt-4 inline-flex rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-              >
-                <SiteIcon name="add" alt="" className="mr-2 inline h-4 w-4 align-[-3px]" />
-                Open Blog Admin
-              </Link>
-            ) : null}
-          </div>
-        )}
-
-        <Pagination currentPage={safePage} totalPages={totalPages} activeTag={activeTag} />
+      <div className="mt-10">
+        <Pagination
+          currentPage={safePage}
+          totalPages={totalPages}
+          activeTag={activeTag}
+        />
       </div>
     </div>
   );
