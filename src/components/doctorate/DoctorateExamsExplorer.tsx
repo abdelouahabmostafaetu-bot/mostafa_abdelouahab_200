@@ -268,7 +268,7 @@ export default function DoctorateExamsExplorer({
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] px-3 text-sm font-medium text-[var(--accent)] transition-colors duration-150 hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:ml-auto"
+              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] px-3 text-sm font-medium text-[var(--accent)] transition-colors duration-150 hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 sm:ml-auto"
             >
               <SearchX className="h-4 w-4" aria-hidden="true" />
               Clear filters
@@ -304,7 +304,7 @@ export default function DoctorateExamsExplorer({
             <button
               type="button"
               onClick={clearFilters}
-              className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+              className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
             >
               <SearchX className="h-4 w-4" aria-hidden="true" />
               Clear filters
@@ -316,7 +316,7 @@ export default function DoctorateExamsExplorer({
           {visibleExams.map((exam, i) => (
             <Reveal key={exam.key} className="h-full" delay={(i % 3) * 70}>
               <article
-                className="group flex h-full flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] motion-reduce:transform-none motion-reduce:transition-none"
+                className="card-sheen group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none motion-reduce:active:scale-100"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
@@ -337,7 +337,7 @@ export default function DoctorateExamsExplorer({
                 <div className="mt-5 flex items-center gap-2.5 pt-4 border-t border-[var(--border)]">
                   <Link
                     href={`/doctorate-exams/exam/${exam.key}`}
-                    className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
+                    className="btn-sheen inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
                   >
                     Open
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -346,7 +346,7 @@ export default function DoctorateExamsExplorer({
                   {isAuthenticated ? (
                     <a
                       href={`/doctorate-exams/download/${exam.key}`}
-                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
                     >
                       <Download className="h-4 w-4" aria-hidden="true" />
                       PDF
@@ -355,7 +355,7 @@ export default function DoctorateExamsExplorer({
                     <Link
                       href="/sign-in"
                       aria-label="Sign in to download the PDF"
-                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
                     >
                       <Lock className="h-4 w-4" aria-hidden="true" />
                       PDF
@@ -380,7 +380,7 @@ export default function DoctorateExamsExplorer({
               type="button"
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
               disabled={safePage === 1}
-              className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text)] disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+              className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text)] disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.95] motion-reduce:transition-none motion-reduce:active:scale-100"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">Previous</span>
@@ -401,7 +401,7 @@ export default function DoctorateExamsExplorer({
                     type="button"
                     onClick={() => setCurrentPage(page)}
                     aria-current={page === safePage ? "page" : undefined}
-                    className={`h-11 min-w-11 rounded-[var(--radius-md)] border px-3 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none ${
+                    className={`h-11 min-w-11 rounded-[var(--radius-md)] border px-3 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.95] motion-reduce:transition-none motion-reduce:active:scale-100 ${
                       page === safePage
                         ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--bg)]"
                         : "border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
@@ -419,7 +419,7 @@ export default function DoctorateExamsExplorer({
                 setCurrentPage((page) => Math.min(totalPages, page + 1))
               }
               disabled={safePage === totalPages}
-              className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text)] disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+              className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text)] disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.95] motion-reduce:transition-none motion-reduce:active:scale-100"
             >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
