@@ -12,31 +12,26 @@
 
     /* =====================================================================
        DESIGN TOKENS  —  single source of truth
-       Refined dark-academia palette + gold accent (#c9a45c).
-       Every legacy --color-* / --bg-* / --tag-* var below is an ALIAS that
-       resolves to these canonical tokens, so existing pages keep working.
        ===================================================================== */
 
     /* ---- Color: canonical ---- */
-    --bg: #15110d;             /* page background */
-    --bg-subtle: #191410;      /* muted section band */
-    --surface: #1d1712;        /* cards, panels */
-    --surface-raised: #241d16; /* hover / elevated surface */
-    --border: #2f2720;         /* default borders */
-    --border-strong: #463829;  /* emphasized borders */
-    --text: #f4efe6;           /* primary text  (~14:1 on --bg) */
-    --text-muted: #bcae9d;     /* secondary text (~8:1) */
-    --text-subtle: #9a8c79;    /* meta / tertiary (~4.6:1, AA) */
-    --accent: #c9a45c;         /* gold — links, markers (~7:1) */
-    --accent-hover: #d9b56d;   /* gold hover */
-    --accent-strong: #e7cd93;  /* bright gold — active */
-    --accent-muted: #a9843f;   /* subdued gold */
-    --accent-soft: rgba(201, 164, 92, 0.1); /* tint fills */
+    --bg: #15110d;
+    --bg-subtle: #191410;
+    --surface: #1d1712;
+    --surface-raised: #241d16;
+    --border: #2f2720;
+    --border-strong: #463829;
+    --text: #f4efe6;
+    --text-muted: #bcae9d;
+    --text-subtle: #9a8c79;
+    --accent: #c9a45c;
+    --accent-hover: #d9b56d;
+    --accent-strong: #e7cd93;
+    --accent-muted: #a9843f;
+    --accent-soft: rgba(201, 164, 92, 0.1);
     --accent-rgb: 201, 164, 92;
 
-    /* ---- Secondary accent (chalk / blackboard teal) ----
-       Cool counterpoint to gold. Use SPARINGLY: gradient mesh, the odd tag,
-       decorative motifs. Must never compete with gold as the primary. */
+    /* ---- Secondary accent (chalk / blackboard teal) — sparing ---- */
     --accent-2: #6fae9f;
     --accent-2-strong: #8ac6b8;
     --accent-2-muted: #4f8377;
@@ -44,14 +39,12 @@
     --accent-2-rgb: 111, 174, 159;
 
     /* ---- Decorative surfaces ---- */
-    /* Low-opacity radial mesh: warm gold + cool teal drifting over --bg. */
     --gradient-hero:
       radial-gradient(60% 55% at 18% 22%, rgba(201, 164, 92, 0.14), transparent 60%),
       radial-gradient(55% 50% at 85% 15%, rgba(111, 174, 159, 0.1), transparent 62%),
       radial-gradient(70% 60% at 65% 90%, rgba(201, 164, 92, 0.07), transparent 65%);
     --gradient-divider:
       linear-gradient(90deg, transparent, var(--accent), transparent);
-    /* Faint tileable paper noise (SVG data URI, ~AA-safe, sits behind text). */
     --noise:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
 
@@ -65,23 +58,22 @@
     --fs-3xl: 2.25rem;   --lh-3xl: 1.15;
     --fs-4xl: 2.75rem;   --lh-4xl: 1.1;
     --fs-5xl: 3.5rem;    --lh-5xl: 1.05;
-    /* Editorial display size for hero / oversized headings. */
     --fs-display: clamp(2.5rem, 8vw, 5.5rem);
     --tracking-tight: -0.015em;
     --tracking-display: -0.02em;
     --tracking-normal: 0;
-    --tracking-wide: 0.18em; /* eyebrow / kicker */
+    --tracking-wide: 0.18em;
 
     /* ---- Spacing (4 / 8 px base) ---- */
-    --space-1: 0.25rem; /* 4  */
-    --space-2: 0.5rem;  /* 8  */
-    --space-3: 0.75rem; /* 12 */
-    --space-4: 1rem;    /* 16 */
-    --space-6: 1.5rem;  /* 24 */
-    --space-8: 2rem;    /* 32 */
-    --space-12: 3rem;   /* 48 */
-    --space-16: 4rem;   /* 64 */
-    --space-24: 6rem;   /* 96 */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-24: 6rem;
 
     /* ---- Radius ---- */
     --radius-sm: 6px;
@@ -95,19 +87,18 @@
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.38);
     --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.28);
-    /* Gold glow for hover emphasis. */
     --shadow-glow: 0 0 0 1px rgba(201, 164, 92, 0.25), 0 12px 32px rgba(201, 164, 92, 0.12);
 
     /* ---- Content widths ---- */
-    --content-narrow: 680px; /* prose / notes reading measure */
-    --content: 880px;        /* problem detail (matches existing) */
-    --content-wide: 1120px;  /* page shell */
+    --content-narrow: 680px;
+    --content: 880px;
+    --content-wide: 1120px;
 
-    /* ---- Mobile chrome heights (kept in sync with tab bar / FAB) ---- */
-    --tabbar-h: 60px;
+    /* ---- Mobile chrome metrics ---- */
+    --tabbar-h: 3.75rem;
 
     /* =====================================================================
-       LEGACY ALIASES  —  do not remove. Map old names to canonical tokens.
+       LEGACY ALIASES  —  do not remove.
        ===================================================================== */
     --bg-main: var(--bg);
     --bg-card: var(--surface);
@@ -183,7 +174,6 @@
     background-color: rgba(201, 164, 92, 0.32);
   }
 
-  /* Elegant scrollbar */
   ::-webkit-scrollbar {
     width: 5px;
   }
@@ -839,11 +829,7 @@
     @apply border border-[var(--color-border)] px-4 py-3 text-sm;
   }
 
-  /* =====================================================================
-     EDITORIAL REDESIGN  —  shared visual utilities
-     ===================================================================== */
-
-  /* Oversized display heading for heros / section titles. */
+  /* ===== Editorial redesign shared utilities ===== */
   .display-title {
     font-family: var(--font-serif);
     font-weight: 400;
@@ -852,7 +838,6 @@
     letter-spacing: var(--tracking-display);
   }
 
-  /* Eyebrow / kicker label. */
   .eyebrow {
     font-size: 0.7rem;
     font-weight: 600;
@@ -861,7 +846,6 @@
     color: var(--accent);
   }
 
-  /* Oversized editorial section number, e.g. "01". */
   .section-index {
     font-family: var(--font-serif);
     font-size: clamp(2rem, 5vw, 3rem);
@@ -870,7 +854,6 @@
     opacity: 0.5;
   }
 
-  /* Hairline gradient divider. */
   .rule-glow {
     height: 1px;
     border: 0;
@@ -878,7 +861,6 @@
     opacity: 0.5;
   }
 
-  /* Paper-noise overlay: attach to a positioned ancestor. Behind content. */
   .noise-overlay::before {
     content: "";
     position: absolute;
@@ -886,61 +868,6 @@
     background-image: var(--noise);
     pointer-events: none;
     z-index: 0;
-  }
-
-  /* =====================================================================
-     MOBILE + INTERACTION  —  shared utilities (phase 2)
-     ===================================================================== */
-
-  /* Safe-area helpers (notch / home bar). */
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-
-  /* Reserve space on phones so fixed bottom chrome never covers content.
-     Removed at md where the tab bar is hidden. */
-  .pb-mobile-chrome {
-    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
-  }
-  @screen md {
-    .pb-mobile-chrome {
-      padding-bottom: 0;
-    }
-  }
-
-  /* Horizontal snap carousel with subtle edge fade (mask). */
-  .snap-row {
-    display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 0.25rem;
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0,
-      #000 18px,
-      #000 calc(100% - 18px),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0,
-      #000 18px,
-      #000 calc(100% - 18px),
-      transparent 100%
-    );
-  }
-  .snap-row::-webkit-scrollbar {
-    display: none;
-  }
-  .snap-item {
-    scroll-snap-align: start;
-    flex: 0 0 auto;
   }
 }
 
@@ -1127,6 +1054,13 @@
   }
 }
 
+/* ===== Mobile chrome: reserve space for the bottom tab bar (< md) ===== */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+}
+
 /* ===== Animations ===== */
 @layer utilities {
   .fade-in {
@@ -1149,23 +1083,13 @@
     opacity: 0;
   }
 
-  .stagger-1 {
-    animation-delay: 0.1s;
-  }
-  .stagger-2 {
-    animation-delay: 0.2s;
-  }
-  .stagger-3 {
-    animation-delay: 0.3s;
-  }
-  .stagger-4 {
-    animation-delay: 0.4s;
-  }
-  .stagger-5 {
-    animation-delay: 0.5s;
-  }
+  .stagger-1 { animation-delay: 0.1s; }
+  .stagger-2 { animation-delay: 0.2s; }
+  .stagger-3 { animation-delay: 0.3s; }
+  .stagger-4 { animation-delay: 0.4s; }
+  .stagger-5 { animation-delay: 0.5s; }
 
-  /* ---- Scroll-reveal (paired with the <Reveal> IntersectionObserver) ---- */
+  /* ---- Scroll-reveal ---- */
   .reveal {
     opacity: 0;
     transform: translateY(20px);
@@ -1180,7 +1104,7 @@
     transform: none;
   }
 
-  /* ---- Hero entrance (staggered rise, driven by animation-delay) ---- */
+  /* ---- Hero entrance ---- */
   .rise {
     opacity: 0;
     animation: riseUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -1191,7 +1115,12 @@
     animation: drift 18s ease-in-out infinite alternate;
   }
 
-  /* ---- SVG path draw-on for the hero curve ---- */
+  /* ---- Even slower float for drifting glyphs ---- */
+  .float-slow {
+    animation: floatSlow 9s ease-in-out infinite alternate;
+  }
+
+  /* ---- SVG path draw-on ---- */
   .draw-path {
     stroke-dasharray: var(--draw-len, 1200);
     stroke-dashoffset: var(--draw-len, 1200);
@@ -1201,116 +1130,122 @@
   /* ---- Animated gradient-mesh shift (hero) ---- */
   .mesh-shift {
     background-size: 160% 160%;
-    animation: meshShift 24s ease-in-out infinite alternate;
+    animation: meshShift 26s ease-in-out infinite alternate;
   }
 
-  /* ---- Drifting hero glyphs (independent slow float) ---- */
-  .glyph-drift {
-    animation: glyphDrift 14s ease-in-out infinite alternate;
+  /* ---- Snap-scroll carousel (mobile card rows) ---- */
+  .snap-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.25rem;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
   }
 
-  /* ---- Press / tap feedback for cards & buttons ---- */
-  .press {
-    transition: transform 0.12s ease;
-  }
-  .press:active {
-    transform: scale(0.98);
+  .snap-row::-webkit-scrollbar {
+    display: none;
   }
 
-  /* ---- Card border-sheen sweep on hover ---- */
-  .card-sheen {
+  .snap-item {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+
+  /* ---- Button sheen sweep ---- */
+  .btn-sheen {
     position: relative;
     overflow: hidden;
+    isolation: isolate;
   }
-  .card-sheen::after {
+
+  .btn-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-130%);
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.14) 50%,
+      transparent 80%
+    );
+    transition: transform 0.6s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .btn-sheen:hover::after {
+    transform: translateX(130%);
+  }
+
+  /* ---- Card border sheen sweep on hover ---- */
+  .card-sheen::before {
     content: "";
     position: absolute;
     top: 0;
     left: -60%;
-    width: 45%;
     height: 100%;
-    background: linear-gradient(
-      100deg,
-      transparent,
-      rgba(201, 164, 92, 0.14),
-      transparent
-    );
-    transform: skewX(-18deg);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-  .card-sheen:hover::after {
-    opacity: 1;
-    animation: sheenSweep 0.9s ease-out;
-  }
-
-  /* ---- Button shine sweep on hover ---- */
-  .btn-sheen {
-    position: relative;
-    overflow: hidden;
-  }
-  .btn-sheen::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -80%;
     width: 55%;
-    height: 100%;
     background: linear-gradient(
       100deg,
       transparent,
-      rgba(255, 255, 255, 0.18),
+      rgba(201, 164, 92, 0.1),
       transparent
     );
     transform: skewX(-18deg);
+    transition: left 0.55s ease;
     pointer-events: none;
-  }
-  .btn-sheen:hover::after {
-    animation: sheenSweep 0.8s ease-out;
+    z-index: 0;
   }
 
-  /* ---- Kicker underline that draws in when revealed ---- */
-  .kicker-underline {
-    position: relative;
+  .card-sheen:hover::before {
+    left: 120%;
   }
-  .kicker-underline::after {
+
+  /* ---- Animated heading underline (reveals with parent .reveal) ---- */
+  .underline-reveal {
+    position: relative;
+    display: inline-block;
+  }
+
+  .underline-reveal::after {
     content: "";
     position: absolute;
     left: 0;
     bottom: -0.4rem;
     height: 2px;
-    width: 2.5rem;
+    width: 2.75rem;
+    background: var(--gradient-divider);
     transform: scaleX(0);
     transform-origin: left;
-    background: var(--gradient-divider);
     transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
   }
-  .reveal.is-visible .kicker-underline::after,
-  .kicker-underline.is-visible::after {
+
+  .reveal.is-visible .underline-reveal::after,
+  .underline-reveal.is-visible::after {
     transform: scaleX(1);
   }
 
-  /* ---- Sliding nav active indicator ---- */
-  .nav-indicator {
-    transition:
-      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.2s ease;
+  /* ---- Safe-area helpers ---- */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .bottom-safe {
+    bottom: calc(env(safe-area-inset-bottom));
   }
 
   @media (prefers-reduced-motion: reduce) {
     .reveal,
     .rise,
     .drift,
+    .float-slow,
     .draw-path,
     .mesh-shift,
-    .glyph-drift,
-    .press,
-    .card-sheen::after,
-    .btn-sheen::after,
-    .kicker-underline::after,
-    .nav-indicator,
     .fade-in,
     .fade-in-up,
     .slide-in-left,
@@ -1320,108 +1255,65 @@
       opacity: 1 !important;
       transform: none !important;
       stroke-dashoffset: 0 !important;
+      background-position: 0 0 !important;
     }
-    .kicker-underline::after {
+
+    .btn-sheen::after,
+    .card-sheen::before {
+      display: none !important;
+    }
+
+    .underline-reveal::after {
+      transition: none !important;
       transform: scaleX(1) !important;
     }
-    .card-sheen::after,
-    .btn-sheen::after {
-      opacity: 0 !important;
+
+    .snap-row {
+      scroll-snap-type: none;
     }
   }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes riseUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(0, -12px, 0) scale(1.03);
-  }
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(0, -12px, 0) scale(1.03); }
+}
+
+@keyframes floatSlow {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -8px, 0); }
 }
 
 @keyframes drawPath {
-  to {
-    stroke-dashoffset: 0;
-  }
+  to { stroke-dashoffset: 0; }
 }
 
 @keyframes meshShift {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes glyphDrift {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(0, -10px, 0);
-  }
-}
-
-@keyframes sheenSweep {
-  from {
-    left: -80%;
-  }
-  to {
-    left: 130%;
-  }
+  from { background-position: 0% 0%; }
+  to { background-position: 100% 100%; }
 }
