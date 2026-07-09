@@ -18,6 +18,7 @@ import {
 } from "@/types/doctorate-problem";
 import Reveal from "@/components/visual/Reveal";
 import MathMotif from "@/components/visual/MathMotif";
+import CountUp from "@/components/visual/CountUp";
 
 type Props = { problems: DoctorateProblemSummary[]; isAuthenticated?: boolean };
 
@@ -186,7 +187,10 @@ export default function DoctorateExamsExplorer({
             and specialist papers from previous years, with complete solutions.
           </p>
           <p className="mt-4 text-sm text-[var(--text-subtle)]">
-            <span className="font-semibold text-[var(--text)]">{exams.length}</span>{" "}
+            <CountUp
+              value={exams.length}
+              className="font-semibold text-[var(--text)]"
+            />{" "}
             {exams.length === 1 ? "exam" : "exams"} archived
           </p>
         </div>
