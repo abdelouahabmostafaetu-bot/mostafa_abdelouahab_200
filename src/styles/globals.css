@@ -103,6 +103,9 @@
     --content: 880px;        /* problem detail (matches existing) */
     --content-wide: 1120px;  /* page shell */
 
+    /* ---- Mobile chrome heights (kept in sync with tab bar / FAB) ---- */
+    --tabbar-h: 60px;
+
     /* =====================================================================
        LEGACY ALIASES  —  do not remove. Map old names to canonical tokens.
        ===================================================================== */
@@ -884,6 +887,61 @@
     pointer-events: none;
     z-index: 0;
   }
+
+  /* =====================================================================
+     MOBILE + INTERACTION  —  shared utilities (phase 2)
+     ===================================================================== */
+
+  /* Safe-area helpers (notch / home bar). */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Reserve space on phones so fixed bottom chrome never covers content.
+     Removed at md where the tab bar is hidden. */
+  .pb-mobile-chrome {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+  @screen md {
+    .pb-mobile-chrome {
+      padding-bottom: 0;
+    }
+  }
+
+  /* Horizontal snap carousel with subtle edge fade (mask). */
+  .snap-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.25rem;
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 18px,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 18px,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
+  }
+  .snap-row::-webkit-scrollbar {
+    display: none;
+  }
+  .snap-item {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1140,11 +1198,119 @@
     animation: drawPath 2.4s ease-out forwards;
   }
 
+  /* ---- Animated gradient-mesh shift (hero) ---- */
+  .mesh-shift {
+    background-size: 160% 160%;
+    animation: meshShift 24s ease-in-out infinite alternate;
+  }
+
+  /* ---- Drifting hero glyphs (independent slow float) ---- */
+  .glyph-drift {
+    animation: glyphDrift 14s ease-in-out infinite alternate;
+  }
+
+  /* ---- Press / tap feedback for cards & buttons ---- */
+  .press {
+    transition: transform 0.12s ease;
+  }
+  .press:active {
+    transform: scale(0.98);
+  }
+
+  /* ---- Card border-sheen sweep on hover ---- */
+  .card-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .card-sheen::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(
+      100deg,
+      transparent,
+      rgba(201, 164, 92, 0.14),
+      transparent
+    );
+    transform: skewX(-18deg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .card-sheen:hover::after {
+    opacity: 1;
+    animation: sheenSweep 0.9s ease-out;
+  }
+
+  /* ---- Button shine sweep on hover ---- */
+  .btn-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-sheen::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(
+      100deg,
+      transparent,
+      rgba(255, 255, 255, 0.18),
+      transparent
+    );
+    transform: skewX(-18deg);
+    pointer-events: none;
+  }
+  .btn-sheen:hover::after {
+    animation: sheenSweep 0.8s ease-out;
+  }
+
+  /* ---- Kicker underline that draws in when revealed ---- */
+  .kicker-underline {
+    position: relative;
+  }
+  .kicker-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.4rem;
+    height: 2px;
+    width: 2.5rem;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: var(--gradient-divider);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+  }
+  .reveal.is-visible .kicker-underline::after,
+  .kicker-underline.is-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* ---- Sliding nav active indicator ---- */
+  .nav-indicator {
+    transition:
+      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.2s ease;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .reveal,
     .rise,
     .drift,
     .draw-path,
+    .mesh-shift,
+    .glyph-drift,
+    .press,
+    .card-sheen::after,
+    .btn-sheen::after,
+    .kicker-underline::after,
+    .nav-indicator,
     .fade-in,
     .fade-in-up,
     .slide-in-left,
@@ -1154,6 +1320,13 @@
       opacity: 1 !important;
       transform: none !important;
       stroke-dashoffset: 0 !important;
+    }
+    .kicker-underline::after {
+      transform: scaleX(1) !important;
+    }
+    .card-sheen::after,
+    .btn-sheen::after {
+      opacity: 0 !important;
     }
   }
 }
@@ -1223,5 +1396,32 @@
 @keyframes drawPath {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+@keyframes meshShift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes glyphDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes sheenSweep {
+  from {
+    left: -80%;
+  }
+  to {
+    left: 130%;
   }
 }
