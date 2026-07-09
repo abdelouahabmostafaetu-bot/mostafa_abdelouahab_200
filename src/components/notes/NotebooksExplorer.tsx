@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { ArrowUpRight, FileText, Plus, Search, X } from 'lucide-react';
-import SiteIcon from '@/components/ui/SiteIcon';
+import { ArrowUpRight, FileText, Plus, Settings } from 'lucide-react';
 
 export type NotebookSummary = {
   id: string;
@@ -21,54 +20,44 @@ function normalizeSubject(subject: string | undefined | null): string {
 }
 
 function NotebookCard({ notebook }: { notebook: NotebookSummary }) {
-  const accent = notebook.color || 'var(--color-accent)';
-  const accentStyle = { backgroundColor: accent };
+  const spineColor = notebook.color || 'var(--accent)';
 
   return (
     <Link
       href={`/notes/notebook/${notebook.slug}`}
-      className="group relative flex overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] transition-all duration-200 hover:-translate-y-1 hover:border-[var(--color-accent)] hover:shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+      className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] pl-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transform-none motion-reduce:transition-none"
     >
       {/* Notebook spine */}
       <span
-        className="w-1.5 shrink-0 opacity-80 transition-opacity duration-200 group-hover:opacity-100"
-        style={accentStyle}
         aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-1.5"
+        style={{ backgroundColor: spineColor }}
       />
 
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-center gap-2">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={accentStyle}
-            aria-hidden="true"
-          />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
-            {normalizeSubject(notebook.subject)}
-          </p>
-        </div>
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--text-subtle)]">
+          {normalizeSubject(notebook.subject)}
+        </p>
 
-        <h2 className="mt-3 font-serif text-lg leading-snug text-[var(--color-text)] text-balance transition-colors duration-200 group-hover:text-[var(--color-accent-light)]">
+        <h2 className="mt-3 font-serif text-xl leading-snug text-[var(--text)] transition-colors duration-150 group-hover:text-[var(--accent)]">
           {notebook.title}
         </h2>
 
         {notebook.description && (
-          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-[var(--color-text-secondary)]">
+          <p className="mt-2.5 line-clamp-3 text-sm leading-relaxed text-[var(--text-muted)]">
             {notebook.description}
           </p>
         )}
 
-        <div className="mt-auto pt-5">
-          <div className="flex items-center justify-between gap-2 border-t border-[var(--color-border)] pt-3.5 text-xs text-[var(--color-text-tertiary)]">
-            <span className="inline-flex items-center gap-1.5">
-              <FileText size={12} aria-hidden="true" />
-              {notebook.pageCount} page{notebook.pageCount !== 1 ? 's' : ''}
-            </span>
-            <span className="inline-flex items-center gap-1 font-medium text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-accent)]">
-              Read
-              <ArrowUpRight size={12} aria-hidden="true" />
-            </span>
-          </div>
+        <div className="mt-auto flex items-center justify-between gap-3 pt-5">
+          <span className="inline-flex items-center gap-1.5 text-xs text-[var(--text-subtle)]">
+            <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+            {notebook.pageCount} page{notebook.pageCount !== 1 ? 's' : ''}
+          </span>
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--accent)]">
+            Read
+            <ArrowUpRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transform-none" aria-hidden="true" />
+          </span>
         </div>
       </div>
     </Link>
@@ -97,9 +86,7 @@ export default function NotebooksExplorer({
 
   const visibleNotebooks = useMemo(() => {
     if (subject === 'all') return notebooks;
-    return notebooks.filter(
-      (nb) => normalizeSubject(nb.subject) === subject,
-    );
+    return notebooks.filter((nb) => normalizeSubject(nb.subject) === subject);
   }, [notebooks, subject]);
 
   const hasFilters = subject !== 'all';
@@ -108,137 +95,127 @@ export default function NotebooksExplorer({
     setSubject('all');
   };
 
-  return (
-    <main className="min-h-screen pt-20 pb-20">
-      <div className="mx-auto max-w-5xl px-4 md:px-6">
-        {/* Header */}
-        <header className="mb-8 border-b border-[var(--color-border)] pb-8">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-                Research Journal
-              </p>
-              <h1 className="font-serif text-3xl text-[var(--color-text)] md:text-4xl text-balance">
-                My Notebooks
-              </h1>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                Theories, theorems, definitions, and observations from ongoing
-                research in mathematics.
-              </p>
-            </div>
+  const chipClass = (active: boolean) =>
+    `inline-flex min-h-[36px] items-center rounded-[var(--radius-full)] border px-3.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none ${
+      active
+        ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--bg)]'
+        : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]'
+    }`;
 
-            {isAdmin && (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/notes/admin/create"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-3 py-2 text-xs font-semibold text-[var(--color-bg)] transition-opacity hover:opacity-90"
-                >
-                  <Plus size={14} aria-hidden="true" />
-                  New notebook
-                </Link>
-                <Link
-                  href="/notes/admin"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                >
-                  <SiteIcon name="settings" alt="" className="h-3.5 w-3.5" />
-                  Manage
-                </Link>
-              </div>
-            )}
-          </div>
+  return (
+    <div className="mx-auto max-w-wide px-4 py-10 sm:px-6 md:py-14">
+      {/* ===== Header ===== */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <header className="max-w-2xl">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--accent)]">
+            Research Journal
+          </p>
+          <h1 className="mt-3 font-serif text-3xl leading-tight text-[var(--text)] sm:text-4xl">
+            My Notebooks
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)]">
+            Theories, theorems, definitions, and observations from ongoing
+            research in mathematics.
+          </p>
         </header>
 
-        {/* Subject filter */}
-        {notebooks.length > 0 && subjects.length > 1 && (
-          <div className="mb-8 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setSubject('all')}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                subject === 'all'
-                  ? 'border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold text-[var(--color-bg)]'
-                  : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
-              }`}
+        {isAdmin && (
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/notes/admin/create"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
-              All ({notebooks.length})
-            </button>
-            {subjects.map(([name, count]) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() =>
-                  setSubject((prev) => (prev === name ? 'all' : name))
-                }
-                className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                  subject === name
-                    ? 'border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold text-[var(--color-bg)]'
-                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
-                }`}
-              >
-                {name} ({count})
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Grid */}
-        {notebooks.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[var(--color-border)] px-4 py-16 text-center">
-            <SiteIcon
-              name="notebook"
-              alt=""
-              className="mx-auto mb-3 h-8 w-8 opacity-40"
-            />
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              No notebooks published yet.
-            </p>
-            {isAdmin && (
-              <Link
-                href="/notes/admin/create"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-              >
-                <Plus size={14} aria-hidden="true" />
-                Create first notebook
-              </Link>
-            )}
-          </div>
-        ) : visibleNotebooks.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[var(--color-border)] px-4 py-16 text-center">
-            <Search
-              size={26}
-              aria-hidden="true"
-              className="mx-auto mb-3 text-[var(--color-text-tertiary)] opacity-60"
-            />
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              No notebooks match this subject.
-            </p>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              New notebook
+            </Link>
+            <Link
+              href="/notes/admin"
+              aria-label="Manage notebooks"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
-              <X size={14} aria-hidden="true" />
-              Clear filter
-            </button>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleNotebooks.map((nb) => (
-              <NotebookCard key={nb.id} notebook={nb} />
-            ))}
-
-            {isAdmin && !hasFilters && (
-              <Link
-                href="/notes/admin/create"
-                className="flex min-h-44 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--color-border)] p-8 text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-              >
-                <Plus size={20} aria-hidden="true" />
-                <span className="text-xs font-medium">New Notebook</span>
-              </Link>
-            )}
+              <Settings className="h-5 w-5" aria-hidden="true" />
+            </Link>
           </div>
         )}
       </div>
-    </main>
+
+      {/* ===== Subject filter ===== */}
+      {notebooks.length > 0 && subjects.length > 1 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setSubject('all')}
+            className={chipClass(subject === 'all')}
+          >
+            All ({notebooks.length})
+          </button>
+          {subjects.map(([name, count]) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() =>
+                setSubject((prev) => (prev === name ? 'all' : name))
+              }
+              className={chipClass(subject === name)}
+            >
+              {name} ({count})
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ===== Grid ===== */}
+      {notebooks.length === 0 ? (
+        <div className="mt-12 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-full)] bg-[var(--surface)] text-[var(--text-subtle)]">
+            <FileText className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <p className="mt-5 text-sm text-[var(--text-muted)]">
+            No notebooks published yet.
+          </p>
+          {isAdmin && (
+            <Link
+              href="/notes/admin/create"
+              className="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Create first notebook
+            </Link>
+          )}
+        </div>
+      ) : visibleNotebooks.length === 0 ? (
+        <div className="mt-12 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-full)] bg-[var(--surface)] text-[var(--text-subtle)]">
+            <FileText className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <p className="mt-5 text-sm text-[var(--text-muted)]">
+            No notebooks match this subject.
+          </p>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          >
+            Clear filter
+          </button>
+        </div>
+      ) : (
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {visibleNotebooks.map((nb) => (
+            <NotebookCard key={nb.id} notebook={nb} />
+          ))}
+
+          {isAdmin && !hasFilters && (
+            <Link
+              href="/notes/admin/create"
+              className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] p-5 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+            >
+              <Plus className="h-6 w-6" aria-hidden="true" />
+              New Notebook
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
