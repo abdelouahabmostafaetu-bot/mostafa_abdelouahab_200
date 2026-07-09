@@ -2,8 +2,19 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
-import SiteIcon from '@/components/ui/SiteIcon';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  FileX,
+  Library as LibraryIcon,
+  Search,
+  Settings,
+  X,
+} from 'lucide-react';
+import Reveal from '@/components/visual/Reveal';
+import MathMotif from '@/components/visual/MathMotif';
+import GenerativeCover from '@/components/visual/GenerativeCover';
 import type { LibraryBook } from '@/types/library';
 
 const PAGE_SIZE = 12;
@@ -56,7 +67,14 @@ function getBookDownloadUrl(book: LibraryBook): string {
 }
 
 function getBookCoverUrl(book: LibraryBook): string {
-  return book.coverUrl || book.imageUrl || book.cover_url || book.thumbnailUrl || book.cover || '';
+  return (
+    book.coverUrl ||
+    book.imageUrl ||
+    book.cover_url ||
+    book.thumbnailUrl ||
+    book.cover ||
+    ''
+  );
 }
 
 function getBookCategory(book: LibraryBook): string {
@@ -70,82 +88,68 @@ function getBookTimestamp(book: LibraryBook): number {
 }
 
 function BookCard({ book }: { book: LibraryBook }) {
-  const [expanded, setExpanded] = useState(false);
-  const shouldClamp = Boolean(book.description && book.description.length > 110);
   const downloadUrl = getBookDownloadUrl(book);
   const coverUrl = getBookCoverUrl(book);
   const category = getBookCategory(book);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] transition-all duration-200 hover:-translate-y-1 hover:border-[var(--color-accent)]/60 hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-      <div className="relative aspect-[2/3] overflow-hidden bg-[var(--color-bg-muted)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] motion-reduce:transform-none motion-reduce:transition-none">
+      {/* Cover: real image if present, else deterministic generative art */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--bg-subtle)]">
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={coverUrl}
             alt={book.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
             loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transform-none"
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#2a2119] via-[#211b16] to-[#3b2d1c] p-3 text-center">
-            <SiteIcon name="book" alt="" className="h-6 w-6 opacity-80" />
-            <span className="line-clamp-4 font-serif text-xs leading-snug text-[var(--color-text)]">
-              {book.title}
-            </span>
-            <span className="line-clamp-1 text-[10px] text-[var(--color-text-tertiary)]">
-              {book.author}
-            </span>
-          </div>
+          <GenerativeCover
+            seed={`${book.title}-${book.author ?? ''}`}
+            label={category}
+            className="transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transform-none"
+          />
         )}
-
-        <span className="absolute left-2 top-2 max-w-[85%] truncate rounded-full bg-black/65 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[var(--color-accent-light)] backdrop-blur-sm">
+        <span className="absolute left-2 top-2 inline-flex items-center rounded-[var(--radius-full)] bg-[var(--bg)]/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--accent)] backdrop-blur-sm">
           {category}
         </span>
-
         {book.fileSize ? (
-          <span className="absolute bottom-2 right-2 rounded-full bg-black/65 px-2 py-0.5 text-[9px] font-medium text-[var(--color-text-secondary)] backdrop-blur-sm">
+          <span className="absolute right-2 top-2 inline-flex items-center rounded-[var(--radius-full)] bg-[var(--bg)]/80 px-2 py-0.5 text-[10px] font-medium text-[var(--text-subtle)] backdrop-blur-sm">
             {formatFileSize(book.fileSize)}
           </span>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-3">
-        <h2 className="line-clamp-2 font-serif text-[15px] font-medium leading-snug text-[var(--color-text)]">
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="font-serif text-base leading-snug text-[var(--text)] transition-colors duration-150 group-hover:text-[var(--accent)]">
           {book.title}
-        </h2>
-        <p className="mt-1 truncate text-[11.5px] text-[var(--color-accent)]">{book.author}</p>
-
+        </h3>
+        {book.author ? (
+          <p className="mt-1 text-xs text-[var(--text-muted)]">{book.author}</p>
+        ) : null}
         {book.description ? (
-          <div className="mt-1.5 text-[11.5px] leading-5 text-[var(--color-text-secondary)]">
-            <p className={expanded ? '' : 'line-clamp-2'}>{book.description}</p>
-            {shouldClamp ? (
-              <button
-                type="button"
-                onClick={() => setExpanded((value) => !value)}
-                className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-accent)]"
-              >
-                {expanded ? 'Less' : 'More'}
-              </button>
-            ) : null}
-          </div>
+          <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[var(--text-subtle)]">
+            {book.description}
+          </p>
         ) : null}
 
-        <div className="mt-auto pt-2.5">
+        <div className="mt-auto pt-4">
           {downloadUrl ? (
             <a
               href={downloadUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-[var(--color-accent)] px-2 text-[11px] font-semibold text-[#161311] transition-opacity hover:opacity-90"
+              className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
-              <SiteIcon name="download" alt="" className="h-3.5 w-3.5" />
+              <Download className="h-4 w-4" aria-hidden="true" />
               Download
             </a>
           ) : (
-            <div className="flex h-8 items-center justify-center rounded-md border border-[var(--color-border)] text-[11px] text-[var(--color-text-tertiary)]">
+            <span className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-dashed border-[var(--border)] px-3 text-sm text-[var(--text-subtle)]">
+              <FileX className="h-4 w-4" aria-hidden="true" />
               No PDF
-            </div>
+            </span>
           )}
         </div>
       </div>
@@ -234,7 +238,9 @@ export default function LibraryPageClient({
       const key = getBookCategory(book);
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
-    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    return Array.from(counts.entries()).sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    );
   }, [allBooks]);
 
   const filteredBooks = useMemo(() => {
@@ -276,24 +282,36 @@ export default function LibraryPageClient({
 
   const totalPages = Math.max(1, Math.ceil(filteredBooks.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const visibleBooks = filteredBooks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const visibleBooks = filteredBooks.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
   const hasActiveFilters = query.trim() !== '' || category !== 'All';
 
+  const chipClass = (active: boolean) =>
+    `inline-flex min-h-[36px] items-center rounded-[var(--radius-full)] border px-3.5 text-[11px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none ${
+      active
+        ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--text)]'
+        : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]'
+    }`;
+
   return (
-    <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--color-border)] pb-6">
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <SiteIcon name="library" alt="" className="h-4 w-4" />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent)]">
-                My Favourite Books
-              </p>
-            </div>
-            <h1 className="font-serif text-3xl font-normal leading-tight text-[var(--color-text)] sm:text-4xl">
+    <div className="mx-auto max-w-wide px-4 py-10 sm:px-6 md:py-14">
+      {/* ===== Header ===== */}
+      <header className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-9">
+        <div className="absolute inset-0 bg-hero-mesh" aria-hidden="true" />
+        <MathMotif
+          name="cayley"
+          opacity={0.1}
+          className="absolute -right-2 top-1/2 hidden h-[120%] -translate-y-1/2 sm:block"
+        />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="eyebrow">My Favourite Books</p>
+            <h1 className="mt-3 font-serif text-4xl leading-tight text-[var(--text)] sm:text-5xl">
               Personal Library
             </h1>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)]">
               {allBooks.length > 0
                 ? `${allBooks.length} book${allBooks.length === 1 ? '' : 's'} across ${categories.length} categor${categories.length === 1 ? 'y' : 'ies'} — browse, explore, and download.`
                 : 'A curated shelf of mathematics books — browse, explore, and download.'}
@@ -303,175 +321,179 @@ export default function LibraryPageClient({
           {showAdminLink ? (
             <Link
               href="/library/admin"
-              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
+              <Settings className="h-4 w-4" aria-hidden="true" />
               Admin
-              <SiteIcon name="external-link" alt="" className="h-3.5 w-3.5" />
             </Link>
           ) : null}
         </div>
+      </header>
 
-        {errorMessage ? (
-          <div className="mt-5 rounded-md border border-red-500/30 bg-red-950/20 px-4 py-3 text-xs text-red-300">
-            {errorMessage}
-          </div>
-        ) : null}
+      {errorMessage ? (
+        <p className="mt-6 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-muted)]">
+          {errorMessage}
+        </p>
+      ) : null}
 
-        {!isLoading && allBooks.length > 0 ? (
-          <div className="mt-6 flex flex-col gap-3">
-            <div className="relative">
-              <Search
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-              />
-              <input
-                type="text"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search by title, author, or topic…"
-                className="h-10 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] pl-9 pr-9 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none"
-              />
-              {query ? (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text)]"
-                  aria-label="Clear search"
-                >
-                  <X size={13} />
-                </button>
-              ) : null}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
+      {/* ===== Controls ===== */}
+      {!isLoading && allBooks.length > 0 ? (
+        <div className="mt-8 space-y-4">
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-subtle)]"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search by title, author, or topic…"
+              className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] pl-9 pr-9 text-sm text-[var(--text)] placeholder:text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--border-strong)] focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            />
+            {query ? (
               <button
                 type="button"
-                onClick={() => setCategory('All')}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
-                  category === 'All'
-                    ? 'border-[var(--color-accent)] bg-[rgba(217,162,74,0.14)] text-[var(--color-text)]'
-                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]/60 hover:text-[var(--color-text)]'
-                }`}
+                onClick={() => setQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[var(--text-subtle)] transition-colors hover:text-[var(--text)]"
+                aria-label="Clear search"
               >
-                All ({allBooks.length})
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
-              {categories.map(([name, count]) => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => setCategory(name)}
-                  className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
-                    category === name
-                      ? 'border-[var(--color-accent)] bg-[rgba(217,162,74,0.14)] text-[var(--color-text)]'
-                      : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]/60 hover:text-[var(--color-text)]'
-                  }`}
-                >
-                  {name} ({count})
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-[var(--color-text-secondary)]">
-                {filteredBooks.length === allBooks.length
-                  ? `Showing all ${allBooks.length} books`
-                  : `Found ${filteredBooks.length} of ${allBooks.length} books`}
-              </p>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-                Sort by
-                <select
-                  value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value as SortOption)}
-                  className="h-8 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-xs text-[var(--color-text)] focus:border-[var(--color-accent)] focus:outline-none"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="title">Title A–Z</option>
-                  <option value="author">Author A–Z</option>
-                </select>
-              </label>
-            </div>
+            ) : null}
           </div>
-        ) : null}
 
-        {isLoading ? (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={index}
-                className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]"
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setCategory('All')}
+              className={chipClass(category === 'All')}
+            >
+              All ({allBooks.length})
+            </button>
+            {categories.map(([name, count]) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setCategory(name)}
+                className={chipClass(category === name)}
               >
-                <div className="aspect-[2/3] animate-pulse bg-[var(--color-bg-muted)]" />
-                <div className="p-3">
-                  <div className="h-3 w-3/4 animate-pulse rounded bg-[var(--color-bg-muted)]" />
-                  <div className="mt-2 h-2 w-1/2 animate-pulse rounded bg-[var(--color-bg-muted)]" />
-                </div>
-              </div>
+                {name} ({count})
+              </button>
             ))}
           </div>
-        ) : allBooks.length === 0 && !errorMessage ? (
-          <div className="mt-12 rounded-xl border border-dashed border-[var(--color-border)] px-4 py-14 text-center">
-            <SiteIcon name="book" alt="" className="mx-auto mb-3 h-8 w-8 opacity-65" />
-            <p className="text-sm font-medium text-[var(--color-text)]">No books yet.</p>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Add books from the admin panel.
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-[var(--text-subtle)]">
+              {filteredBooks.length === allBooks.length
+                ? `Showing all ${allBooks.length} books`
+                : `Found ${filteredBooks.length} of ${allBooks.length} books`}
             </p>
+            <label className="flex items-center gap-2 text-xs text-[var(--text-subtle)]">
+              Sort by
+              <select
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value as SortOption)}
+                className="h-9 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-2 text-xs text-[var(--text)] focus-visible:border-[var(--accent)] focus-visible:outline-none"
+              >
+                <option value="newest">Newest first</option>
+                <option value="title">Title A–Z</option>
+                <option value="author">Author A–Z</option>
+              </select>
+            </label>
           </div>
-        ) : filteredBooks.length === 0 ? (
-          <div className="mt-10 rounded-xl border border-dashed border-[var(--color-border)] px-4 py-12 text-center">
-            <SiteIcon name="search" alt="" className="mx-auto mb-3 h-7 w-7 opacity-65" />
-            <p className="text-sm font-medium text-[var(--color-text)]">
-              No books match your search.
-            </p>
-            {hasActiveFilters ? (
+        </div>
+      ) : null}
+
+      {/* ===== Results ===== */}
+      {isLoading ? (
+        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div
+              key={index}
+              className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)]"
+            >
+              <div className="aspect-[3/4] w-full animate-pulse bg-[var(--surface-raised)]" />
+              <div className="space-y-2 p-4">
+                <div className="h-3 w-3/4 animate-pulse rounded bg-[var(--surface-raised)]" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-[var(--surface-raised)]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : allBooks.length === 0 && !errorMessage ? (
+        <div className="mt-12 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-full)] bg-[var(--surface)] text-[var(--text-subtle)]">
+            <LibraryIcon className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <p className="mt-5 text-sm text-[var(--text-muted)]">No books yet.</p>
+          <p className="mt-1 text-xs text-[var(--text-subtle)]">
+            Add books from the admin panel.
+          </p>
+        </div>
+      ) : filteredBooks.length === 0 ? (
+        <div className="mt-12 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-full)] bg-[var(--surface)] text-[var(--text-subtle)]">
+            <Search className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <p className="mt-5 text-sm text-[var(--text-muted)]">
+            No books match your search.
+          </p>
+          {hasActiveFilters ? (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                setCategory('All');
+              }}
+              className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+              Clear filters
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <>
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {visibleBooks.map((book, i) => (
+              <Reveal
+                key={`${book.title}-${book.author ?? ''}-${i}`}
+                className="h-full"
+                delay={(i % 4) * 60}
+              >
+                <BookCard book={book} />
+              </Reveal>
+            ))}
+          </div>
+
+          {totalPages > 1 ? (
+            <div className="mt-10 flex items-center justify-center gap-4">
               <button
                 type="button"
-                onClick={() => {
-                  setQuery('');
-                  setCategory('All');
-                }}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                onClick={() => setPage((value) => Math.max(1, value - 1))}
+                disabled={safePage <= 1}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                aria-label="Previous books page"
               >
-                <X size={12} />
-                Clear filters
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </button>
-            ) : null}
-          </div>
-        ) : (
-          <>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {visibleBooks.map((book) => (
-                <BookCard key={book.id} book={book} />
-              ))}
+              <span className="text-sm text-[var(--text-subtle)]">
+                Page {safePage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                disabled={safePage >= totalPages}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                aria-label="Next books page"
+              >
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </button>
             </div>
-
-            {totalPages > 1 ? (
-              <div className="mt-10 flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPage((value) => Math.max(1, value - 1))}
-                  disabled={safePage <= 1}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Previous books page"
-                >
-                  <ChevronLeft size={15} />
-                </button>
-                <span className="text-xs text-[var(--color-text-secondary)]">
-                  Page {safePage} of {totalPages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
-                  disabled={safePage >= totalPages}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Next books page"
-                >
-                  <ChevronRight size={15} />
-                </button>
-              </div>
-            ) : null}
-          </>
-        )}
-      </div>
-    </section>
+          ) : null}
+        </>
+      )}
+    </div>
   );
 }
