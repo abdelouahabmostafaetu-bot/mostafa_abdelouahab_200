@@ -52,7 +52,7 @@ export default function HeroMath({ className = '', style }: HeroMathProps) {
         {/* Parametric Lissajous curve, draws on */}
         <path
           className="draw-path"
-          style={{ ['--draw-len' as string]: 2600 }}
+          style={{ '--draw-len': 2600 } as CSSProperties}
           d="M300 90 C 470 120 520 300 420 430 C 340 530 200 520 150 400 C 100 280 180 130 300 90 Z"
           stroke="url(#hero-stroke)"
           strokeWidth={2}
@@ -60,7 +60,7 @@ export default function HeroMath({ className = '', style }: HeroMathProps) {
         />
         <path
           className="draw-path"
-          style={{ ['--draw-len' as string]: 2200, animationDelay: '0.4s' }}
+          style={{ '--draw-len': 2200, animationDelay: '0.4s' } as CSSProperties}
           d="M300 160 C 410 180 450 300 390 400 C 330 490 240 480 210 390 C 175 290 220 190 300 160 Z"
           stroke="var(--accent)"
           strokeWidth={1.25}
