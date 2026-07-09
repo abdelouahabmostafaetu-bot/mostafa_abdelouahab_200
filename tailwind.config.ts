@@ -63,6 +63,17 @@ const config: Config = {
           800: '#6b5127',
           900: '#4d3a1c',
         },
+        // ---- Secondary accent (chalk / blackboard teal) — use sparingly ----
+        'accent-2': {
+          DEFAULT: 'var(--accent-2)',
+          strong: 'var(--accent-2-strong)',
+          muted: 'var(--accent-2-muted)',
+        },
+      },
+      backgroundImage: {
+        'hero-mesh': 'var(--gradient-hero)',
+        'divider-glow': 'var(--gradient-divider)',
+        noise: 'var(--noise)',
       },
       fontFamily: {
         sans: ['var(--font-source-sans)', 'system-ui', 'sans-serif'],
@@ -72,6 +83,7 @@ const config: Config = {
       },
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }],
+        display: ['var(--fs-display)', { lineHeight: '1.02', letterSpacing: '-0.02em' }],
       },
       borderRadius: {
         xl: '0.75rem',
@@ -81,6 +93,7 @@ const config: Config = {
         card: 'var(--shadow-card)',
         raised: 'var(--shadow-raised)',
         soft: 'var(--shadow-sm)',
+        glow: 'var(--shadow-glow)',
       },
       maxWidth: {
         reading: 'var(--content-narrow)',
