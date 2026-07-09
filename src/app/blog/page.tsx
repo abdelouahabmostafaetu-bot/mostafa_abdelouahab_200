@@ -9,6 +9,7 @@ import { getCurrentAdminUser } from '@/lib/admin';
 import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import Reveal from '@/components/visual/Reveal';
 import MathMotif from '@/components/visual/MathMotif';
+import CountUp from '@/components/visual/CountUp';
 
 const POSTS_PER_PAGE = 15;
 
@@ -66,10 +67,16 @@ export default async function BlogPage({
             <h1 className="mt-3 font-serif text-4xl leading-tight text-[var(--text)] sm:text-5xl">
               Blog
             </h1>
-            <p className="mt-3 text-sm text-[var(--text-muted)]">
-              {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
-              {activeTag ? ` tagged \u201c${activeTag}\u201d` : ''}
-              {totalPages > 1 ? ` \u00b7 Page ${safePage} of ${totalPages}` : ''}
+            <p className="mt-3 flex flex-wrap items-center gap-1 text-sm text-[var(--text-muted)]">
+              <CountUp
+                value={filteredPosts.length}
+                className="font-semibold text-[var(--text)]"
+              />
+              <span>
+                {filteredPosts.length !== 1 ? 'posts' : 'post'}
+                {activeTag ? ` tagged \u201c${activeTag}\u201d` : ''}
+                {totalPages > 1 ? ` \u00b7 Page ${safePage} of ${totalPages}` : ''}
+              </span>
             </p>
           </div>
 
