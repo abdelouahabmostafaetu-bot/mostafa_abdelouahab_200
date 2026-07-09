@@ -7,6 +7,7 @@ import {
   FileText,
 } from 'lucide-react';
 import HeroArt from '@/components/home/HeroArt';
+import HeroSymbolLayer from '@/components/home/HeroSymbolLayer';
 
 const profileFacts = [
   { label: 'Institution', value: 'University of Mila', Icon: GraduationCap },
@@ -56,6 +57,10 @@ export default function ProfileSection() {
 
       {/* Animated math art + gradient mesh (lazy, behind content) */}
       <HeroArt />
+
+      {/* Greek/operator symbol field + blackboard draw + morphing focal glyph
+          (lazy, aria-hidden, low opacity, behind the text). */}
+      <HeroSymbolLayer />
 
       <div className="relative z-10 mx-auto max-w-wide px-4 pb-16 pt-16 sm:px-6 md:pb-24 md:pt-24">
         {/* Eyebrow */}
