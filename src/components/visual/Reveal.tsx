@@ -1,6 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ElementType,
+  type ReactNode,
+} from 'react';
+
+type Direction = 'up' | 'left' | 'right' | 'none';
 
 type RevealProps = {
   children: ReactNode;
@@ -11,15 +20,40 @@ type RevealProps = {
   className?: string;
   /** Trigger once then stop observing (default: true). */
   once?: boolean;
+  /**
+   * Optional slide direction. When set, the reveal is driven by inline styles
+   * (spring-like ease) instead of the shared `.reveal` class, so callers can
+   * mix up/left/right for a directional stagger. Omit for the original
+   * behaviour (fully backward compatible).
+   */
+  direction?: Direction;
+  /** Travel distance in px for the directional variant. */
+  distance?: number;
 };
+
+const SPRING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+function hiddenTransform(direction: Direction, distance: number): string {
+  switch (direction) {
+    case 'left':
+      return `translate3d(-${distance}px, 0, 0)`;
+    case 'right':
+      return `translate3d(${distance}px, 0, 0)`;
+    case 'up':
+      return `translate3d(0, ${distance}px, 0)`;
+    default:
+      return 'none';
+  }
+}
 
 /**
  * Reveal — lightweight scroll-reveal using IntersectionObserver + CSS.
  *
- * The element starts with the `.reveal` class (opacity 0, translateY) and gains
- * `.is-visible` when it scrolls into view. All motion is defined in globals.css
- * and fully disabled under prefers-reduced-motion, so there is no JS animation
- * loop and no layout shift (the element occupies its final box from the start).
+ * Default mode: element uses the shared `.reveal` class (opacity 0, translateY)
+ * and gains `.is-visible` on scroll-in. When `direction` is provided it instead
+ * uses inline transform/opacity with a spring ease so sections can slide in from
+ * alternating sides. Both modes are fully disabled under prefers-reduced-motion
+ * (revealed immediately) and cause no layout shift (final box reserved).
  */
 export default function Reveal({
   children,
@@ -27,20 +61,23 @@ export default function Reveal({
   as,
   className = '',
   once = true,
+  direction,
+  distance = 28,
 }: RevealProps) {
   const Tag = (as ?? 'div') as ElementType;
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
+  const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
 
-    // If reduced motion is requested, reveal immediately and skip observing.
     const prefersReduced = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches;
     if (prefersReduced) {
+      setReduced(true);
       setVisible(true);
       return;
     }
@@ -63,6 +100,30 @@ export default function Reveal({
     return () => observer.disconnect();
   }, [once]);
 
+  // Directional mode: drive with inline styles (spring ease).
+  const useDirectional = Boolean(direction) && direction !== 'none';
+
+  const directionalStyle: CSSProperties | undefined =
+    useDirectional && !reduced
+      ? {
+          opacity: visible ? 1 : 0,
+          transform: visible
+            ? 'translate3d(0,0,0)'
+            : hiddenTransform(direction as Direction, distance),
+          transition: `opacity 0.6s ${SPRING} ${delay}ms, transform 0.6s ${SPRING} ${delay}ms`,
+          willChange: 'opacity, transform',
+        }
+      : undefined;
+
+  if (useDirectional) {
+    return (
+      <Tag ref={ref} className={className} style={directionalStyle}>
+        {children}
+      </Tag>
+    );
+  }
+
+  // Default mode: shared `.reveal` class (unchanged behaviour).
   return (
     <Tag
       ref={ref}
