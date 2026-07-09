@@ -16,6 +16,8 @@ import {
   type DoctorateExamType,
   type DoctorateProblemSummary,
 } from "@/types/doctorate-problem";
+import Reveal from "@/components/visual/Reveal";
+import MathMotif from "@/components/visual/MathMotif";
 
 type Props = { problems: DoctorateProblemSummary[]; isAuthenticated?: boolean };
 
@@ -164,22 +166,30 @@ export default function DoctorateExamsExplorer({
   return (
     <div className="mx-auto max-w-wide px-4 py-10 sm:px-6 md:py-14">
       {/* ===== Header ===== */}
-      <header className="max-w-2xl">
-        <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--accent)]">
-          <GraduationCap className="h-4 w-4" aria-hidden="true" />
-          Doctorate Entrance Exams
-        </p>
-        <h1 className="mt-3 font-serif text-3xl leading-tight text-[var(--text)] sm:text-4xl">
-          Doctorate Exam Archive
-        </h1>
-        <p className="mt-4 text-[0.95rem] leading-relaxed text-[var(--text-muted)]">
-          Past mathematics doctorate (PhD) entrance exams in Algeria — general
-          and specialist papers from previous years, with complete solutions.
-        </p>
-        <p className="mt-4 text-sm text-[var(--text-subtle)]">
-          <span className="font-semibold text-[var(--text)]">{exams.length}</span>{" "}
-          {exams.length === 1 ? "exam" : "exams"} archived
-        </p>
+      <header className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-9">
+        <div className="absolute inset-0 bg-hero-mesh" aria-hidden="true" />
+        <MathMotif
+          name="integral"
+          opacity={0.1}
+          className="absolute -right-2 top-1/2 hidden h-[130%] -translate-y-1/2 sm:block"
+        />
+        <div className="relative z-10 max-w-2xl">
+          <p className="eyebrow flex items-center gap-2">
+            <GraduationCap className="h-4 w-4" aria-hidden="true" />
+            Doctorate Entrance Exams
+          </p>
+          <h1 className="mt-3 font-serif text-4xl leading-tight text-[var(--text)] sm:text-5xl">
+            Doctorate Exam Archive
+          </h1>
+          <p className="mt-4 text-[0.95rem] leading-relaxed text-[var(--text-muted)]">
+            Past mathematics doctorate (PhD) entrance exams in Algeria — general
+            and specialist papers from previous years, with complete solutions.
+          </p>
+          <p className="mt-4 text-sm text-[var(--text-subtle)]">
+            <span className="font-semibold text-[var(--text)]">{exams.length}</span>{" "}
+            {exams.length === 1 ? "exam" : "exams"} archived
+          </p>
+        </div>
       </header>
 
       {/* ===== Filter bar ===== */}
@@ -299,56 +309,57 @@ export default function DoctorateExamsExplorer({
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleExams.map((exam) => (
-            <article
-              key={exam.key}
-              className="group flex flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-raised)] motion-reduce:transform-none motion-reduce:transition-none"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
-                  {exam.year}
-                </span>
-                <ExamTypeBadge type={exam.examType} />
-              </div>
+          {visibleExams.map((exam, i) => (
+            <Reveal key={exam.key} className="h-full" delay={(i % 3) * 70}>
+              <article
+                className="group flex h-full flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] motion-reduce:transform-none motion-reduce:transition-none"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
+                    {exam.year}
+                  </span>
+                  <ExamTypeBadge type={exam.examType} />
+                </div>
 
-              <h2 className="mt-4 font-serif text-xl leading-snug text-[var(--text)]">
-                {exam.specialty || "Mathematics"}
-              </h2>
-              {exam.university ? (
-                <p className="mt-1.5 text-sm text-[var(--text-muted)]">
-                  {exam.university}
-                </p>
-              ) : null}
+                <h2 className="mt-4 font-serif text-xl leading-snug text-[var(--text)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+                  {exam.specialty || "Mathematics"}
+                </h2>
+                {exam.university ? (
+                  <p className="mt-1.5 text-sm text-[var(--text-muted)]">
+                    {exam.university}
+                  </p>
+                ) : null}
 
-              <div className="mt-5 flex items-center gap-2.5 pt-4 border-t border-[var(--border)]">
-                <Link
-                  href={`/doctorate-exams/exam/${exam.key}`}
-                  className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
-                >
-                  Open
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-
-                {isAuthenticated ? (
-                  <a
-                    href={`/doctorate-exams/download/${exam.key}`}
-                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
-                  >
-                    <Download className="h-4 w-4" aria-hidden="true" />
-                    PDF
-                  </a>
-                ) : (
+                <div className="mt-5 flex items-center gap-2.5 pt-4 border-t border-[var(--border)]">
                   <Link
-                    href="/sign-in"
-                    aria-label="Sign in to download the PDF"
-                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                    href={`/doctorate-exams/exam/${exam.key}`}
+                    className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
                   >
-                    <Lock className="h-4 w-4" aria-hidden="true" />
-                    PDF
+                    Open
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
-                )}
-              </div>
-            </article>
+
+                  {isAuthenticated ? (
+                    <a
+                      href={`/doctorate-exams/download/${exam.key}`}
+                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                    >
+                      <Download className="h-4 w-4" aria-hidden="true" />
+                      PDF
+                    </a>
+                  ) : (
+                    <Link
+                      href="/sign-in"
+                      aria-label="Sign in to download the PDF"
+                      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--border-strong)] hover:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                    >
+                      <Lock className="h-4 w-4" aria-hidden="true" />
+                      PDF
+                    </Link>
+                  )}
+                </div>
+              </article>
+            </Reveal>
           ))}
         </div>
       )}
