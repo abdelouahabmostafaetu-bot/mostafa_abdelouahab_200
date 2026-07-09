@@ -1,5 +1,11 @@
 import Link from 'next/link';
-import { GraduationCap, BookOpen, MapPin, ArrowRight, FileText } from 'lucide-react';
+import {
+  GraduationCap,
+  BookOpen,
+  MapPin,
+  ArrowRight,
+  FileText,
+} from 'lucide-react';
 
 const profileFacts = [
   { label: 'Institution', value: 'University of Mila', Icon: GraduationCap },
@@ -9,75 +15,60 @@ const profileFacts = [
 
 export default function ProfileSection() {
   return (
-    <section className="mx-auto w-full max-w-3xl px-5 pt-16 pb-10 md:pt-24 md:pb-14">
+    <section className="mx-auto max-w-wide px-4 pt-14 sm:px-6 md:pt-20">
       {/* Eyebrow */}
-      <p className="mb-5 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+      <p className="text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--accent)]">
         Mathematics Researcher
       </p>
 
       {/* Name */}
-      <h1
-        className="font-normal text-[var(--color-text)]"
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 'clamp(2.4rem, 7vw, 3.6rem)',
-          lineHeight: 1.05,
-          letterSpacing: '-0.02em',
-        }}
-      >
+      <h1 className="mt-4 font-serif text-4xl leading-[1.05] text-[var(--text)] sm:text-5xl md:text-6xl">
         Abdelouahab Mostafa
       </h1>
 
       {/* Lede */}
-      <p
-        className="mt-6 max-w-[52ch] text-[var(--color-text-secondary)]"
-        style={{ fontSize: '1.075rem', lineHeight: 1.7 }}
-      >
-        Master&rsquo;s student in fundamental mathematics, interested in analysis
-        and topology. I keep notes, work through problems, and write about the
-        ideas I find beautiful.
+      <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[var(--text-muted)]">
+        Master&rsquo;s student in fundamental mathematics, interested in
+        analysis and topology. I keep notes, work through problems, and write
+        about the ideas I find beautiful.
       </p>
 
       {/* Actions */}
-      <div className="mt-8 flex flex-wrap items-center gap-3">
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/cv"
-          className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-200"
-          style={{
-            background: 'var(--color-accent)',
-            color: 'var(--color-bg)',
-          }}
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] motion-reduce:transition-none"
         >
-          <FileText size={16} />
+          <FileText className="h-4 w-4" aria-hidden="true" />
           Curriculum Vitae
         </Link>
         <Link
           href="/blog"
-          className="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-medium text-[var(--color-text)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-          style={{ borderColor: 'var(--color-border)' }}
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-5 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
         >
           Read the blog
-          <ArrowRight size={15} />
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
 
       {/* Facts */}
-      <dl className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-xl border sm:grid-cols-3"
-        style={{ borderColor: 'var(--color-border)', background: 'var(--color-border)' }}
-      >
+      <dl className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--border)] sm:grid-cols-3">
         {profileFacts.map(({ label, value, Icon }) => (
           <div
             key={label}
-            className="flex flex-col gap-2 p-5"
-            style={{ background: 'var(--color-bg-elevated)' }}
+            className="flex items-start gap-3 bg-[var(--surface)] p-5"
           >
-            <div className="flex items-center gap-2">
-              <Icon size={15} style={{ color: 'var(--color-accent)' }} />
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-tertiary)]">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent-soft)] text-[var(--accent)]">
+              <Icon className="h-4.5 w-4.5" aria-hidden="true" />
+            </span>
+            <div>
+              <dt className="text-[0.7rem] font-semibold uppercase tracking-[var(--tracking-wide)] text-[var(--text-subtle)]">
                 {label}
               </dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text)]">
+                {value}
+              </dd>
             </div>
-            <dd className="text-[0.95rem] text-[var(--color-text)]">{value}</dd>
           </div>
         ))}
       </dl>
