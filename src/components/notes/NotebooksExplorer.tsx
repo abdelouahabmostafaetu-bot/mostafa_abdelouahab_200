@@ -6,6 +6,7 @@ import { ArrowUpRight, FileText, Plus, Settings } from 'lucide-react';
 import Reveal from '@/components/visual/Reveal';
 import MathMotif from '@/components/visual/MathMotif';
 import GenerativeCover from '@/components/visual/GenerativeCover';
+import SnapRow from '@/components/visual/SnapRow';
 
 export type NotebookSummary = {
   id: string;
@@ -29,7 +30,7 @@ function NotebookCard({ notebook }: { notebook: NotebookSummary }) {
   return (
     <Link
       href={`/notes/notebook/${notebook.slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transform-none motion-reduce:transition-none"
+      className="card-sheen group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none motion-reduce:active:scale-100"
     >
       {/* Generative cover thumbnail (deterministic; graceful, always renders) */}
       <div className="relative aspect-[16/9] w-full overflow-hidden">
@@ -108,7 +109,7 @@ export default function NotebooksExplorer({
   };
 
   const chipClass = (active: boolean) =>
-    `inline-flex min-h-[36px] items-center rounded-[var(--radius-full)] border px-3.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none ${
+    `inline-flex min-h-[36px] items-center rounded-[var(--radius-full)] border px-3.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 ${
       active
         ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--bg)]'
         : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]'
@@ -140,7 +141,7 @@ export default function NotebooksExplorer({
             <div className="flex shrink-0 items-center gap-2">
               <Link
                 href="/notes/admin/create"
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                className="btn-sheen inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 New notebook
@@ -148,7 +149,7 @@ export default function NotebooksExplorer({
               <Link
                 href="/notes/admin"
                 aria-label="Manage notebooks"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
               >
                 <Settings className="h-5 w-5" aria-hidden="true" />
               </Link>
@@ -194,7 +195,7 @@ export default function NotebooksExplorer({
           {isAdmin && (
             <Link
               href="/notes/admin/create"
-              className="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+              className="btn-sheen mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Create first notebook
@@ -212,29 +213,36 @@ export default function NotebooksExplorer({
           <button
             type="button"
             onClick={clearFilters}
-            className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
           >
             Clear filter
           </button>
         </div>
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleNotebooks.map((nb, i) => (
-            <Reveal key={nb.id} className="h-full" delay={(i % 3) * 70}>
-              <NotebookCard notebook={nb} />
-            </Reveal>
-          ))}
+        /* Mobile: horizontal snap carousel; sm+: responsive grid. Reveal wraps
+           the whole row (not each card) so scroll-reveal never fights the
+           horizontal snap track or leaves off-screen cards invisible. */
+        <Reveal className="mt-8 block">
+          <SnapRow gridClassName="sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
+            {visibleNotebooks.map((nb) => (
+              <SnapRow.Item key={nb.id}>
+                <NotebookCard notebook={nb} />
+              </SnapRow.Item>
+            ))}
 
-          {isAdmin && !hasFilters && (
-            <Link
-              href="/notes/admin/create"
-              className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] p-5 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
-            >
-              <Plus className="h-6 w-6" aria-hidden="true" />
-              New Notebook
-            </Link>
-          )}
-        </div>
+            {isAdmin && !hasFilters && (
+              <SnapRow.Item>
+                <Link
+                  href="/notes/admin/create"
+                  className="flex h-full min-h-[160px] flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] p-5 text-sm font-medium text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
+                >
+                  <Plus className="h-6 w-6" aria-hidden="true" />
+                  New Notebook
+                </Link>
+              </SnapRow.Item>
+            )}
+          </SnapRow>
+        </Reveal>
       )}
     </div>
   );
