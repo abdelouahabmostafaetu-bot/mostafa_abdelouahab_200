@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Coffee } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Coffee, Search, Settings } from 'lucide-react';
 import { getCurrentAdminUser } from '@/lib/admin';
 import { renderInlineMarkdownPreviewToHtml } from '@/lib/mdx-preview';
 import {
@@ -10,6 +10,8 @@ import {
 import { connectToDatabase } from '@/lib/mongodb';
 import CoffeeProblemModel from '@/lib/models/coffee-problem';
 import type { ProblemSummary } from '@/types/problem';
+import Reveal from '@/components/visual/Reveal';
+import MathMotif from '@/components/visual/MathMotif';
 
 export const metadata: Metadata = {
   title: 'Problems with Coffee | Abdelouahab Mostafa',
@@ -65,37 +67,47 @@ function buildProblemSummaryFallback(source: string) {
     .slice(0, 180);
 }
 
-function ProblemListItem({
+function ProblemCard({
   problem,
   index,
 }: {
   problem: ProblemSummaryWithHtml;
   index: number;
 }) {
-  const variant = index % 3;
+  // Sparing teal counterpoint: teal only on every third card, gold otherwise.
+  const accentVar = index % 3 === 1 ? 'var(--accent-2)' : 'var(--accent)';
 
   return (
-    <article className="problem-list-item" data-variant={variant}>
-      <Link href={`/problems-with-coffee/${problem.slug}`} prefetch className="problem-list-link">
-        <div className="problem-list-accent" aria-hidden="true" />
-        <div className="min-w-0 flex-1">
-          <div className="problem-list-meta">
-            <span>Problem {index + 1}</span>
-            {problem.estimatedTime ? <span>{problem.estimatedTime}</span> : null}
-          </div>
-          <h2 className="problem-list-heading">
-            <span
-              className="problem-list-title problem-title"
-              dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
-            />
-          </h2>
-          <p
-            className="problem-list-description"
-            dangerouslySetInnerHTML={{ __html: problem.shortDescriptionHtml }}
-          />
-        </div>
-      </Link>
-    </article>
+    <Link
+      href={`/problems-with-coffee/${problem.slug}`}
+      className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transform-none motion-reduce:transition-none"
+    >
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-1"
+        style={{ backgroundColor: accentVar }}
+      />
+      <div className="flex items-center gap-3 text-xs">
+        <span className="font-semibold uppercase tracking-[0.08em] text-[var(--text-subtle)]">
+          Problem {index + 1}
+        </span>
+        {problem.estimatedTime ? (
+          <span className="inline-flex items-center gap-1 text-[var(--text-subtle)]">
+            <Coffee className="h-3.5 w-3.5" aria-hidden="true" />
+            {problem.estimatedTime}
+          </span>
+        ) : null}
+      </div>
+
+      <h2
+        className="mt-3 font-serif text-lg leading-snug text-[var(--text)] transition-colors duration-150 group-hover:text-[var(--accent)]"
+        dangerouslySetInnerHTML={{ __html: problem.titleHtml }}
+      />
+      <div
+        className="mt-2 line-clamp-3 text-sm leading-relaxed text-[var(--text-muted)]"
+        dangerouslySetInnerHTML={{ __html: problem.shortDescriptionHtml }}
+      />
+    </Link>
   );
 }
 
@@ -156,7 +168,9 @@ async function loadProblems({
       const problem = mapProblemSummary(doc);
       const summary =
         problem.shortDescription ||
-        buildProblemSummaryFallback(String(doc.fullProblemContent ?? doc.problemStatement ?? ''));
+        buildProblemSummaryFallback(
+          String(doc.fullProblemContent ?? doc.problemStatement ?? ''),
+        );
 
       return {
         ...problem,
@@ -206,81 +220,124 @@ export default async function ProblemsWithCoffeePage({ searchParams }: PageProps
   }
 
   return (
-    <section className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
-        <header className="mx-auto max-w-4xl border-b border-[var(--color-border)] pb-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1
-              className="flex items-center gap-3 text-3xl font-semibold leading-tight sm:text-4xl"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              <Coffee
-                aria-hidden="true"
-                className="h-7 w-7 shrink-0 text-[var(--color-accent)] sm:h-9 sm:w-9"
-              />
-              <span>Problems with Coffee</span>
-            </h1>
-            {adminUser ? (
-              <Link
-                href="/admin/problems"
-                className="inline-flex w-fit items-center justify-center rounded-md border border-[var(--color-accent)]/40 px-4 py-2 text-sm font-semibold text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10"
-              >
-                Admin
-              </Link>
-            ) : null}
-          </div>
-        </header>
-
-        {warning ? (
-          <div className="mt-5 rounded-md border border-amber-500/30 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
-            {warning}
-          </div>
-        ) : null}
-
-        {data.problems.length === 0 ? (
-          <div className="mt-10 rounded-lg border border-dashed border-[var(--color-border)] px-4 py-14 text-center">
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              No published problems found.
+    <div className="mx-auto max-w-wide px-4 py-10 sm:px-6 md:py-14">
+      {/* ===== Header ===== */}
+      <header className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-9">
+        <div className="absolute inset-0 bg-hero-mesh" aria-hidden="true" />
+        <MathMotif
+          name="grid"
+          opacity={0.08}
+          className="absolute -right-4 top-1/2 hidden h-[130%] -translate-y-1/2 sm:block"
+        />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="eyebrow flex items-center gap-2">
+              <Coffee className="h-4 w-4" aria-hidden="true" />
+              One coffee. One problem. One idea.
             </p>
+            <h1 className="mt-3 font-serif text-4xl leading-tight text-[var(--text)] sm:text-5xl">
+              Problems with Coffee
+            </h1>
+            {data.pagination.totalProblems > 0 && (
+              <p className="mt-3 text-sm text-[var(--text-muted)]">
+                {data.pagination.totalProblems} problem
+                {data.pagination.totalProblems !== 1 ? 's' : ''}
+                {data.pagination.totalPages > 1
+                  ? ` \u00b7 Page ${data.pagination.page} of ${data.pagination.totalPages}`
+                  : ''}
+              </p>
+            )}
           </div>
-        ) : (
-          <div className="problem-list mt-8">
-            {data.problems.map((problem, index) => (
-              <ProblemListItem key={problem.slug} problem={problem} index={index} />
-            ))}
-          </div>
-        )}
 
-        <div className="mt-10 flex flex-row flex-nowrap items-center justify-center gap-2 sm:gap-3">
-          {data.pagination.hasPreviousPage ? (
+          {adminUser ? (
             <Link
-              href={buildPageHref(page - 1, { search, level, tag })}
-              className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs hover:border-[var(--color-accent)] sm:px-4 sm:text-sm"
+              href="/admin/problems-with-coffee"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
             >
-              Previous
+              <Settings className="h-4 w-4" aria-hidden="true" />
+              Admin
             </Link>
-          ) : (
-            <span className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs opacity-40 sm:px-4 sm:text-sm">
-              Previous
-            </span>
-          )}
-          <span className="whitespace-nowrap text-xs text-[var(--color-text-secondary)] sm:text-sm">
-            Page {data.pagination.page} of {data.pagination.totalPages}
-          </span>
-          {data.pagination.hasNextPage ? (
-            <Link
-              href={buildPageHref(page + 1, { search, level, tag })}
-              className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs hover:border-[var(--color-accent)] sm:px-4 sm:text-sm"
-            >
-              Next
-            </Link>
-          ) : (
-            <span className="whitespace-nowrap rounded-md border border-[var(--color-border)] px-3 py-2 text-xs opacity-40 sm:px-4 sm:text-sm">
-              Next
-            </span>
-          )}
+          ) : null}
         </div>
+      </header>
+
+      {/* ===== Search (maps to the existing ?search=/level=/tag= query) ===== */}
+      <form action="/problems-with-coffee" method="get" className="relative mt-8">
+        {level ? <input type="hidden" name="level" value={level} /> : null}
+        {tag ? <input type="hidden" name="tag" value={tag} /> : null}
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-subtle)]"
+          aria-hidden="true"
+        />
+        <input
+          type="text"
+          name="search"
+          defaultValue={search}
+          placeholder="Search problems by title or topic…"
+          className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] pl-9 pr-4 text-sm text-[var(--text)] placeholder:text-[var(--text-subtle)] transition-colors duration-150 hover:border-[var(--border-strong)] focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+        />
+      </form>
+
+      {warning ? (
+        <p className="mt-6 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-muted)]">
+          {warning}
+        </p>
+      ) : null}
+
+      {/* ===== Results ===== */}
+      {data.problems.length === 0 ? (
+        <div className="mt-12 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-full)] bg-[var(--surface)] text-[var(--text-subtle)]">
+            <Coffee className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <p className="mt-5 text-sm text-[var(--text-muted)]">
+            No published problems found.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {data.problems.map((problem, index) => (
+            <Reveal key={problem.slug} className="h-full" delay={(index % 2) * 70}>
+              <ProblemCard problem={problem} index={index} />
+            </Reveal>
+          ))}
+        </div>
+      )}
+
+      {/* ===== Pagination ===== */}
+      <div className="mt-10 flex items-center justify-center gap-4">
+        {data.pagination.hasPreviousPage ? (
+          <Link
+            href={buildPageHref(data.pagination.page - 1, { search, level, tag })}
+            className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          >
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Previous</span>
+          </Link>
+        ) : (
+          <span className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-subtle)] opacity-40">
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Previous</span>
+          </span>
+        )}
+        <span className="text-sm text-[var(--text-subtle)]">
+          Page {data.pagination.page} of {data.pagination.totalPages}
+        </span>
+        {data.pagination.hasNextPage ? (
+          <Link
+            href={buildPageHref(data.pagination.page + 1, { search, level, tag })}
+            className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        ) : (
+          <span className="inline-flex h-11 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] px-3 text-sm text-[var(--text-subtle)] opacity-40">
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </span>
+        )}
       </div>
-    </section>
+    </div>
   );
 }
