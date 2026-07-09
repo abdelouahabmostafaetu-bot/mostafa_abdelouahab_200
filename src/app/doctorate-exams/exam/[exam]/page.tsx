@@ -7,6 +7,8 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { DoctorateProblem } from '@/lib/models/doctorate-problem';
 import MDXContent from '@/components/MDXContent';
 import SolutionReveal from '@/components/doctorate/SolutionReveal';
+import Reveal from '@/components/visual/Reveal';
+import MathMotif from '@/components/visual/MathMotif';
 import {
   DIFFICULTY_LABELS,
   EXAM_TYPE_LABELS,
@@ -126,53 +128,61 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
       </Link>
 
       {/* ===== Exam header ===== */}
-      <header className="mt-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] sm:p-8">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
-            {year}
-          </span>
-          <ExamTypeTag type={examType} />
-          <span className="text-sm text-[var(--text-subtle)]">
-            {problems.length} exercice{problems.length !== 1 ? 's' : ''}
-          </span>
-        </div>
-
-        <h1 className="mt-4 font-serif text-3xl leading-tight text-[var(--text)] sm:text-4xl">
-          {examLabel} — {year}
-        </h1>
-
-        <div className="mt-3 flex flex-col gap-1.5 text-sm text-[var(--text-muted)] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
-          <span>{first.specialty}</span>
-          {first.university && (
-            <span className="inline-flex items-center gap-1.5">
-              <Building2 className="h-4 w-4 text-[var(--text-subtle)]" aria-hidden="true" />
-              {first.university}
+      <header className="relative mt-6 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] sm:p-8">
+        <div className="absolute inset-0 bg-hero-mesh" aria-hidden="true" />
+        <MathMotif
+          name="series"
+          opacity={0.09}
+          className="absolute -right-4 bottom-2 hidden h-24 sm:block"
+        />
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)] px-2.5 py-1 text-sm font-semibold text-[var(--text)]">
+              {year}
             </span>
-          )}
-        </div>
+            <ExamTypeTag type={examType} />
+            <span className="text-sm text-[var(--text-subtle)]">
+              {problems.length} exercice{problems.length !== 1 ? 's' : ''}
+            </span>
+          </div>
 
-        {first.source && (
-          <p className="mt-3 text-xs text-[var(--text-subtle)]">{first.source}</p>
-        )}
+          <h1 className="mt-4 font-serif text-4xl leading-tight text-[var(--text)] sm:text-5xl">
+            {examLabel} — {year}
+          </h1>
 
-        <div className="mt-6 border-t border-[var(--border)] pt-6">
-          {user ? (
-            <a
-              href={`/doctorate-exams/download/${exam}`}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-colors duration-150 hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              Download exam + all solutions (PDF)
-            </a>
-          ) : (
-            <Link
-              href="/sign-in"
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-5 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
-            >
-              <Lock className="h-4 w-4" aria-hidden="true" />
-              Sign in to download
-            </Link>
+          <div className="mt-3 flex flex-col gap-1.5 text-sm text-[var(--text-muted)] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
+            <span>{first.specialty}</span>
+            {first.university && (
+              <span className="inline-flex items-center gap-1.5">
+                <Building2 className="h-4 w-4 text-[var(--text-subtle)]" aria-hidden="true" />
+                {first.university}
+              </span>
+            )}
+          </div>
+
+          {first.source && (
+            <p className="mt-3 text-xs text-[var(--text-subtle)]">{first.source}</p>
           )}
+
+          <div className="mt-6 border-t border-[var(--border)] pt-6">
+            {user ? (
+              <a
+                href={`/doctorate-exams/download/${exam}`}
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--bg)] transition-all duration-200 hover:bg-[var(--accent-hover)] hover:shadow-[var(--shadow-glow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] motion-reduce:transition-none"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Download exam + all solutions (PDF)
+              </a>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] px-5 text-sm font-medium text-[var(--text-muted)] transition-colors duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] motion-reduce:transition-none"
+              >
+                <Lock className="h-4 w-4" aria-hidden="true" />
+                Sign in to download
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -182,50 +192,49 @@ export default async function DoctorateExamViewPage({ params }: PageProps) {
           const n = p.problemNumber ?? i + 1;
           const hasSolution = Boolean(String(p.solution ?? '').trim());
           return (
-            <section
-              key={String(p._id)}
-              className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)]"
-            >
-              <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4 sm:px-6">
-                <h2 className="font-serif text-lg text-[var(--text)]">
-                  Exercice {n}
-                </h2>
-                <span className="inline-flex items-center rounded-[var(--radius-full)] bg-[var(--bg-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">
-                  {DIFFICULTY_LABELS[p.difficulty] ?? p.difficulty}
-                </span>
-              </div>
-
-              <div className="px-5 py-5 sm:px-6">
-                <div className="prose-academic blog-content">
-                  <MDXContent content={p.statement} />
+            <Reveal key={String(p._id)} delay={(i % 3) * 70}>
+              <section className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)]">
+                <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4 sm:px-6">
+                  <h2 className="font-serif text-lg text-[var(--text)]">
+                    Exercice {n}
+                  </h2>
+                  <span className="inline-flex items-center rounded-[var(--radius-full)] bg-[var(--bg-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">
+                    {DIFFICULTY_LABELS[p.difficulty] ?? p.difficulty}
+                  </span>
                 </div>
-              </div>
 
-              {hasSolution ? (
-                <div className="border-t border-[var(--border)]">
-                  <SolutionReveal>
-                    <div className="prose-academic blog-content px-5 pb-6 sm:px-6">
-                      <MDXContent content={p.solution} />
-                    </div>
-                  </SolutionReveal>
-                </div>
-              ) : (
-                <div className="flex items-start gap-3 border-t border-[var(--border)] px-5 py-5 sm:px-6">
-                  <Hourglass
-                    className="mt-0.5 h-5 w-5 shrink-0 text-[var(--text-subtle)]"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text)]">
-                      Solution coming soon
-                    </p>
-                    <p className="mt-1 text-sm text-[var(--text-muted)]">
-                      The worked solution for this exercice is being prepared.
-                    </p>
+                <div className="px-5 py-5 sm:px-6">
+                  <div className="prose-academic blog-content">
+                    <MDXContent content={p.statement} />
                   </div>
                 </div>
-              )}
-            </section>
+
+                {hasSolution ? (
+                  <div className="border-t border-[var(--border)]">
+                    <SolutionReveal>
+                      <div className="prose-academic blog-content px-5 pb-6 sm:px-6">
+                        <MDXContent content={p.solution} />
+                      </div>
+                    </SolutionReveal>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3 border-t border-[var(--border)] px-5 py-5 sm:px-6">
+                    <Hourglass
+                      className="mt-0.5 h-5 w-5 shrink-0 text-[var(--text-subtle)]"
+                      aria-hidden="true"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-[var(--text)]">
+                        Solution coming soon
+                      </p>
+                      <p className="mt-1 text-sm text-[var(--text-muted)]">
+                        The worked solution for this exercice is being prepared.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </section>
+            </Reveal>
           );
         })}
       </div>
